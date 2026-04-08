@@ -6,6 +6,8 @@ export const FORM_VARIANT_CONFIG = {
     introduction:
       "Tell us about yourself or the person you want us to meet. This path supports direct interest and referrals for the Studio Development Manager opportunity.",
     submitLabel: "Share Work With Us Interest",
+    successMessage:
+      "Thanks. This review-build submission was saved locally on this device and is ready for live Google Sheets wiring once approved.",
     requiredFields: [
       "first_name",
       "last_name",
@@ -21,12 +23,16 @@ export const FORM_VARIANT_CONFIG = {
       "video_intro_url",
       "city_area",
       "instagram_handle",
+      "email_follow_up_consent",
+      "text_follow_up_consent",
     ],
   },
   partner_with_us: {
     introduction:
       "Use this path if you want to explore local collaboration opportunities with The Tox in Raleigh.",
     submitLabel: "Share Partnership Interest",
+    successMessage:
+      "Thanks. This review-build submission was saved locally on this device and can be connected to the live follow-up workflow after approval.",
     requiredFields: [
       "first_name",
       "last_name",
@@ -36,12 +42,20 @@ export const FORM_VARIANT_CONFIG = {
       "partnership_type",
       "short_message",
     ],
-    optionalFields: ["website_url", "instagram_url_or_handle", "collaboration_idea"],
+    optionalFields: [
+      "website_url",
+      "instagram_url_or_handle",
+      "collaboration_idea",
+      "email_follow_up_consent",
+      "text_follow_up_consent",
+    ],
   },
   stay_connected: {
     introduction:
-      "Use this path if you want launch updates, early announcements, and future VIP communications.",
+      "Want to be first in line when pre-sales opens? Sign up below to be notified when a limited number of discounted Founding Member VIP packages become available and to stay connected as we build toward launch in Raleigh.",
     submitLabel: "Stay Connected",
+    successMessage:
+      "Thanks. This review-build submission was saved locally on this device and represents the future launch-updates flow.",
     requiredFields: [
       "first_name",
       "last_name",
@@ -95,7 +109,7 @@ export const FIELD_DEFINITIONS = {
     ],
   },
   short_message: {
-    label: "Short Message",
+    label: "Tell us why this feels like a fit",
     type: "textarea",
   },
   linkedin_url: {
@@ -145,12 +159,20 @@ export const FIELD_DEFINITIONS = {
     label: "Collaboration Idea",
     type: "textarea",
   },
+  email_follow_up_consent: {
+    label: "Yes, you may email me about this inquiry.",
+    type: "checkbox",
+  },
+  text_follow_up_consent: {
+    label: "Yes, you may text me about this inquiry.",
+    type: "checkbox",
+  },
   email_updates_consent: {
-    label: "I consent to email updates",
+    label: "I consent to email updates about launch news, pre-sales updates, and Founding Member VIP offers.",
     type: "checkbox",
   },
   text_updates_consent: {
-    label: "I consent to text updates",
+    label: "I consent to text-message updates about launch news, pre-sales updates, and Founding Member VIP offers.",
     type: "checkbox",
   },
   interest_type: {
@@ -218,10 +240,7 @@ export function validateFormValues(pathKey, rawValues) {
     validationErrors.push("Email format must be valid.");
   }
 
-  if (
-    normalizedValues.phone &&
-    !/^[0-9()\-\s+.]{7,}$/.test(normalizedValues.phone)
-  ) {
+  if (normalizedValues.phone && !/^[0-9()\-\s+.]{7,}$/.test(normalizedValues.phone)) {
     validationErrors.push("Phone format must be valid when provided.");
   }
 
