@@ -1,7 +1,8 @@
 import {
   FIELD_DEFINITIONS,
   buildSubmissionPayload,
-  getFieldSequence,
+  getFieldGroups,
+  getRequiredFields,
   getFormVariantConfig,
 } from "./form-configuration.js";
 
@@ -10,82 +11,30 @@ const formFieldGridElement = document.querySelector("#form-field-grid");
 const formIntroductionElement = document.querySelector("#form-introduction");
 const formStatusMessageElement = document.querySelector("#form-status-message");
 const submitButtonElement = document.querySelector("#contact-submit-button");
-const prototypeStorageKey = "raleigh-premium-wellness-prototype-submissions";
 const observedSections = document.querySelectorAll("main section[id]");
 const navigationLinks = document.querySelectorAll("[data-nav-link]");
+const prototypeStorageKey = "raleigh-premium-wellness-prototype-submissions";
 
-function createInputMarkup(fieldKey, isRequired) {
-  const field = FIELD_DEFINITIONS[fieldKey];
-  const fieldClassName = field.type === "textarea" ? "form-field form-field--full" : "form-field";
-  const requiredLabel = isRequired ? '<span class="field-required-note"> *</span>' : "";
-  const helperMarkup = field.helperText
-    ? `<p class="form-field__helper">${field.helperText}</p>`
-    : "";
+let currentFormValues = {
+  interestPath: "work_with_us",
+  self_or_referral: "I’m interested for myself",
+  role_interest: "Manager-Studio Development",
+};
 
-  if (field.type === "select") {
-    const optionMarkup = field.options
-      .map((optionValue) => `<option value="${optionValue}">${optionValue}</option>`)
-      .join("");
-
-    return `
-      <div class="${fieldClassName}">
-        <label for="${fieldKey}">${field.label}${requiredLabel}</label>
-        <select id="${fieldKey}" name="${fieldKey}" ${isRequired ? "required" : ""}>
-          <option value="">Select an option</option>
-          ${optionMarkup}
-        </select>
-        ${helperMarkup}
-      </div>
-    `;
-  }
-
-  if (field.type === "checkbox") {
-    return `
-      <div class="form-field form-field--full">
-        <label class="form-checkbox" for="${fieldKey}">
-          <input id="${fieldKey}" name="${fieldKey}" type="checkbox" ${isRequired ? "required" : ""} />
-          <span>${field.label}${requiredLabel}</span>
-        </label>
-        ${helperMarkup}
-      </div>
-    `;
-  }
-
-  if (field.type === "textarea") {
-    return `
-      <div class="${fieldClassName}">
-        <label for="${fieldKey}">${field.label}${requiredLabel}</label>
-        <textarea id="${fieldKey}" name="${fieldKey}" ${isRequired ? "required" : ""}></textarea>
-        ${helperMarkup}
-      </div>
-    `;
-  }
-
-  return `
-    <div class="${fieldClassName}">
-      <label for="${fieldKey}">${field.label}${requiredLabel}</label>
-      <input
-        id="${fieldKey}"
-        name="${fieldKey}"
-        type="${field.type}"
-        ${field.autocomplete ? `autocomplete="${field.autocomplete}"` : ""}
-        ${isRequired ? "required" : ""}
-      />
-      ${helperMarkup}
-    </div>
-  `;
+function trackEvent(eventName, eventData = {}) {
+  window.dataLayer = window.dataLayer ?? [];
+  window.dataLayer.push({
+    event: eventName,
+    ...eventData,
+  });
 }
 
-function renderVariant(pathKey) {
-  const variant = getFormVariantConfig(pathKey);
-  const requiredFieldSet = new Set(variant.requiredFields);
-
-  formIntroductionElement.innerHTML = `<p>${variant.introduction}</p>`;
-  submitButtonElement.textContent = variant.submitLabel;
-
-  formFieldGridElement.innerHTML = getFieldSequence(pathKey)
-    .map((fieldKey) => createInputMarkup(fieldKey, requiredFieldSet.has(fieldKey)))
-    .join("");
+function escapeHtml(rawValue = "") {
+  return String(rawValue)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
 function readCurrentFormValues() {
@@ -100,6 +49,11 @@ function readCurrentFormValues() {
     formValues[checkboxElement.name] = checkboxElement.checked;
   }
 
+  for (const richtextElement of contactFormElement.querySelectorAll("[data-richtext-target]")) {
+    const targetField = richtextElement.dataset.richtextTarget;
+    formValues[targetField] = richtextElement.value;
+  }
+
   return formValues;
 }
 
@@ -108,13 +62,152 @@ function setStatusMessage(message, status) {
   formStatusMessageElement.dataset.status = status;
 }
 
-function handlePathChange(event) {
-  if (event.target.name !== "interestPath") {
-    return;
+function buildRichTextToolbar(fieldKey) {
+  return `
+    <div class="richtext-toolbar" aria-label="${FIELD_DEFINITIONS[fieldKey].label} formatting tools">
+      <button type="button" data-format-action="bold" data-target-field="${fieldKey}">Bold</button>
+      <button type="button" data-format-action="bullets" data-target-field="${fieldKey}">Bullets</button>
+      <button type="button" data-format-action="link" data-target-field="${fieldKey}">Link</button>
+    </div>
+  `;
+}
+
+function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired) {
+  const field = FIELD_DEFINITIONS[fieldKey];
+  const fieldClassName =
+    field.type === "richtext" || field.type === "checkbox" ? "form-field form-field--full" : "form-field";
+  const helperMarkup = field.helperText
+    ? `<p class="${field.type === "checkbox" ? "form-checkbox__helper" : "form-field__helper"}">${escapeHtml(field.helperText)}</p>`
+    : "";
+  const errorMarkup = validationMessage
+    ? `<p class="form-field__error" data-field-error="${fieldKey}">${escapeHtml(validationMessage)}</p>`
+    : "";
+  const requiredLabel = isRequired ? '<span class="field-required-note"> *</span>' : "";
+
+  if (field.type === "select") {
+    const optionMarkup = field.options
+      .map((optionValue) => {
+        const isSelected = currentValue === optionValue ? "selected" : "";
+        return `<option value="${escapeHtml(optionValue)}" ${isSelected}>${escapeHtml(optionValue)}</option>`;
+      })
+      .join("");
+
+    return `
+      <div class="${fieldClassName}">
+        <label for="${fieldKey}">${escapeHtml(field.label)}${requiredLabel}</label>
+        <select id="${fieldKey}" name="${fieldKey}">
+          <option value="">Select an option</option>
+          ${optionMarkup}
+        </select>
+        ${helperMarkup}
+        ${errorMarkup}
+      </div>
+    `;
   }
 
-  renderVariant(event.target.value);
-  setStatusMessage("", "idle");
+  if (field.type === "checkbox") {
+    const isChecked = currentValue ? "checked" : "";
+    return `
+      <div class="${fieldClassName}">
+        <div class="form-checkbox">
+          <label for="${fieldKey}">
+            <input id="${fieldKey}" name="${fieldKey}" type="checkbox" ${isChecked} />
+            <span>${escapeHtml(field.label)}${requiredLabel}</span>
+          </label>
+          ${helperMarkup}
+          ${errorMarkup}
+        </div>
+      </div>
+    `;
+  }
+
+  if (field.type === "richtext") {
+    return `
+      <div class="${fieldClassName}">
+        <label class="richtext-label" for="${fieldKey}">${escapeHtml(field.label)}${requiredLabel}</label>
+        <div class="richtext-editor">
+          ${buildRichTextToolbar(fieldKey)}
+          <textarea
+            id="${fieldKey}"
+            name="${fieldKey}"
+            class="richtext-editor__input"
+            data-richtext-target="${fieldKey}"
+            aria-invalid="${validationMessage ? "true" : "false"}"
+          >${escapeHtml(currentValue ?? "")}</textarea>
+        </div>
+        ${helperMarkup}
+        ${errorMarkup}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="${fieldClassName}">
+      <label for="${fieldKey}">${escapeHtml(field.label)}${requiredLabel}</label>
+      <input
+        id="${fieldKey}"
+        name="${fieldKey}"
+        type="${field.type}"
+        value="${escapeHtml(currentValue ?? "")}"
+        ${field.autocomplete ? `autocomplete="${field.autocomplete}"` : ""}
+        aria-invalid="${validationMessage ? "true" : "false"}"
+      />
+      ${helperMarkup}
+      ${errorMarkup}
+    </div>
+  `;
+}
+
+function getFieldValidationMap(pathKey, currentValues) {
+  const submissionPayload = buildSubmissionPayload(pathKey, currentValues);
+  const validationMap = new Map();
+
+  for (const errorMessage of submissionPayload.validationErrors) {
+    const matchingEntry = Object.entries(FIELD_DEFINITIONS).find(([, fieldDefinition]) =>
+      errorMessage.startsWith(fieldDefinition.label),
+    );
+
+    if (matchingEntry) {
+      validationMap.set(matchingEntry[0], errorMessage);
+    }
+  }
+
+  return validationMap;
+}
+
+function renderVariant(pathKey, nextValues = currentFormValues, options = {}) {
+  currentFormValues = {
+    ...currentFormValues,
+    ...nextValues,
+  };
+
+  const variant = getFormVariantConfig(pathKey);
+  const fieldGroups = getFieldGroups(pathKey, currentFormValues);
+  const validationMap = options.showValidation ? getFieldValidationMap(pathKey, currentFormValues) : new Map();
+  const requiredFieldSet = new Set(getRequiredFields(pathKey, currentFormValues));
+
+  formIntroductionElement.innerHTML = `<p>${variant.introduction}</p>`;
+  submitButtonElement.textContent = variant.submitLabel;
+
+  formFieldGridElement.innerHTML = fieldGroups
+    .map((group) => {
+      const fieldsMarkup = group.fields
+        .map((fieldKey) =>
+          createFieldMarkup(
+            fieldKey,
+            currentFormValues[fieldKey],
+            validationMap.get(fieldKey),
+            requiredFieldSet.has(fieldKey),
+          ),
+        )
+        .join("");
+
+      return `
+        <p class="form-section-label">${group.label}</p>
+        ${fieldsMarkup}
+      `;
+    })
+    .join("");
 }
 
 function readStoredSubmissions() {
@@ -138,25 +231,14 @@ function storeSubmission(submissionPayload) {
   );
 }
 
-function handleFormSubmit(event) {
-  event.preventDefault();
+function resetForCurrentPath(pathKey) {
+  currentFormValues = {
+    interestPath: pathKey,
+    self_or_referral: "I’m interested for myself",
+    role_interest: "Manager-Studio Development",
+  };
 
-  const selectedPath = contactFormElement.elements.interestPath.value;
-  const variant = getFormVariantConfig(selectedPath);
-  const submissionPayload = buildSubmissionPayload(selectedPath, readCurrentFormValues());
-
-  if (submissionPayload.validationErrors.length > 0) {
-    setStatusMessage(submissionPayload.validationErrors[0], "error");
-    return;
-  }
-
-  storeSubmission(submissionPayload);
-  console.info("Unified contact form payload", submissionPayload);
-  setStatusMessage(variant.successMessage, "success");
-
-  contactFormElement.reset();
-  contactFormElement.querySelector(`input[name="interestPath"][value="${selectedPath}"]`).checked = true;
-  renderVariant(selectedPath);
+  renderVariant(pathKey, currentFormValues);
 }
 
 function updateActiveNavigation(activeSectionId) {
@@ -180,7 +262,7 @@ function observeSectionsForNavigation() {
       }
     },
     {
-      rootMargin: "-18% 0px -55% 0px",
+      rootMargin: "-20% 0px -55% 0px",
       threshold: [0.2, 0.45, 0.7],
     },
   );
@@ -190,8 +272,151 @@ function observeSectionsForNavigation() {
   }
 }
 
-contactFormElement.addEventListener("change", handlePathChange);
-contactFormElement.addEventListener("submit", handleFormSubmit);
+function insertTextAtSelection(textareaElement, beforeText, afterText = "") {
+  const selectionStart = textareaElement.selectionStart;
+  const selectionEnd = textareaElement.selectionEnd;
+  const selectedText = textareaElement.value.slice(selectionStart, selectionEnd);
+  const replacement = `${beforeText}${selectedText}${afterText}`;
 
-renderVariant("work_with_us");
+  textareaElement.setRangeText(replacement, selectionStart, selectionEnd, "end");
+  textareaElement.focus();
+}
+
+function handleRichTextToolbarClick(event) {
+  const toolbarButton = event.target.closest("[data-format-action]");
+
+  if (!toolbarButton) {
+    return;
+  }
+
+  const targetField = toolbarButton.dataset.targetField;
+  const targetTextarea = contactFormElement.querySelector(`[data-richtext-target="${targetField}"]`);
+
+  if (!targetTextarea) {
+    return;
+  }
+
+  const formatAction = toolbarButton.dataset.formatAction;
+
+  if (formatAction === "bold") {
+    insertTextAtSelection(targetTextarea, "**", "**");
+  }
+
+  if (formatAction === "bullets") {
+    const selectedText = targetTextarea.value.slice(targetTextarea.selectionStart, targetTextarea.selectionEnd);
+    const sourceText = selectedText || "List item";
+    const bulletText = sourceText
+      .split("\n")
+      .map((line) => `- ${line}`)
+      .join("\n");
+
+    targetTextarea.setRangeText(
+      bulletText,
+      targetTextarea.selectionStart,
+      targetTextarea.selectionEnd,
+      "end",
+    );
+    targetTextarea.focus();
+  }
+
+  if (formatAction === "link") {
+    const selectionStart = targetTextarea.selectionStart;
+    const selectionEnd = targetTextarea.selectionEnd;
+    const selectedText =
+      targetTextarea.value.slice(selectionStart, selectionEnd) || "link text";
+    targetTextarea.setRangeText(
+      `[${selectedText}](https://)`,
+      selectionStart,
+      selectionEnd,
+      "end",
+    );
+    targetTextarea.focus();
+  }
+
+  currentFormValues[targetField] = targetTextarea.value;
+}
+
+function handleFormChange(event) {
+  const selectedPath = contactFormElement.elements.interestPath.value;
+
+  if (event.target.name === "interestPath") {
+    trackEvent("form_path_selection", { interestPath: event.target.value });
+    resetForCurrentPath(event.target.value);
+    setStatusMessage("", "idle");
+    return;
+  }
+
+  if (event.target.name) {
+    currentFormValues[event.target.name] =
+      event.target.type === "checkbox" ? event.target.checked : event.target.value;
+  }
+
+  if (event.target.matches("[data-richtext-target]")) {
+    currentFormValues[event.target.dataset.richtextTarget] = event.target.value;
+  }
+
+  if (selectedPath === "work_with_us" && (event.target.name === "self_or_referral" || event.target.name?.startsWith("referred_"))) {
+    renderVariant(selectedPath, currentFormValues);
+  }
+
+  setStatusMessage("", "idle");
+}
+
+function handleFormSubmit(event) {
+  event.preventDefault();
+
+  const selectedPath = contactFormElement.elements.interestPath.value;
+  const formValues = {
+    ...currentFormValues,
+    ...readCurrentFormValues(),
+  };
+  const submissionPayload = buildSubmissionPayload(selectedPath, formValues);
+
+  if (submissionPayload.validationErrors.length > 0) {
+    currentFormValues = {
+      ...currentFormValues,
+      ...submissionPayload.normalizedValues,
+    };
+    renderVariant(selectedPath, currentFormValues, { showValidation: true });
+    setStatusMessage(submissionPayload.validationErrors[0], "error");
+    return;
+  }
+
+  storeSubmission(submissionPayload);
+  trackEvent("form_submission_success", { interestPath: selectedPath });
+  setStatusMessage(getFormVariantConfig(selectedPath).successMessage, "success");
+  contactFormElement.reset();
+  resetForCurrentPath(selectedPath);
+  contactFormElement.querySelector(`input[name="interestPath"][value="${selectedPath}"]`).checked = true;
+}
+
+function handleNavClick(event) {
+  const navigationLink = event.target.closest("[data-nav-link]");
+
+  if (!navigationLink) {
+    return;
+  }
+
+  trackEvent("nav_click", { target: navigationLink.dataset.navLink });
+}
+
+function handleHeroCtaTracking(event) {
+  const trackedLink = event.target.closest("[data-analytics-id]");
+
+  if (!trackedLink) {
+    return;
+  }
+
+  trackEvent("hero_cta_click", { target: trackedLink.dataset.analyticsId });
+}
+
+contactFormElement.addEventListener("change", handleFormChange);
+contactFormElement.addEventListener("input", handleFormChange);
+contactFormElement.addEventListener("click", handleRichTextToolbarClick);
+contactFormElement.addEventListener("submit", handleFormSubmit);
+document.addEventListener("click", handleHeroCtaTracking);
+document.querySelector(".site-navigation")?.addEventListener("click", handleNavClick);
+
+trackEvent("page_load", { page: window.location.pathname });
+renderVariant("work_with_us", currentFormValues);
 observeSectionsForNavigation();
