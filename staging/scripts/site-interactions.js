@@ -82,7 +82,8 @@ function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired
   const errorMarkup = validationMessage
     ? `<p class="form-field__error" data-field-error="${fieldKey}">${escapeHtml(validationMessage)}</p>`
     : "";
-  const requiredLabel = isRequired ? '<span class="field-required-note"> *</span>' : "";
+  // Keep the required marker glued to the label text so it never drops to its own line.
+  const requiredLabel = isRequired ? '&nbsp;<span class="field-required-note">*</span>' : "";
 
   if (field.type === "select") {
     const optionMarkup = field.options
