@@ -9,21 +9,21 @@ export const FORM_VARIANT_CONFIG = {
       "If you see yourself in this opportunity, or someone came to mind while reading about it, we’d love to hear from you. Share a few details below and we’ll take it from there.",
     submitLabel: "Share Work With Us Interest",
     successMessage:
-      "Thanks. This prototype saved your submission locally and is structured for future Google Sheets and email notification wiring.",
+      "Thank you. Your message has been saved for this review build, and we’ll be ready to connect the live follow-up flow next.",
   },
   partner_with_us: {
     introduction:
       "If you see an opportunity to collaborate, host something together, or introduce us to your community, we’d love to hear from you. Share a few details below and let’s explore it.",
     submitLabel: "Share Partnership Interest",
     successMessage:
-      "Thanks. This prototype saved your partnership submission locally and is ready for live follow-up integration later.",
+      "Thank you. Your partnership note has been saved for this review build.",
   },
   stay_connected: {
     introduction:
       "Want to be first in line when pre-sales opens? Sign up below to be notified when a limited number of discounted Founding Member VIP packages become available and to stay connected as we build toward launch in Raleigh.",
     submitLabel: "Stay Connected",
     successMessage:
-      "Thanks. This prototype saved your early-access submission locally and is ready for launch-update integration later.",
+      "Thank you. Your early-access note has been saved for this review build.",
   },
 };
 
