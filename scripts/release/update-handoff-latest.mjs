@@ -187,12 +187,8 @@ export function main() {
     previousHandoffContent,
     "Operator Notes For Next Session",
   );
-  const preservedBlockers = extractBulletSection(
-    previousHandoffContent,
-    "Blockers Or Manual Follow-Ups",
-  );
   const branchAlignment = describeBranchAlignment(sourceBranch);
-  const blockers = [...preservedBlockers];
+  const blockers = [];
 
   if (branchAlignment.workingTreeState) {
     blockers.unshift("- Working tree is dirty. Commit, stash, or clean changes before another machine starts editing.");
