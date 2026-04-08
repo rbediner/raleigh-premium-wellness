@@ -1,0 +1,7 @@
+# macOS metadata files do not belong in version control.
+.DS_Store
+
+# Node-based tooling may be added later for local development and testing.
+node_modules/
+dist/
+coverage/
