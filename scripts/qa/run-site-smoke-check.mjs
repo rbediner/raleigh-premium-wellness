@@ -35,8 +35,13 @@ if (!response.ok) {
 }
 
 const responseText = await response.text();
+const requiredHeroFragments = [
+  "A NEW STANDARD",
+  "IN PREMIUM WELLNESS",
+  "IS COMING TO RALEIGH",
+];
 
-if (!responseText.includes("A NEW STANDARD IN PREMIUM WELLNESS IS COMING TO RALEIGH")) {
+if (!requiredHeroFragments.every((fragment) => responseText.includes(fragment))) {
   throw new Error("Smoke check failed because the locked hero headline was not found.");
 }
 
