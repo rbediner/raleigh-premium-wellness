@@ -17,8 +17,8 @@
   --radius-small: 14px;
   --shadow-soft: 0 24px 70px rgba(0, 0, 0, 0.22);
   --shadow-strong: 0 34px 100px rgba(0, 0, 0, 0.34);
-  --page-width: 46rem;
-  --hero-width: 52rem;
+  --page-width: 45rem;
+  --hero-width: 54rem;
   --header-offset: 5.75rem;
 }
 
@@ -199,12 +199,17 @@ h2 {
 
 h1 {
   margin-bottom: 1.15rem;
-  font-size: clamp(3rem, 8vw, 5.75rem);
+  font-size: clamp(3.1rem, 7.1vw, 6rem);
   text-wrap: balance;
+  max-width: 14.4ch;
 }
 
 h1 span {
   display: block;
+}
+
+.hero-section__headline-accent {
+  margin-top: 0.08em;
 }
 
 h2 {
@@ -218,6 +223,13 @@ h3 {
   font-size: clamp(1.48rem, 2.6vw, 2.05rem);
 }
 
+h4 {
+  margin: 0 0 0.95rem;
+  font-size: 1.18rem;
+  line-height: 1.28;
+  color: var(--ink);
+}
+
 p,
 li,
 label,
@@ -225,8 +237,8 @@ input,
 textarea,
 select,
 button {
-  font-size: 1rem;
-  line-height: 1.74;
+  font-size: 1.035rem;
+  line-height: 1.8;
 }
 
 .hero-section {
@@ -246,12 +258,13 @@ button {
 .hero-section__lead {
   margin: 0;
   color: var(--ink-soft);
-  font-size: 1.12rem;
+  font-size: 1.15rem;
 }
 
 .hero-section__support {
   margin: 1rem 0 0;
   color: var(--ink-muted);
+  max-width: 35rem;
 }
 
 .hero-section__actions,
@@ -270,15 +283,17 @@ button {
 
 .content-section,
 .contact-section {
-  padding: 3.7rem 0 0;
+  padding: 4.25rem 0 0;
 }
 
 .content-shell--lead {
-  padding-top: 4.3rem;
+  padding-top: 4.9rem;
 }
 
 .section-heading {
-  margin-bottom: 1.6rem;
+  margin-bottom: 1.85rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid rgba(247, 239, 231, 0.08);
 }
 
 .section-heading__support,
@@ -294,18 +309,29 @@ button {
 .role-subnav {
   display: flex;
   gap: 0.75rem;
-  margin-bottom: 1.6rem;
+  margin-bottom: 1.95rem;
 }
 
 .role-subnav__link {
   display: inline-flex;
   align-items: center;
   min-height: 2.9rem;
-  padding: 0.7rem 1rem;
+  padding: 0.72rem 1.08rem;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(247, 239, 231, 0.04);
+  background: rgba(247, 239, 231, 0.05);
   text-decoration: none;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.role-subnav__link:hover,
+.role-subnav__link:focus-visible {
+  background: rgba(247, 239, 231, 0.08);
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
 }
 
 .manager-feature,
@@ -328,8 +354,8 @@ button {
 
 .manager-feature {
   display: grid;
-  gap: 1.75rem;
-  padding-top: 1.7rem;
+  gap: 2rem;
+  padding-top: 1.85rem;
 }
 
 .manager-feature__header,
@@ -343,16 +369,16 @@ button {
 
 .manager-feature__lead {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: 1.11rem;
 }
 
 .narrative-block {
-  padding-top: 1.35rem;
+  padding-top: 1.6rem;
   border-top: 1px solid rgba(247, 239, 231, 0.08);
 }
 
 .narrative-block p {
-  margin: 0 0 1rem;
+  margin: 0 0 1.08rem;
 }
 
 .section-preface {
@@ -372,11 +398,11 @@ button {
 }
 
 .manager-feature__actions {
-  margin-top: 1.3rem;
+  margin-top: 1.5rem;
 }
 
 .editorial-copy {
-  padding-top: 1.45rem;
+  padding-top: 1.55rem;
 }
 
 .editorial-copy p {
@@ -384,16 +410,26 @@ button {
 }
 
 .founder-photo-card {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.65rem;
+  position: relative;
 }
 
 .founder-photo-card__image {
   display: block;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   object-fit: cover;
+  object-position: center 34%;
   border-radius: var(--radius-large);
   box-shadow: var(--shadow-strong);
+}
+
+.founder-photo-card__caption {
+  margin-top: 0.8rem;
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .contact-form {
@@ -424,7 +460,7 @@ button {
 }
 
 .form-introduction {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 .form-field-grid {
@@ -479,7 +515,7 @@ button {
 .form-field textarea,
 .richtext-editor__input {
   width: 100%;
-  padding: 0.9rem 0.95rem;
+  padding: 0.95rem 1rem;
   border-radius: var(--radius-small);
   border: 1px solid rgba(247, 239, 231, 0.14);
   background: rgba(247, 239, 231, 0.03);
@@ -535,8 +571,8 @@ button {
 
 .richtext-toolbar button,
 .button-link {
-  min-height: 3.1rem;
-  padding: 0.72rem 1.2rem;
+  min-height: 3.2rem;
+  padding: 0.78rem 1.3rem;
   border-radius: 999px;
   font: inherit;
 }
@@ -556,6 +592,7 @@ button {
   border: 1px solid transparent;
   text-decoration: none;
   font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -573,17 +610,18 @@ button {
 .button-link--primary {
   background: linear-gradient(135deg, #c89d77 0%, #b28059 100%);
   color: var(--ink-deep);
+  box-shadow: 0 14px 34px rgba(178, 128, 89, 0.16);
 }
 
 .button-link--secondary {
-  background: rgba(247, 239, 231, 0.08);
-  border-color: rgba(247, 239, 231, 0.12);
+  background: rgba(247, 239, 231, 0.09);
+  border-color: rgba(247, 239, 231, 0.16);
   color: var(--ink);
 }
 
 .button-link--ghost {
   background: transparent;
-  border-color: rgba(247, 239, 231, 0.14);
+  border-color: rgba(247, 239, 231, 0.18);
   color: var(--ink-soft);
 }
 
