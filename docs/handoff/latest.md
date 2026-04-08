@@ -1,12 +1,12 @@
 # Latest Handoff
 
-Handoff sequence: `6`
+Handoff sequence: `7`
 
-Updated at (UTC): `2026-04-08T16:19:04.864Z`
+Updated at (UTC): `2026-04-08T16:24:36.260Z`
 
 Source branch: `staging`
 
-Source commit: `22b85fcd8b4e3e609ff030a652eb0babbfb58cd7`
+Source commit: `b9ce98bd25574fd36bab277e46b0a4763a25ad51`
 
 ## Current Branch Model
 
@@ -17,9 +17,9 @@ Source commit: `22b85fcd8b4e3e609ff030a652eb0babbfb58cd7`
 ## Branch Alignment Or Divergence Notes
 
 - Current branch at update time: `staging`.
-- Current HEAD at update time: `22b85fcd8b4e3e609ff030a652eb0babbfb58cd7`.
+- Current HEAD at update time: `b9ce98bd25574fd36bab277e46b0a4763a25ad51`.
 - Upstream tracking branch: `origin/staging`
-- Working tree: dirty.
+- Working tree: clean.
 - Compared with `origin/staging`: ahead 0, behind 0.
 
 ## Preview Or Staging URL
@@ -28,12 +28,12 @@ Source commit: `22b85fcd8b4e3e609ff030a652eb0babbfb58cd7`
 
 ## Current CI Or Deploy Status Summary
 
-- Preview Deploy on staging: status completed, conclusion failure, url https://github.com/rbediner/the-tox-raleigh-outreach-site/actions/runs/24146117449
+- Preview Deploy on staging: status queued, conclusion in progress, url https://github.com/rbediner/the-tox-raleigh-outreach-site/actions/runs/24146403981
 - Production Deploy on main: no recent run found from this machine.
 
 ## Blockers Or Manual Follow-Ups
 
-- Working tree is dirty. Commit, stash, or clean changes before another machine starts editing.
+- No blockers recorded at handoff update time.
 
 ## Operator Notes For Next Session
 
