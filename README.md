@@ -81,13 +81,14 @@ Plain-English rule:
 1. Make changes on a feature branch.
 2. Merge approved feature work into `staging`.
 3. Run `npm run release:preflight:preview`.
-4. Push `staging` and wait for the Preview Deploy workflow to pass.
-5. Open the preview URL and review the exact preview build.
-6. Approve that exact preview commit.
-7. Promote that exact approved commit from `staging` to `main`.
-8. Run `npm run release:preflight:production` if you need a last local production check.
-9. Push `main` and wait for the Production Deploy workflow to pass.
-10. Confirm the production smoke verification passes before saying the release is live.
+4. Push `staging` and actively monitor the Preview Deploy workflow until it finishes.
+5. If the preview workflow fails, read the failing log, fix the issue, and rerun preview before handing anything off.
+6. Only after the preview workflow passes, share the preview URL and review the exact preview build.
+7. Approve that exact preview commit.
+8. Promote that exact approved commit from `staging` to `main`.
+9. Run `npm run release:preflight:production` if you need a last local production check.
+10. Push `main` and wait for the Production Deploy workflow to pass.
+11. Confirm the production smoke verification passes before saying the release is live.
 
 The production workflow also enforces one more rule automatically: the commit on `main` must already exist on `staging`. If it does not, production deploy fails on purpose.
 
@@ -160,6 +161,7 @@ git checkout main
 - Read the failing workflow log first.
 - Run the matching local command from this README.
 - Fix the issue on a feature branch or on `staging`, then rerun preview.
+- Do not hand off a preview URL until the replacement `staging` run has finished successfully.
 
 ### Before Ending A Session
 

@@ -61,7 +61,11 @@ describe("release workflow contracts", () => {
     expect(readme).toContain("npm run session:ready");
     expect(readme).toContain("npm run handoff:update");
     expect(readme).toContain('ps -ax | rg "serve-static-site|playwright|chromium"');
+    expect(readme).toContain("actively monitor the Preview Deploy workflow until it finishes");
+    expect(readme).toContain("Only after the preview workflow passes, share the preview URL");
     expect(sop).toContain("Before ending a work session, inspect for stray local preview or browser QA processes.");
     expect(sop).toContain("Leave the app terminal back at a normal shell prompt before handing off the repo.");
+    expect(sop).toContain("Monitor the pushed `staging` preview deploy until it finishes.");
+    expect(sop).toContain("Share the preview URL only after the preview deploy succeeds");
   });
 });

@@ -15,7 +15,9 @@ This file is the repo-local source of truth for how releases must move through t
 - Make changes on a feature branch.
 - Merge approved work into `staging` first.
 - Validate on `staging` before promotion.
-- Share the preview URL and review that preview before production.
+- Monitor the pushed `staging` preview deploy until it finishes.
+- Catch preview deploy failures and resolve them before handing off.
+- Share the preview URL only after the preview deploy succeeds, then review that preview before production.
 - Promote that exact approved commit to `main`.
 - The production workflow must confirm that the promoted commit already exists on `staging`.
 - Never announce production complete until verification passes.
@@ -26,14 +28,15 @@ This file is the repo-local source of truth for how releases must move through t
 2. Merge or move approved work into `staging`.
 3. Run the smallest responsible QA gate with `npm run release:preflight:preview`.
 4. Push `staging`.
-5. Wait for the Preview Deploy workflow to pass.
-6. Open the preview URL.
-7. Review and approve the preview.
-8. Promote the exact approved `staging` commit to `main`.
-9. Run `npm run release:preflight:production` if you want a final local production check.
-10. Push `main`.
-11. Wait for the Production Deploy workflow to pass.
-12. Confirm the production smoke verification passes.
+5. Actively monitor the Preview Deploy workflow until it completes.
+6. If preview deploy fails, inspect the failing run, fix the issue, and rerun preview before handing anything off.
+7. Only after the preview deploy succeeds, share the preview URL.
+8. Review and approve that exact preview.
+9. Promote the exact approved `staging` commit to `main`.
+10. Run `npm run release:preflight:production` if you want a final local production check.
+11. Push `main`.
+12. Wait for the Production Deploy workflow to pass.
+13. Confirm the production smoke verification passes.
 
 ## Preview Safety Rules
 
@@ -78,6 +81,8 @@ If that future case happens, the cleanup path is:
 - Stop and fix the issue on a feature branch or on `staging`.
 - Re-run `npm run release:preflight:preview`.
 - Push again only after the local gate passes.
+- Stay with the replacement `staging` run until it reaches a final status.
+- Do not share a preview URL until the successful replacement run is complete.
 
 ### If production verification fails
 
