@@ -8,7 +8,7 @@
  * reviewed carefully and protected by tests.
  */
 
-import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join, resolve } from "node:path";
 
@@ -24,6 +24,7 @@ const repositoryRoot = process.cwd();
 const outputDirectory = resolve(repositoryRoot, "dist", buildMode);
 const outputStylesDirectory = join(outputDirectory, "styles");
 const outputScriptsDirectory = join(outputDirectory, "scripts");
+const outputAssetsDirectory = join(outputDirectory, "assets");
 
 const sourceHtml = readFileSync(resolve(repositoryRoot, "site", "index.html"), "utf8");
 const sourceStylesPath = resolve(repositoryRoot, "styles", "site.css");
@@ -39,6 +40,7 @@ const sourceFormConfigPath = resolve(
   "site",
   "form-configuration.js",
 );
+const sourceAssetsDirectory = resolve(repositoryRoot, "assets");
 
 const currentCommitSha = process.env.GITHUB_SHA || execSync("git rev-parse HEAD").toString().trim();
 const canonicalUrl = process.env.PRODUCTION_CANONICAL_URL?.replace(/\/$/, "") || "";
@@ -80,13 +82,15 @@ function buildRobotsText() {
   return "User-agent: *\nAllow: /\n";
 }
 
-rmSync(outputDirectory, { recursive: true, force: true });
+rmSync(outputDirectory, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 mkdirSync(outputStylesDirectory, { recursive: true });
 mkdirSync(outputScriptsDirectory, { recursive: true });
+mkdirSync(outputAssetsDirectory, { recursive: true });
 
 copyFileSync(sourceStylesPath, join(outputStylesDirectory, "site.css"));
 copyFileSync(sourceInteractionScriptPath, join(outputScriptsDirectory, "site-interactions.js"));
 copyFileSync(sourceFormConfigPath, join(outputScriptsDirectory, "form-configuration.js"));
+cpSync(sourceAssetsDirectory, outputAssetsDirectory, { recursive: true });
 
 writeFileSync(join(outputDirectory, "index.html"), buildHtmlForMode());
 writeFileSync(join(outputDirectory, "robots.txt"), buildRobotsText());

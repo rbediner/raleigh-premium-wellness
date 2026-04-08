@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("release artifact safety", () => {
@@ -15,6 +15,7 @@ describe("release artifact safety", () => {
     expect(previewHtml).toContain('name="robots" content="noindex, noarchive, nofollow"');
     expect(previewHtml).not.toContain('rel="canonical"');
     expect(previewRobots).toContain("Disallow: /");
+    expect(existsSync("dist/preview/assets/optimized-images/founders/rb-mb-social-photo-960.jpg")).toBe(true);
   });
 
   it("builds a production artifact that is not blocked from indexing", () => {
@@ -28,5 +29,6 @@ describe("release artifact safety", () => {
     expect(productionHtml).toContain('data-release-channel="production"');
     expect(productionHtml).not.toContain('name="robots" content="noindex, noarchive, nofollow"');
     expect(productionRobots).toContain("Allow: /");
+    expect(existsSync("dist/production/assets/optimized-images/founders/rb-mb-social-photo-960.jpg")).toBe(true);
   });
 });
