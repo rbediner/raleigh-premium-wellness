@@ -9,7 +9,7 @@ import {
 describe("unified contact form logic", () => {
   it("returns the work-with-us configuration by default", () => {
     expect(getFormVariantConfig("unknown_path").submitLabel).toBe(
-      "Share Work With Us Interest",
+      "Start the Conversation",
     );
   });
 
