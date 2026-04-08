@@ -1,12 +1,12 @@
 # Latest Handoff
 
-Handoff sequence: `9`
+Handoff sequence: `10`
 
-Updated at (UTC): `2026-04-08T18:24:34.534Z`
+Updated at (UTC): `2026-04-08T18:32:04.361Z`
 
 Source branch: `staging`
 
-Source commit: `c9d01606499e6c7f7d9c3a280c8c86caa7958ebd`
+Source commit: `d5b1c91eea3fc042dd608eae7855f4e794905b41`
 
 ## Current Branch Model
 
@@ -17,7 +17,7 @@ Source commit: `c9d01606499e6c7f7d9c3a280c8c86caa7958ebd`
 ## Branch Alignment Or Divergence Notes
 
 - Current branch at update time: `staging`.
-- Current HEAD at update time: `c9d01606499e6c7f7d9c3a280c8c86caa7958ebd`.
+- Current HEAD at update time: `d5b1c91eea3fc042dd608eae7855f4e794905b41`.
 - Upstream tracking branch: `origin/staging`
 - Working tree: clean.
 - Compared with `origin/staging`: ahead 0, behind 0.
@@ -28,7 +28,7 @@ Source commit: `c9d01606499e6c7f7d9c3a280c8c86caa7958ebd`
 
 ## Current CI Or Deploy Status Summary
 
-- Preview Deploy on staging: status completed, conclusion success, url https://github.com/rbediner/raleigh-premium-wellness/actions/runs/24150951558
+- Preview Deploy on staging: status completed, conclusion success, url https://github.com/rbediner/raleigh-premium-wellness/actions/runs/24151593023
 - Production Deploy on main: no recent run found from this machine.
 
 ## Blockers Or Manual Follow-Ups
