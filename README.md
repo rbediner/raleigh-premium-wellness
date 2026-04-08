@@ -161,6 +161,34 @@ git checkout main
 - Run the matching local command from this README.
 - Fix the issue on a feature branch or on `staging`, then rerun preview.
 
+### Before Ending A Session
+
+Do a quick terminal and process sweep so the repo is not left with stray preview servers or hanging browser jobs.
+
+Inspect first:
+
+```bash
+ps -ax | rg "serve-static-site|playwright|chromium"
+```
+
+If you find a stray local preview server, stop it with:
+
+```bash
+pkill -f "serve-static-site.mjs"
+```
+
+If you find a clearly stale Playwright or Chromium process tied to this repo, stop it with:
+
+```bash
+pkill -f "playwright|chromium"
+```
+
+Best-practice note:
+
+- Inspect before killing anything.
+- Only kill clearly stale local preview or browser QA processes.
+- The app terminal should be back at a normal shell prompt before you leave the session.
+
 ### If Deploy Verification Fails
 
 - Do not announce that production is complete.
@@ -202,6 +230,7 @@ Do these steps every time you open this repo on a new machine or in a new Codex 
 4. Align your local checkout to the handoff branch before editing.
 5. Make sure the branch is committed or clean before editing.
 6. Run `npm run session:ready`.
+7. Before ending the session, run the terminal/process sweep from this README and make sure the app terminal is back at a shell prompt.
 
 ### What `npm run session:ready` checks
 

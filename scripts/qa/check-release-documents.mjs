@@ -21,6 +21,8 @@ const requiredDocumentRules = [
       "Run `npm run session:ready`.",
       "npm run handoff:update",
       "Do not rely on cloud-synced `.gdoc` or `.gsheet` shortcut files as tracked repo state.",
+      "ps -ax | rg \"serve-static-site|playwright|chromium\"",
+      "The app terminal should be back at a normal shell prompt before you leave the session.",
     ],
   },
   {
@@ -33,6 +35,8 @@ const requiredDocumentRules = [
       "Every new machine or new Codex session must read `README.md` first.",
       "Run `npm run session:ready` before writing code.",
       "Refresh the canonical handoff with `npm run handoff:update`",
+      "Before ending a work session, inspect for stray local preview or browser QA processes.",
+      "Leave the app terminal back at a normal shell prompt before handing off the repo.",
     ],
   },
   {

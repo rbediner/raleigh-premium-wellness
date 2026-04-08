@@ -86,6 +86,14 @@ If that future case happens, the cleanup path is:
 - Re-check the workflow logs and the live URL.
 - Re-run the production smoke script until the site is actually serving correctly.
 
+## Terminal And Process Cleanup
+
+- Before ending a work session, inspect for stray local preview or browser QA processes.
+- Run `ps -ax | rg "serve-static-site|playwright|chromium"` first.
+- Only if needed, stop a stale preview server with `pkill -f "serve-static-site.mjs"`.
+- Only if needed, stop a clearly stale browser QA process with `pkill -f "playwright|chromium"`.
+- Leave the app terminal back at a normal shell prompt before handing off the repo.
+
 ## Cross-Machine Startup Rule
 
 - Every new machine or new Codex session must read `README.md` first.
@@ -94,3 +102,4 @@ If that future case happens, the cleanup path is:
 - Align the local checkout to the handoff branch before editing.
 - Run `npm run session:ready` before writing code.
 - Refresh the canonical handoff with `npm run handoff:update` when the work block ends.
+- Before ending the session, do the terminal and process cleanup sweep above.
