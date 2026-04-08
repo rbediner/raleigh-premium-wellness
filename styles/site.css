@@ -612,6 +612,8 @@ button {
 
 .field-required-note {
   color: var(--accent);
+  display: inline;
+  white-space: nowrap;
 }
 
 .form-field input,
@@ -669,7 +671,7 @@ button {
   justify-self: start;
 }
 
-.form-checkbox label span {
+.form-checkbox__label-text {
   display: block;
 }
 
