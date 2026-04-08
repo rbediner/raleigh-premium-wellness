@@ -137,7 +137,7 @@ function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired
         <div class="form-checkbox">
           <label for="${fieldKey}">
             <input id="${fieldKey}" name="${fieldKey}" type="checkbox" ${isChecked} />
-            <span>${escapeHtml(field.label)}${requiredLabel}</span>
+            <span class="form-checkbox__label-text">${escapeHtml(field.label)}${requiredLabel}</span>
           </label>
           ${helperMarkup}
           ${errorMarkup}
