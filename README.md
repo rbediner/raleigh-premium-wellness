@@ -52,6 +52,7 @@ nvm use
 
 ## Available Commands
 
+- `npm run assets:optimize:founder-photo` regenerates responsive founder-photo image variants from the checked-in source image
 - `npm run preview:staging` builds and serves the staging preview artifact locally
 - `npm run preview:production` builds and serves the production artifact locally
 - `npm run qa:session-readiness` checks that the repo and machine are ready for a safe session

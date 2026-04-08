@@ -192,11 +192,50 @@
         </div>
 
         <div class="about-layout">
-          <div class="content-card">
-            <h3>Image placeholder ready</h3>
+          <figure class="content-card founder-photo-card">
+            <picture>
+              <source
+                type="image/webp"
+                srcset="
+                  ../assets/optimized-images/founders/rb-mb-social-photo-640.webp 640w,
+                  ../assets/optimized-images/founders/rb-mb-social-photo-960.webp 960w,
+                  ../assets/optimized-images/founders/rb-mb-social-photo-1280.webp 1280w
+                "
+                sizes="(max-width: 900px) 100vw, 42vw"
+              />
+              <img
+                class="founder-photo-card__image"
+                src="../assets/optimized-images/founders/rb-mb-social-photo-960.jpg"
+                srcset="
+                  ../assets/optimized-images/founders/rb-mb-social-photo-640.jpg 640w,
+                  ../assets/optimized-images/founders/rb-mb-social-photo-960.jpg 960w,
+                  ../assets/optimized-images/founders/rb-mb-social-photo-1280.jpg 1280w
+                "
+                sizes="(max-width: 900px) 100vw, 42vw"
+                alt="Roman Bediner and Marianna together, representing the founders behind The Tox Raleigh outreach effort."
+                loading="lazy"
+                decoding="async"
+                width="960"
+                height="960"
+              />
+            </picture>
+            <figcaption class="founder-photo-card__caption">
+              Founder image staged for the About section using optimized
+              responsive image variants for faster mobile loading.
+            </figcaption>
+          </figure>
+
+          <div class="content-card founder-story-card">
+            <h3>Building the Raleigh launch thoughtfully</h3>
             <p>
-              A source image has already been added to the repository and will
-              be optimized once we decide its final display role in the design.
+              This site is being built to introduce the people behind the
+              Raleigh effort, create early trust, and make it easy for the
+              right local connectors to step in at the right moment.
+            </p>
+            <p>
+              The image is now production-ready from a performance standpoint,
+              even while the final founder narrative and polished brand copy
+              are still being refined.
             </p>
           </div>
 
@@ -205,7 +244,7 @@
             <p>
               The PRD has locked the structure for this section, but the final
               founder story and chosen image still need to be confirmed before
-              we replace these placeholders.
+              we replace the remaining placeholder language.
             </p>
           </div>
         </div>
