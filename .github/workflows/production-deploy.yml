@@ -1,0 +1,70 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  production-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
+
+      - name: Fetch staging branch for promotion check
+        run: git fetch origin staging main
+
+      - name: Confirm this production commit already passed through staging
+        run: npm run release:verify:promotion
+
+      - name: Run production preflight
+        run: npm run release:preflight:production
+
+      - name: Publish production artifact to gh-pages
+        run: node scripts/release/publish-github-pages-branch.mjs --mode production
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRODUCTION_CANONICAL_URL: ${{ vars.PRODUCTION_CANONICAL_URL }}
+
+      - name: Verify production URL
+        run: >
+          node scripts/release/verify-remote-deployment.mjs
+          --mode production
+          --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          --sha ${{ github.sha }}
+          --ci-run-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          --deploy-url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+
+      - name: Write production summary
+        run: |
+          {
+            echo "## Production Deploy"
+            echo ""
+            echo "- Branch: main"
+            echo "- Commit: ${{ github.sha }}"
+            echo "- Promotion guard: commit confirmed on staging"
+            echo "- Production URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+            echo "- CI Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } >> "$GITHUB_STEP_SUMMARY"

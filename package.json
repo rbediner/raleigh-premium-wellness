@@ -1,0 +1,29 @@
+{
+  "name": "the-tox-raleigh-outreach-site",
+  "version": "1.0.0",
+  "description": "This repository will hold the placeholder outreach site for The Tox Raleigh launch.",
+  "scripts": {
+    "preview:staging": "node scripts/release/build-site-artifact.mjs --mode preview && SITE_OUTPUT_DIR=dist/preview node scripts/qa/serve-static-site.mjs",
+    "preview:production": "node scripts/release/build-site-artifact.mjs --mode production && SITE_OUTPUT_DIR=dist/production node scripts/qa/serve-static-site.mjs",
+    "qa:session-readiness": "node scripts/qa/check-session-readiness.mjs",
+    "qa:docs-gate": "node scripts/qa/check-release-documents.mjs",
+    "qa:preview-smoke:local": "node scripts/qa/run-local-site-smoke-check.mjs --mode preview",
+    "qa:production-smoke:local": "node scripts/qa/run-local-site-smoke-check.mjs --mode production",
+    "release:build:preview": "node scripts/release/build-site-artifact.mjs --mode preview",
+    "release:build:production": "node scripts/release/build-site-artifact.mjs --mode production",
+    "release:verify:promotion": "node scripts/release/verify-main-commit-is-on-staging.mjs",
+    "release:preflight:preview": "node scripts/release/run-release-preflight.mjs --mode preview",
+    "release:preflight:production": "node scripts/release/run-release-preflight.mjs --mode production",
+    "test:unit": "vitest run --config qa/config/vitest.config.mjs qa/unit",
+    "test:workflow": "vitest run --config qa/config/vitest.config.mjs qa/tests",
+    "test:qa": "node scripts/qa/run-browser-quality-checks.mjs",
+    "test:all": "node scripts/qa/run-all-quality-checks.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "vitest": "^4.1.3"
+  }
+}
