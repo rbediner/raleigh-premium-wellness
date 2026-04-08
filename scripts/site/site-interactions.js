@@ -73,11 +73,6 @@ function readCurrentFormValues() {
     formValues[checkboxElement.name] = checkboxElement.checked;
   }
 
-  for (const richtextElement of contactFormElement.querySelectorAll("[data-richtext-target]")) {
-    const targetField = richtextElement.dataset.richtextTarget;
-    formValues[targetField] = richtextElement.value;
-  }
-
   return formValues;
 }
 
@@ -86,28 +81,70 @@ function setStatusMessage(message, status) {
   formStatusMessageElement.dataset.status = status;
 }
 
-function buildRichTextToolbar(fieldKey) {
+function buildRequiredMarker(fieldKey, isRequired) {
+  if (!isRequired) {
+    return "";
+  }
+
+  const fieldDefinition = FIELD_DEFINITIONS[fieldKey];
+  if (fieldDefinition.type === "checkbox") {
+    return "";
+  }
+  const requiredIndicatorText = fieldDefinition.requiredIndicatorText ?? "*";
+
+  return ` <span class="field-required-note">${escapeHtml(requiredIndicatorText)}</span>`;
+}
+
+function buildComposerChips(fieldKey) {
+  const fieldDefinition = FIELD_DEFINITIONS[fieldKey];
+  const composerChips = fieldDefinition.composerChips ?? [];
+
+  if (composerChips.length === 0) {
+    return "";
+  }
+
+  const chipsMarkup = composerChips
+    .map(
+      (chip) => `
+        <button
+          type="button"
+          class="composer-chip"
+          data-composer-chip="${fieldKey}"
+          data-chip-text="${escapeHtml(chip.text)}"
+        >
+          ${escapeHtml(chip.label)}
+        </button>
+      `,
+    )
+    .join("");
+
   return `
-    <div class="richtext-toolbar" aria-label="${FIELD_DEFINITIONS[fieldKey].label} formatting tools">
-      <button type="button" data-format-action="bold" data-target-field="${fieldKey}">Bold</button>
-      <button type="button" data-format-action="bullets" data-target-field="${fieldKey}">Bullets</button>
-      <button type="button" data-format-action="link" data-target-field="${fieldKey}">Link</button>
+    <div class="composer-chip-row" aria-label="${escapeHtml(fieldDefinition.label)} suggestions">
+      ${chipsMarkup}
     </div>
   `;
+}
+
+function autoResizeTextarea(textareaElement) {
+  if (!(textareaElement instanceof HTMLTextAreaElement)) {
+    return;
+  }
+
+  textareaElement.style.height = "auto";
+  textareaElement.style.height = `${textareaElement.scrollHeight}px`;
 }
 
 function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired) {
   const field = FIELD_DEFINITIONS[fieldKey];
   const fieldClassName =
-    field.type === "richtext" || field.type === "checkbox" ? "form-field form-field--full" : "form-field";
+    field.type === "textarea" || field.type === "checkbox" ? "form-field form-field--full" : "form-field";
   const helperMarkup = field.helperText
     ? `<p class="${field.type === "checkbox" ? "form-checkbox__helper" : "form-field__helper"}">${escapeHtml(field.helperText)}</p>`
     : "";
   const errorMarkup = validationMessage
     ? `<p class="form-field__error" data-field-error="${fieldKey}">${escapeHtml(validationMessage)}</p>`
     : "";
-  // Keep the required marker glued to the label text so it never drops to its own line.
-  const requiredLabel = isRequired ? '&nbsp;<span class="field-required-note">*</span>' : "";
+  const requiredLabel = buildRequiredMarker(fieldKey, isRequired);
 
   if (field.type === "select") {
     const optionMarkup = field.options
@@ -137,7 +174,9 @@ function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired
         <div class="form-checkbox">
           <label for="${fieldKey}">
             <input id="${fieldKey}" name="${fieldKey}" type="checkbox" ${isChecked} />
-            <span class="form-checkbox__label-text">${escapeHtml(field.label)}${requiredLabel}</span>
+            <span class="form-checkbox__copy">
+              <span class="form-checkbox__label-text">${escapeHtml(field.label)}</span>${requiredLabel}
+            </span>
           </label>
           ${helperMarkup}
           ${errorMarkup}
@@ -146,20 +185,17 @@ function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired
     `;
   }
 
-  if (field.type === "richtext") {
+  if (field.type === "textarea") {
     return `
       <div class="${fieldClassName}">
-        <label class="richtext-label" for="${fieldKey}">${escapeHtml(field.label)}${requiredLabel}</label>
-        <div class="richtext-editor">
-          ${buildRichTextToolbar(fieldKey)}
-          <textarea
-            id="${fieldKey}"
-            name="${fieldKey}"
-            class="richtext-editor__input"
-            data-richtext-target="${fieldKey}"
-            aria-invalid="${validationMessage ? "true" : "false"}"
-          >${escapeHtml(currentValue ?? "")}</textarea>
-        </div>
+        <label for="${fieldKey}">${escapeHtml(field.label)}${requiredLabel}</label>
+        ${buildComposerChips(fieldKey)}
+        <textarea
+          id="${fieldKey}"
+          name="${fieldKey}"
+          class="form-textarea"
+          aria-invalid="${validationMessage ? "true" : "false"}"
+        >${escapeHtml(currentValue ?? "")}</textarea>
         ${helperMarkup}
         ${errorMarkup}
       </div>
@@ -233,6 +269,10 @@ function renderVariant(pathKey, nextValues = currentFormValues, options = {}) {
       `;
     })
     .join("");
+
+  for (const textareaElement of formFieldGridElement.querySelectorAll("textarea")) {
+    autoResizeTextarea(textareaElement);
+  }
 }
 
 function readStoredSubmissions() {
@@ -297,68 +337,19 @@ function observeSectionsForNavigation() {
   }
 }
 
-function insertTextAtSelection(textareaElement, beforeText, afterText = "") {
-  const selectionStart = textareaElement.selectionStart;
-  const selectionEnd = textareaElement.selectionEnd;
-  const selectedText = textareaElement.value.slice(selectionStart, selectionEnd);
-  const replacement = `${beforeText}${selectedText}${afterText}`;
+function insertChipText(textareaElement, chipText) {
+  const selectionStart = textareaElement.selectionStart ?? textareaElement.value.length;
+  const selectionEnd = textareaElement.selectionEnd ?? textareaElement.value.length;
+  const prefix = textareaElement.value && selectionStart > 0 ? "\n" : "";
 
-  textareaElement.setRangeText(replacement, selectionStart, selectionEnd, "end");
+  textareaElement.setRangeText(
+    `${prefix}${chipText}`,
+    selectionStart,
+    selectionEnd,
+    "end",
+  );
   textareaElement.focus();
-}
-
-function handleRichTextToolbarClick(event) {
-  const toolbarButton = event.target.closest("[data-format-action]");
-
-  if (!toolbarButton) {
-    return;
-  }
-
-  const targetField = toolbarButton.dataset.targetField;
-  const targetTextarea = contactFormElement.querySelector(`[data-richtext-target="${targetField}"]`);
-
-  if (!targetTextarea) {
-    return;
-  }
-
-  const formatAction = toolbarButton.dataset.formatAction;
-
-  if (formatAction === "bold") {
-    insertTextAtSelection(targetTextarea, "**", "**");
-  }
-
-  if (formatAction === "bullets") {
-    const selectedText = targetTextarea.value.slice(targetTextarea.selectionStart, targetTextarea.selectionEnd);
-    const sourceText = selectedText || "List item";
-    const bulletText = sourceText
-      .split("\n")
-      .map((line) => `- ${line}`)
-      .join("\n");
-
-    targetTextarea.setRangeText(
-      bulletText,
-      targetTextarea.selectionStart,
-      targetTextarea.selectionEnd,
-      "end",
-    );
-    targetTextarea.focus();
-  }
-
-  if (formatAction === "link") {
-    const selectionStart = targetTextarea.selectionStart;
-    const selectionEnd = targetTextarea.selectionEnd;
-    const selectedText =
-      targetTextarea.value.slice(selectionStart, selectionEnd) || "link text";
-    targetTextarea.setRangeText(
-      `[${selectedText}](https://)`,
-      selectionStart,
-      selectionEnd,
-      "end",
-    );
-    targetTextarea.focus();
-  }
-
-  currentFormValues[targetField] = targetTextarea.value;
+  autoResizeTextarea(textareaElement);
 }
 
 function handleFormChange(event) {
@@ -376,8 +367,8 @@ function handleFormChange(event) {
       event.target.type === "checkbox" ? event.target.checked : event.target.value;
   }
 
-  if (event.target.matches("[data-richtext-target]")) {
-    currentFormValues[event.target.dataset.richtextTarget] = event.target.value;
+  if (event.target instanceof HTMLTextAreaElement) {
+    autoResizeTextarea(event.target);
   }
 
   if (selectedPath === "work_with_us" && (event.target.name === "self_or_referral" || event.target.name?.startsWith("referred_"))) {
@@ -385,6 +376,25 @@ function handleFormChange(event) {
   }
 
   setStatusMessage("", "idle");
+}
+
+function handleComposerChipClick(event) {
+  const chipButton = event.target.closest("[data-composer-chip]");
+
+  if (!chipButton || !contactFormElement) {
+    return;
+  }
+
+  const fieldKey = chipButton.dataset.composerChip;
+  const chipText = chipButton.dataset.chipText ?? "";
+  const targetTextarea = contactFormElement.querySelector(`#${CSS.escape(fieldKey)}`);
+
+  if (!(targetTextarea instanceof HTMLTextAreaElement)) {
+    return;
+  }
+
+  insertChipText(targetTextarea, chipText);
+  currentFormValues[fieldKey] = targetTextarea.value;
 }
 
 function handleFormSubmit(event) {
@@ -458,11 +468,32 @@ function handleHashNavigation() {
   closeMobileMenu();
 }
 
+function handleSectionActionClick(event) {
+  const actionLink = event.target.closest("[data-interest-path-link]");
+
+  if (!actionLink || !contactFormElement) {
+    return;
+  }
+
+  const targetPath = actionLink.dataset.interestPathLink;
+  const targetInput = contactFormElement.querySelector(`input[name="interestPath"][value="${targetPath}"]`);
+
+  if (!targetInput) {
+    return;
+  }
+
+  targetInput.checked = true;
+  trackEvent("form_path_selection", { interestPath: targetPath });
+  resetForCurrentPath(targetPath);
+  setStatusMessage("", "idle");
+}
+
 contactFormElement.addEventListener("change", handleFormChange);
 contactFormElement.addEventListener("input", handleFormChange);
-contactFormElement.addEventListener("click", handleRichTextToolbarClick);
+contactFormElement.addEventListener("click", handleComposerChipClick);
 contactFormElement.addEventListener("submit", handleFormSubmit);
 document.addEventListener("click", handleHeroCtaTracking);
+document.addEventListener("click", handleSectionActionClick);
 siteNavigationElement?.addEventListener("click", handleNavClick);
 document.addEventListener("keydown", handleEscapeForMobileMenu);
 window.addEventListener("hashchange", handleHashNavigation);

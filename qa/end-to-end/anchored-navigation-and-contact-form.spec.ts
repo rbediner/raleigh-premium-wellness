@@ -29,6 +29,16 @@ test("homepage exposes anchored sections and adaptive form states", async ({ pag
   await expect(page.getByRole("button", { name: /join the list/i })).toBeVisible();
 });
 
+test("section calls-to-action hand off into the matching contact flow", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("link", { name: "Join the Early Access List", exact: true }).click();
+
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(page.getByLabel("I want to stay connected")).toBeChecked();
+  await expect(page.getByRole("button", { name: /join the list/i })).toBeVisible();
+});
+
 test("mobile navigation uses a compact menu pattern and closes after selection", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
@@ -37,7 +47,7 @@ test("mobile navigation uses a compact menu pattern and closes after selection",
   await expect(menuButton).toBeVisible();
   await menuButton.click();
 
-  const aboutLink = page.getByRole("link", { name: "About Us", exact: true }).last();
+  const aboutLink = page.getByRole("link", { name: "About", exact: true }).last();
   await expect(aboutLink).toBeVisible();
   await aboutLink.click();
 

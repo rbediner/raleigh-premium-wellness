@@ -64,8 +64,22 @@ export const FIELD_DEFINITIONS = {
   },
   short_message: {
     label: "Short Message",
-    type: "richtext",
-    helperText: "Use links, bold, or bullets if helpful.",
+    type: "textarea",
+    helperText: "A few thoughtful details are plenty.",
+    composerChips: [
+      {
+        label: "Why I’m interested",
+        text: "I’m interested because ",
+      },
+      {
+        label: "Relevant experience",
+        text: "Relevant experience: ",
+      },
+      {
+        label: "LinkedIn profile",
+        text: "LinkedIn: https://",
+      },
+    ],
   },
   city_area: {
     label: "City / Area",
@@ -89,8 +103,22 @@ export const FIELD_DEFINITIONS = {
   },
   referral_reason: {
     label: "Why do you think this person would be a great fit?",
-    type: "richtext",
+    type: "textarea",
     helperText: "Share what stands out about this person and why they came to mind.",
+    composerChips: [
+      {
+        label: "How I know them",
+        text: "I know them through ",
+      },
+      {
+        label: "Why they stand out",
+        text: "They stand out because ",
+      },
+      {
+        label: "Community credibility",
+        text: "They’re well regarded in the community because ",
+      },
+    ],
   },
   referred_first_name: {
     label: "Referred Person First Name",
@@ -153,13 +181,37 @@ export const FIELD_DEFINITIONS = {
   },
   collaboration_idea: {
     label: "Collaboration Idea",
-    type: "richtext",
+    type: "textarea",
     helperText: "Outline the idea, audience, or format you have in mind.",
+    composerChips: [
+      {
+        label: "Audience",
+        text: "Audience: ",
+      },
+      {
+        label: "Activation idea",
+        text: "Activation idea: ",
+      },
+      {
+        label: "Timing",
+        text: "Ideal timing: ",
+      },
+    ],
   },
   short_note: {
     label: "Short Note",
-    type: "richtext",
+    type: "textarea",
     helperText: "Optional, but helpful if you want to share what interests you most.",
+    composerChips: [
+      {
+        label: "Founding Member VIP",
+        text: "I’m most interested in Founding Member VIP because ",
+      },
+      {
+        label: "Launch updates",
+        text: "I’d like updates about ",
+      },
+    ],
   },
   interest_type: {
     label: "Interest Type",
