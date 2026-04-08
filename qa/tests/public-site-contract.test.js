@@ -53,4 +53,15 @@ describe("public site contract", () => {
     expect(htmlDocument).not.toContain("prototype note");
     expect(htmlDocument).not.toContain("debug");
   });
+
+  it("keeps the compact mobile menu structure and preferred submit CTA copy", () => {
+    const htmlDocument = readFileSync("site/index.html", "utf8");
+    const formConfiguration = readFileSync("scripts/site/form-configuration.js", "utf8");
+
+    expect(htmlDocument).toContain('class="site-navigation__menu-button"');
+    expect(htmlDocument).toContain('class="site-navigation__scrim"');
+    expect(formConfiguration).toContain('submitLabel: "Start the Conversation"');
+    expect(formConfiguration).toContain('submitLabel: "Explore a Partnership"');
+    expect(formConfiguration).toContain('submitLabel: "Join the List"');
+  });
 });

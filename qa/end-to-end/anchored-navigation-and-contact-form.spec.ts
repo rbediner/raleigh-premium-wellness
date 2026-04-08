@@ -26,5 +26,21 @@ test("homepage exposes anchored sections and adaptive form states", async ({ pag
       "Yes, I’d like to receive email updates about launch news, pre-sales, and Founding Member VIP offers.",
     ),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: /stay connected/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /join the list/i })).toBeVisible();
+});
+
+test("mobile navigation uses a compact menu pattern and closes after selection", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const menuButton = page.getByRole("button", { name: /open navigation menu/i });
+  await expect(menuButton).toBeVisible();
+  await menuButton.click();
+
+  const aboutLink = page.getByRole("link", { name: "About Us", exact: true }).last();
+  await expect(aboutLink).toBeVisible();
+  await aboutLink.click();
+
+  await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+  await expect(page).toHaveURL(/#about$/);
 });

@@ -13,6 +13,10 @@ const formStatusMessageElement = document.querySelector("#form-status-message");
 const submitButtonElement = document.querySelector("#contact-submit-button");
 const observedSections = document.querySelectorAll("main section[id]");
 const navigationLinks = document.querySelectorAll("[data-nav-link]");
+const siteNavigationElement = document.querySelector(".site-navigation");
+const mobileMenuButtonElement = document.querySelector(".site-navigation__menu-button");
+const mobileMenuScrimElement = document.querySelector(".site-navigation__scrim");
+const mobileMenuLinksElement = document.querySelector("#site-navigation-links");
 const prototypeStorageKey = "raleigh-premium-wellness-prototype-submissions";
 
 let currentFormValues = {
@@ -20,6 +24,26 @@ let currentFormValues = {
   self_or_referral: "I’m interested for myself",
   role_interest: "Manager-Studio Development",
 };
+
+function setMobileMenuState(isOpen) {
+  if (!mobileMenuButtonElement || !mobileMenuLinksElement || !mobileMenuScrimElement) {
+    return;
+  }
+
+  mobileMenuButtonElement.setAttribute("aria-expanded", String(isOpen));
+  mobileMenuLinksElement.dataset.menuState = isOpen ? "open" : "closed";
+  mobileMenuScrimElement.hidden = !isOpen;
+  document.body.classList.toggle("body--menu-open", isOpen);
+}
+
+function closeMobileMenu() {
+  setMobileMenuState(false);
+}
+
+function toggleMobileMenu() {
+  const isExpanded = mobileMenuButtonElement?.getAttribute("aria-expanded") === "true";
+  setMobileMenuState(!isExpanded);
+}
 
 function trackEvent(eventName, eventData = {}) {
   window.dataLayer = window.dataLayer ?? [];
@@ -392,13 +416,26 @@ function handleFormSubmit(event) {
 }
 
 function handleNavClick(event) {
+  const menuTrigger = event.target.closest(".site-navigation__menu-button");
   const navigationLink = event.target.closest("[data-nav-link]");
+  const clickedScrim = event.target.closest(".site-navigation__scrim");
+
+  if (menuTrigger) {
+    toggleMobileMenu();
+    return;
+  }
+
+  if (clickedScrim) {
+    closeMobileMenu();
+    return;
+  }
 
   if (!navigationLink) {
     return;
   }
 
   trackEvent("nav_click", { target: navigationLink.dataset.navLink });
+  closeMobileMenu();
 }
 
 function handleHeroCtaTracking(event) {
@@ -411,12 +448,24 @@ function handleHeroCtaTracking(event) {
   trackEvent("hero_cta_click", { target: trackedLink.dataset.analyticsId });
 }
 
+function handleEscapeForMobileMenu(event) {
+  if (event.key === "Escape") {
+    closeMobileMenu();
+  }
+}
+
+function handleHashNavigation() {
+  closeMobileMenu();
+}
+
 contactFormElement.addEventListener("change", handleFormChange);
 contactFormElement.addEventListener("input", handleFormChange);
 contactFormElement.addEventListener("click", handleRichTextToolbarClick);
 contactFormElement.addEventListener("submit", handleFormSubmit);
 document.addEventListener("click", handleHeroCtaTracking);
-document.querySelector(".site-navigation")?.addEventListener("click", handleNavClick);
+siteNavigationElement?.addEventListener("click", handleNavClick);
+document.addEventListener("keydown", handleEscapeForMobileMenu);
+window.addEventListener("hashchange", handleHashNavigation);
 
 trackEvent("page_load", { page: window.location.pathname });
 renderVariant("work_with_us", currentFormValues);
