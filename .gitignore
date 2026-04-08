@@ -9,7 +9,7 @@ playwright-report/
 test-results/
 
 # Local Google Drive shortcut files are convenient on one machine but unstable
-# across cloud-synced machines, so we keep checked-in markdown references
-# instead of tracking .gdoc or .gsheet artifacts.
+# across cloud-synced machines, so we do not track .gdoc or .gsheet artifacts.
+# Stable project links live as checked-in .webloc and markdown reference files.
 *.gdoc
 *.gsheet
