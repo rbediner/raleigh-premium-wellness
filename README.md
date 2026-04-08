@@ -25,7 +25,7 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 
 - Primary PRD source: `planning/the-raleigh-tox-prd-reference.md`
 - Google Sheet source: `data-sources/the-tox-raleigh-outreach-sheet-reference.md`
-- GitHub repository: `rbediner/the-tox-raleigh-outreach-site`
+- GitHub repository: `rbediner/raleigh-premium-wellness`
 - Repository visibility: private
 
 ## Prerequisites
@@ -99,13 +99,13 @@ It means the exact commit SHA that passed on `staging` and was reviewed on the p
 
 Once GitHub Pages is enabled for the `gh-pages` branch, the preview URL will be:
 
-`https://rbediner.github.io/the-tox-raleigh-outreach-site/staging/`
+`https://rbediner.github.io/raleigh-premium-wellness/staging/`
 
 ### Production URL
 
 Once GitHub Pages is enabled for the `gh-pages` branch, the production URL will be:
 
-`https://rbediner.github.io/the-tox-raleigh-outreach-site/`
+`https://rbediner.github.io/raleigh-premium-wellness/`
 
 ### One-Time Manual GitHub Setup
 

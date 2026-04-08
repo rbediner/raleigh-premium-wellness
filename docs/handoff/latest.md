@@ -24,11 +24,11 @@ Source commit: `68b8c0f311a28611fe4856e9ef4aaf641fabe2ee`
 
 ## Preview Or Staging URL
 
-- https://rbediner.github.io/the-tox-raleigh-outreach-site/staging/
+- https://rbediner.github.io/raleigh-premium-wellness/staging/
 
 ## Current CI Or Deploy Status Summary
 
-- Preview Deploy on staging: status completed, conclusion success, url https://github.com/rbediner/the-tox-raleigh-outreach-site/actions/runs/24146410266
+- Preview Deploy on staging: status completed, conclusion success, url https://github.com/rbediner/raleigh-premium-wellness/actions/runs/24146410266
 - Production Deploy on main: no recent run found from this machine.
 
 ## Blockers Or Manual Follow-Ups
