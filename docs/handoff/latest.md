@@ -1,27 +1,42 @@
 # Latest Handoff
 
-Source branch: `main`
+Handoff sequence: `3`
 
-Source commit: `6873428f7f02d0b508f12c87d8993bba1a015f04`
+Updated at (UTC): `2026-04-08T16:10:19.922Z`
 
-Workflow status:
+Source branch: `codex/cross-machine-continuity`
 
-- Release workflow scaffold added locally.
-- Preview is designed to publish from `staging` to `/staging/` on the `gh-pages` branch.
-- Production is designed to publish from `main` to the root of the `gh-pages` branch.
-- Production is protected so the deployed `main` commit must already exist on `staging`.
-- Local QA and workflow contract tests are part of the repo now.
+Source commit: `bbf5b3585a96199401583be3c79806690ba72c35`
 
-Recent release changes:
+## Current Branch Model
 
-- Added a GitHub Pages staging/production release model.
-- Added repo-local SOP docs, QA docs, and session handoff docs.
-- Added preview/prod build scripts and deploy publication scripts.
-- Added policy tests that protect the branch roles, workflow files, and preview noindex rules.
+- `staging` is the preview and integration branch.
+- `main` is the production branch.
+- Feature branches should merge into `staging` before anything is promoted to `main`.
 
-Operator notes:
+## Branch Alignment Or Divergence Notes
 
-- Do not use `main` as a working branch.
-- Review preview on `staging` before promoting anything to `main`.
-- GitHub Pages must be enabled once in repository settings with `gh-pages` as the source branch.
-- The Google Sheets + email-notification bridge is still a separate next implementation step.
+- Current branch at update time: `codex/cross-machine-continuity`.
+- Current HEAD at update time: `bbf5b3585a96199401583be3c79806690ba72c35`.
+- Upstream tracking branch: `origin/codex/cross-machine-continuity`
+- Working tree: dirty.
+- Compared with `origin/codex/cross-machine-continuity`: ahead 0, behind 0.
+
+## Preview Or Staging URL
+
+- https://rbediner.github.io/the-tox-raleigh-outreach-site/staging/
+
+## Current CI Or Deploy Status Summary
+
+- Preview Deploy on staging: status completed, conclusion success, url https://github.com/rbediner/the-tox-raleigh-outreach-site/actions/runs/24144810287
+- Production Deploy on main: no recent run found from this machine.
+
+## Blockers Or Manual Follow-Ups
+
+- Working tree is dirty. Commit, stash, or clean changes before another machine starts editing.
+- Remote branch `origin/codex/cross-machine-continuity` was not available during handoff refresh.
+- Local HEAD does not match `origin/main`. Sync the branch before another machine resumes work.
+
+## Operator Notes For Next Session
+
+- Read README.md first, then docs/handoff/latest.md, before making changes.
