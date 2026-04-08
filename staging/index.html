@@ -34,7 +34,21 @@
       <nav class="site-navigation" aria-label="Primary">
         <a class="site-navigation__brand" href="#hero">Raleigh Premium Wellness</a>
 
-        <div class="site-navigation__links">
+        <button
+          class="site-navigation__menu-button"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-navigation-links"
+          aria-label="Open navigation menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="site-navigation__scrim" hidden></div>
+
+        <div id="site-navigation-links" class="site-navigation__links" data-menu-state="closed">
           <a href="#hero" data-nav-link="hero">Home</a>
           <a href="#work-with-us" data-nav-link="work-with-us">Work With Us</a>
           <a href="#partner-with-us" data-nav-link="partner-with-us">Partner With Us</a>
@@ -49,8 +63,7 @@
       <section id="hero" class="hero-section hero-shell">
         <p class="eyebrow-label">Founder-Led Local Preview</p>
         <h1>
-          <span>A NEW STANDARD IN</span>
-          <span>PREMIUM WELLNESS</span>
+          <span>A NEW STANDARD IN PREMIUM WELLNESS</span>
           <span class="hero-section__headline-accent">IS COMING TO RALEIGH</span>
         </h1>
         <p class="hero-section__lead">
@@ -74,10 +87,9 @@
           </a>
         </div>
 
-        <p class="hero-section__transition">
-          For the right person, the first door into that momentum is a visible, community-facing leadership
-          role.
-        </p>
+        <div class="hero-section__transition">
+          <p class="hero-section__transition-line">The first invitation into that momentum is a visible, community-facing leadership role.</p>
+        </div>
       </section>
 
       <section id="work-with-us" class="content-section content-shell content-shell--lead">
@@ -308,7 +320,7 @@
         <div class="editorial-copy">
           <p>
             Early access should feel quiet, privileged, and worth paying attention to. Just enough to keep
-            you close as more is revealed.
+            you close as more is revealed, with a sense that something thoughtfully built is still just ahead.
           </p>
         </div>
       </section>
@@ -370,13 +382,13 @@
           <p class="eyebrow-label">Contact</p>
           <h2>Choose your path and let’s begin.</h2>
           <p class="section-heading__support">
-            Choose the path that fits you best and share a few details. We’ll take it from there.
+            Choose the path that fits you best and share a few thoughtful details. We’ll take it from there.
           </p>
         </div>
 
         <form id="unified-contact-form" class="contact-form" novalidate>
           <fieldset class="contact-form__fieldset">
-            <legend>Choose your path</legend>
+            <legend class="visually-hidden">Choose your path</legend>
 
             <label class="selector-card">
               <input type="radio" name="interestPath" value="work_with_us" checked />
