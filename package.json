@@ -5,7 +5,9 @@
   "scripts": {
     "preview:staging": "node scripts/release/build-site-artifact.mjs --mode preview && SITE_OUTPUT_DIR=dist/preview node scripts/qa/serve-static-site.mjs",
     "preview:production": "node scripts/release/build-site-artifact.mjs --mode production && SITE_OUTPUT_DIR=dist/production node scripts/qa/serve-static-site.mjs",
-    "qa:session-readiness": "node scripts/qa/check-session-readiness.mjs",
+    "session:ready": "node scripts/qa/verify-session-readiness.mjs",
+    "handoff:update": "node scripts/release/update-handoff-latest.mjs",
+    "qa:session-readiness": "npm run session:ready",
     "qa:docs-gate": "node scripts/qa/check-release-documents.mjs",
     "qa:preview-smoke:local": "node scripts/qa/run-local-site-smoke-check.mjs --mode preview",
     "qa:production-smoke:local": "node scripts/qa/run-local-site-smoke-check.mjs --mode production",

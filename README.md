@@ -32,7 +32,7 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 
 These are the tools this repo now expects:
 
-- Node.js 20 or newer
+- Node.js 20.x, matching `.nvmrc`
 - npm 10 or newer
 - Git
 - GitHub CLI (`gh`) for convenient branch/workflow inspection
@@ -42,6 +42,12 @@ Install the browser dependency once with:
 
 ```bash
 npx playwright install chromium
+```
+
+If you use `nvm`, align Node to the repo before doing anything else:
+
+```bash
+nvm use
 ```
 
 ## Available Commands
@@ -111,6 +117,34 @@ GitHub Pages still needs one manual repo setting:
 
 After that, the preview and production workflows can publish the preview path and the live root automatically.
 
+## GitHub Actions Runtime Maintenance
+
+This repo has already been updated for GitHub's Node 20 JavaScript action-runtime deprecation where it applies directly to our workflow files.
+
+- `actions/checkout` was upgraded to `@v6`
+- `actions/setup-node` was upgraded to `@v6`
+
+Why this repo is a little different from other GitHub Pages setups:
+
+- This repo does use GitHub Pages as the host.
+- This repo does **not** use `actions/upload-pages-artifact` or `actions/deploy-pages`.
+- Instead, the preview and production workflows publish to the `gh-pages` branch with our own script in `scripts/release/publish-github-pages-branch.mjs`.
+
+Because of that, the temporary Pages workaround from other projects is **not** needed here:
+
+- `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` was **not** added to these workflows.
+- The specific lingering warning tied to `actions/upload-pages-artifact@v4` does not apply in this repo because that action is not used here.
+
+If this repo later switches to the standard GitHub Pages artifact workflow and still needs `actions/upload-pages-artifact@v4`, then use this temporary workaround on the affected job:
+
+- set `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'` at the job level
+- do the same for any rollback or redeploy job that also uses `actions/upload-pages-artifact@v4`
+
+When GitHub releases `actions/upload-pages-artifact@v5`, the future cleanup path is:
+
+1. upgrade to `actions/upload-pages-artifact@v5`
+2. remove `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`
+
 If the remote `staging` branch does not exist yet, create it once from the current approved codebase:
 
 ```bash
@@ -143,3 +177,49 @@ Every completed release should capture:
 - the live smoke result
 
 The handoff file in `docs/handoff/latest.md` is the canonical place to keep that information up to date.
+
+## Cross-Machine Continuity
+
+This repo is set up so you can switch laptops or Codex sessions without depending on chat memory. The one canonical handoff file is:
+
+- `docs/handoff/latest.md`
+
+That file is single-entry only. We keep only the latest repo state there and rely on Git history for older handoffs.
+
+### Fresh Machine Or New Session Startup Flow
+
+Do these steps every time you open this repo on a new machine or in a new Codex session:
+
+1. Open `README.md`.
+2. Open `docs/handoff/latest.md`.
+3. Open `docs/release/release-sop.md`.
+4. Align your local checkout to the handoff branch before editing.
+5. Make sure the branch is committed or clean before editing.
+6. Run `npm run session:ready`.
+
+### What `npm run session:ready` checks
+
+This command fails on purpose if any of these are wrong:
+
+- `README.md` is missing
+- `docs/handoff/latest.md` is missing
+- `.nvmrc` is missing
+- your Node version does not match the repo expectation
+- the working tree is dirty
+- your current branch does not match the handoff branch
+- local `HEAD` does not match `origin/<handoff-branch>`
+- obvious cloud-sync duplicate artifacts are present
+
+### Refreshing The Handoff
+
+Whenever you finish a meaningful work block, refresh the canonical handoff file with:
+
+```bash
+npm run handoff:update
+```
+
+That command rewrites `docs/handoff/latest.md` with the latest repo state, increments the handoff sequence, and keeps the handoff deterministic for the next machine.
+
+### Friendly Resume Rule
+
+Before editing code on a new machine, do not trust memory alone. Read the repo docs first, align to the handoff branch, and wait for `npm run session:ready` to pass.

@@ -17,6 +17,9 @@ const requiredDocumentRules = [
       "preview deploys come from `staging`",
       "production deploys come from `main`",
       "production is not considered complete until deploy verification passes",
+      "Open `README.md`.",
+      "Run `npm run session:ready`.",
+      "npm run handoff:update",
     ],
   },
   {
@@ -26,15 +29,21 @@ const requiredDocumentRules = [
       "merge approved work into `staging`",
       "promote that exact approved commit to `main`",
       "never announce production complete until verification passes",
+      "Every new machine or new Codex session must read `README.md` first.",
+      "Run `npm run session:ready` before writing code.",
+      "Refresh the canonical handoff with `npm run handoff:update`",
     ],
   },
   {
     filePath: "docs/handoff/latest.md",
     requiredSnippets: [
+      "Handoff sequence:",
+      "Updated at (UTC):",
       "Source branch:",
       "Source commit:",
-      "Workflow status:",
-      "Operator notes:",
+      "Current Branch Model",
+      "Current CI Or Deploy Status Summary",
+      "Operator Notes For Next Session",
     ],
   },
 ];

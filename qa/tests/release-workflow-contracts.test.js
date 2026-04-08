@@ -26,13 +26,38 @@ describe("release workflow contracts", () => {
     expect(productionWorkflow).toContain("release:verify:promotion");
   });
 
+  it("keeps GitHub-hosted workflow actions on current majors and documents the Pages runtime plan", () => {
+    const previewWorkflow = readFileSync(".github/workflows/preview-deploy.yml", "utf8");
+    const productionWorkflow = readFileSync(".github/workflows/production-deploy.yml", "utf8");
+    const readme = readFileSync("README.md", "utf8");
+    const sop = readFileSync("docs/release/release-sop.md", "utf8");
+
+    expect(previewWorkflow).toContain("actions/checkout@v6");
+    expect(previewWorkflow).toContain("actions/setup-node@v6");
+    expect(productionWorkflow).toContain("actions/checkout@v6");
+    expect(productionWorkflow).toContain("actions/setup-node@v6");
+
+    expect(previewWorkflow).not.toContain("upload-pages-artifact");
+    expect(productionWorkflow).not.toContain("upload-pages-artifact");
+    expect(previewWorkflow).not.toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24");
+    expect(productionWorkflow).not.toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24");
+
+    expect(readme).toContain("This repo does **not** use `actions/upload-pages-artifact`");
+    expect(readme).toContain("`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` was **not** added");
+    expect(readme).toContain("upgrade to `actions/upload-pages-artifact@v5`");
+    expect(sop).toContain("This repo does not use `actions/upload-pages-artifact`.");
+    expect(sop).toContain("`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'`");
+  });
+
   it("keeps the required helper scripts and handoff docs in the repo", () => {
     const handoff = readFileSync("docs/handoff/latest.md", "utf8");
     const readme = readFileSync("README.md", "utf8");
 
     expect(handoff).toContain("Source branch:");
-    expect(handoff).toContain("Workflow status:");
+    expect(handoff).toContain("Current CI Or Deploy Status Summary");
     expect(readme).toContain("npm run release:preflight:preview");
     expect(readme).toContain("npm run release:preflight:production");
+    expect(readme).toContain("npm run session:ready");
+    expect(readme).toContain("npm run handoff:update");
   });
 });

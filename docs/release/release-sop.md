@@ -48,6 +48,29 @@ This file is the repo-local source of truth for how releases must move through t
 - Production must not be marked `noindex`.
 - Production verification should include the deploy URL, CI run URL, promoted SHA, and smoke result.
 
+## GitHub Actions Runtime Maintenance
+
+- The repo upgraded `actions/checkout` to `@v6`.
+- The repo upgraded `actions/setup-node` to `@v6`.
+- These upgrades address the directly controlled GitHub-hosted actions used by this repo's workflows.
+
+Why the standard Pages workaround is not present here:
+
+- This repo publishes GitHub Pages content by pushing to `gh-pages` with a custom script.
+- This repo does not use `actions/upload-pages-artifact`.
+- This repo does not use `actions/deploy-pages`.
+
+That means the temporary workaround below is not active in this repo today:
+
+- `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'`
+
+Only add that env var if this repo later adopts `actions/upload-pages-artifact@v4` and GitHub still emits the Node 20 warning from that action's internal dependencies.
+
+If that future case happens, the cleanup path is:
+
+1. upgrade to `actions/upload-pages-artifact@v5` when available
+2. remove `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`
+
 ## If Something Fails
 
 ### If preview CI fails
@@ -62,3 +85,12 @@ This file is the repo-local source of truth for how releases must move through t
 - Do not say it is live yet.
 - Re-check the workflow logs and the live URL.
 - Re-run the production smoke script until the site is actually serving correctly.
+
+## Cross-Machine Startup Rule
+
+- Every new machine or new Codex session must read `README.md` first.
+- Then read `docs/handoff/latest.md`.
+- Then read this SOP before making changes.
+- Align the local checkout to the handoff branch before editing.
+- Run `npm run session:ready` before writing code.
+- Refresh the canonical handoff with `npm run handoff:update` when the work block ends.
