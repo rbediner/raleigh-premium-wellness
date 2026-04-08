@@ -253,6 +253,30 @@ button {
   gap: 1.25rem;
 }
 
+.founder-photo-card {
+  margin: 0;
+  overflow: hidden;
+}
+
+.founder-photo-card__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: calc(var(--radius-large) - 0.4rem);
+}
+
+.founder-photo-card__caption {
+  margin: 0.9rem 0 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.founder-story-card {
+  display: grid;
+  align-content: start;
+}
+
 .content-card ul {
   padding-left: 1.2rem;
   margin-bottom: 0;

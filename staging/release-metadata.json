@@ -1,8 +1,8 @@
 {
   "buildMode": "preview",
   "expectedBranch": "staging",
-  "generatedAt": "2026-04-08T16:19:51.412Z",
-  "currentCommitSha": "d1019d4e61de92eaec279a687da1bf213c81ec2d",
+  "generatedAt": "2026-04-08T16:25:00.009Z",
+  "currentCommitSha": "b9ce98bd25574fd36bab277e46b0a4763a25ad51",
   "canonicalUrl": null,
   "previewSeoBlocked": true
 }
