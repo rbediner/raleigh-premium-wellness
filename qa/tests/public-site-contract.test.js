@@ -40,4 +40,17 @@ describe("public site contract", () => {
     expect(htmlDocument).not.toContain("<h3>Front of House Team Member</h3>");
     expect(htmlDocument).not.toContain("<h3>Licensed Esthetician Opportunity</h3>");
   });
+
+  it("keeps the hero and footer outward-facing rather than meta or defensive", () => {
+    const htmlDocument = readFileSync("site/index.html", "utf8");
+
+    expect(htmlDocument).toContain("A NEW STANDARD IN");
+    expect(htmlDocument).toContain("PREMIUM WELLNESS");
+    expect(htmlDocument).toContain("IS COMING TO RALEIGH");
+    expect(htmlDocument).toContain("A quiet preview of what may be coming to Raleigh.");
+
+    expect(htmlDocument).not.toContain("This page is a simple invitation");
+    expect(htmlDocument).not.toContain("prototype note");
+    expect(htmlDocument).not.toContain("debug");
+  });
 });
