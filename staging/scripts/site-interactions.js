@@ -10,12 +10,17 @@ const formFieldGridElement = document.querySelector("#form-field-grid");
 const formIntroductionElement = document.querySelector("#form-introduction");
 const formStatusMessageElement = document.querySelector("#form-status-message");
 const submitButtonElement = document.querySelector("#contact-submit-button");
-const prototypeStorageKey = "the-tox-raleigh-review-build-submissions";
+const prototypeStorageKey = "raleigh-premium-wellness-prototype-submissions";
+const observedSections = document.querySelectorAll("main section[id]");
+const navigationLinks = document.querySelectorAll("[data-nav-link]");
 
 function createInputMarkup(fieldKey, isRequired) {
   const field = FIELD_DEFINITIONS[fieldKey];
   const fieldClassName = field.type === "textarea" ? "form-field form-field--full" : "form-field";
   const requiredLabel = isRequired ? '<span class="field-required-note"> *</span>' : "";
+  const helperMarkup = field.helperText
+    ? `<p class="form-field__helper">${field.helperText}</p>`
+    : "";
 
   if (field.type === "select") {
     const optionMarkup = field.options
@@ -29,6 +34,7 @@ function createInputMarkup(fieldKey, isRequired) {
           <option value="">Select an option</option>
           ${optionMarkup}
         </select>
+        ${helperMarkup}
       </div>
     `;
   }
@@ -40,6 +46,7 @@ function createInputMarkup(fieldKey, isRequired) {
           <input id="${fieldKey}" name="${fieldKey}" type="checkbox" ${isRequired ? "required" : ""} />
           <span>${field.label}${requiredLabel}</span>
         </label>
+        ${helperMarkup}
       </div>
     `;
   }
@@ -49,6 +56,7 @@ function createInputMarkup(fieldKey, isRequired) {
       <div class="${fieldClassName}">
         <label for="${fieldKey}">${field.label}${requiredLabel}</label>
         <textarea id="${fieldKey}" name="${fieldKey}" ${isRequired ? "required" : ""}></textarea>
+        ${helperMarkup}
       </div>
     `;
   }
@@ -63,6 +71,7 @@ function createInputMarkup(fieldKey, isRequired) {
         ${field.autocomplete ? `autocomplete="${field.autocomplete}"` : ""}
         ${isRequired ? "required" : ""}
       />
+      ${helperMarkup}
     </div>
   `;
 }
@@ -143,16 +152,46 @@ function handleFormSubmit(event) {
 
   storeSubmission(submissionPayload);
   console.info("Unified contact form payload", submissionPayload);
-
   setStatusMessage(variant.successMessage, "success");
 
   contactFormElement.reset();
-  contactFormElement.elements.interestPath.value = selectedPath;
   contactFormElement.querySelector(`input[name="interestPath"][value="${selectedPath}"]`).checked = true;
   renderVariant(selectedPath);
+}
+
+function updateActiveNavigation(activeSectionId) {
+  for (const navigationLink of navigationLinks) {
+    navigationLink.classList.toggle(
+      "site-navigation__link--active",
+      navigationLink.dataset.navLink === activeSectionId,
+    );
+  }
+}
+
+function observeSectionsForNavigation() {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visibleEntries = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((leftEntry, rightEntry) => rightEntry.intersectionRatio - leftEntry.intersectionRatio);
+
+      if (visibleEntries.length > 0) {
+        updateActiveNavigation(visibleEntries[0].target.id);
+      }
+    },
+    {
+      rootMargin: "-18% 0px -55% 0px",
+      threshold: [0.2, 0.45, 0.7],
+    },
+  );
+
+  for (const observedSection of observedSections) {
+    observer.observe(observedSection);
+  }
 }
 
 contactFormElement.addEventListener("change", handlePathChange);
 contactFormElement.addEventListener("submit", handleFormSubmit);
 
 renderVariant("work_with_us");
+observeSectionsForNavigation();

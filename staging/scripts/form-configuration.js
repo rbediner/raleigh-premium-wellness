@@ -105,12 +105,16 @@ export const FIELD_DEFINITIONS = {
     type: "select",
     options: [
       "Studio Development Manager",
+      "Front of House Team Member",
+      "Licensed Esthetician Opportunity",
       "Another future role",
     ],
   },
   short_message: {
     label: "Tell us why this feels like a fit",
     type: "textarea",
+    helperText:
+      "Links, plain-text bullets, and markdown-style bold markers are all fine here.",
   },
   linkedin_url: {
     label: "LinkedIn URL",
@@ -158,6 +162,8 @@ export const FIELD_DEFINITIONS = {
   collaboration_idea: {
     label: "Collaboration Idea",
     type: "textarea",
+    helperText:
+      "You can include links, bullet points, or a short outline of what you have in mind.",
   },
   email_follow_up_consent: {
     label: "Yes, you may email me about this inquiry.",
@@ -187,6 +193,8 @@ export const FIELD_DEFINITIONS = {
   short_note: {
     label: "Short Note",
     type: "textarea",
+    helperText:
+      "If helpful, share what you would most want to hear about first.",
   },
 };
 
