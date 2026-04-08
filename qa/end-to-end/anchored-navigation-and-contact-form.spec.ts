@@ -8,8 +8,9 @@ test("homepage exposes anchored sections and adaptive form states", async ({ pag
       name: "A NEW STANDARD IN PREMIUM WELLNESS IS COMING TO RALEIGH",
     }),
   ).toBeVisible();
+  const primaryNavigation = page.getByLabel("Primary");
   await expect(
-    page.getByRole("link", { name: "Work With Us", exact: true }),
+    primaryNavigation.getByRole("link", { name: "Work With Us", exact: true }),
   ).toHaveAttribute("href", "#work-with-us");
 
   await page.getByLabel("I want to partner with you").check();
@@ -17,6 +18,10 @@ test("homepage exposes anchored sections and adaptive form states", async ({ pag
   await expect(page.getByRole("button", { name: /partnership/i })).toBeVisible();
 
   await page.getByLabel("I want to stay connected").check();
-  await expect(page.getByLabel("I consent to email updates")).toBeVisible();
+  await expect(
+    page.getByLabel(
+      "I consent to email updates about launch news, pre-sales updates, and Founding Member VIP offers.",
+    ),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: /stay connected/i })).toBeVisible();
 });

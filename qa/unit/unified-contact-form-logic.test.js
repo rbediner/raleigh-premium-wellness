@@ -49,7 +49,7 @@ describe("unified contact form logic", () => {
     });
 
     expect(payload.validationErrors).toContain(
-      "I consent to email updates is required.",
+      "I consent to email updates about launch news, pre-sales updates, and Founding Member VIP offers. is required.",
     );
   });
 });

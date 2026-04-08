@@ -10,6 +10,7 @@ const formFieldGridElement = document.querySelector("#form-field-grid");
 const formIntroductionElement = document.querySelector("#form-introduction");
 const formStatusMessageElement = document.querySelector("#form-status-message");
 const submitButtonElement = document.querySelector("#contact-submit-button");
+const prototypeStorageKey = "the-tox-raleigh-review-build-submissions";
 
 function createInputMarkup(fieldKey, isRequired) {
   const field = FIELD_DEFINITIONS[fieldKey];
@@ -35,9 +36,9 @@ function createInputMarkup(fieldKey, isRequired) {
   if (field.type === "checkbox") {
     return `
       <div class="form-field form-field--full">
-        <label for="${fieldKey}">
+        <label class="form-checkbox" for="${fieldKey}">
           <input id="${fieldKey}" name="${fieldKey}" type="checkbox" ${isRequired ? "required" : ""} />
-          ${field.label}${requiredLabel}
+          <span>${field.label}${requiredLabel}</span>
         </label>
       </div>
     `;
@@ -107,10 +108,32 @@ function handlePathChange(event) {
   setStatusMessage("", "idle");
 }
 
+function readStoredSubmissions() {
+  try {
+    return JSON.parse(window.localStorage.getItem(prototypeStorageKey) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function storeSubmission(submissionPayload) {
+  const storedSubmissions = readStoredSubmissions();
+  const nextSubmission = {
+    ...submissionPayload,
+    storedAt: new Date().toISOString(),
+  };
+
+  window.localStorage.setItem(
+    prototypeStorageKey,
+    JSON.stringify([...storedSubmissions, nextSubmission]),
+  );
+}
+
 function handleFormSubmit(event) {
   event.preventDefault();
 
   const selectedPath = contactFormElement.elements.interestPath.value;
+  const variant = getFormVariantConfig(selectedPath);
   const submissionPayload = buildSubmissionPayload(selectedPath, readCurrentFormValues());
 
   if (submissionPayload.validationErrors.length > 0) {
@@ -118,16 +141,14 @@ function handleFormSubmit(event) {
     return;
   }
 
-  // The Google Sheets integration is not wired yet, so this scaffold confirms
-  // the front-end logic and logs the eventual payload shape for development.
+  storeSubmission(submissionPayload);
   console.info("Unified contact form payload", submissionPayload);
 
-  setStatusMessage(
-    "Front-end form logic is working. Google Sheets submission wiring is the next implementation step.",
-    "success",
-  );
+  setStatusMessage(variant.successMessage, "success");
 
   contactFormElement.reset();
+  contactFormElement.elements.interestPath.value = selectedPath;
+  contactFormElement.querySelector(`input[name="interestPath"][value="${selectedPath}"]`).checked = true;
   renderVariant(selectedPath);
 }
 
