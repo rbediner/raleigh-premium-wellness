@@ -69,6 +69,7 @@ function buildHtmlForMode() {
   return sourceHtml
     .replace("../styles/site.css", "./styles/site.css")
     .replace("../scripts/site/site-interactions.js", "./scripts/site-interactions.js")
+    .replaceAll("../assets/", "./assets/")
     .replace("<!-- BUILD_ENVIRONMENT_HEAD -->", environmentHeadMarkup)
     .replace("<!-- BUILD_ENVIRONMENT_BANNER -->", environmentBannerMarkup)
     .replace("<body>", `<body data-release-channel="${buildMode}">`);
