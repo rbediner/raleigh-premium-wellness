@@ -8,7 +8,7 @@ describe("founder image contract", () => {
     expect(htmlDocument).toContain("rb-mb-social-photo-640.webp");
     expect(htmlDocument).toContain("rb-mb-social-photo-960.jpg");
     expect(htmlDocument).toContain('class="founder-photo-card__image"');
-    expect(htmlDocument).toContain("Roman Bediner and Marianna together");
+    expect(htmlDocument).toContain("Two founders photographed together");
   });
 
   it("keeps generated founder image variants available in the repo", () => {

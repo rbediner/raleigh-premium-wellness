@@ -3,6 +3,7 @@ import {
   buildSubmissionPayload,
   getFieldSequence,
   getFormVariantConfig,
+  shouldRequireReferralPermission,
 } from "../../scripts/site/form-configuration.js";
 
 describe("unified contact form logic", () => {
@@ -29,7 +30,7 @@ describe("unified contact form logic", () => {
     const payload = buildSubmissionPayload("partner_with_us", {
       first_name: " Roman ",
       last_name: " Bediner ",
-      organization_name: "The Tox Circle",
+      organization_name: "Bediner Wellness Circle",
       email: "not-an-email",
       phone: "919-555-0100",
       partnership_type: "Community partnership",
@@ -37,7 +38,7 @@ describe("unified contact form logic", () => {
     });
 
     expect(payload.normalizedValues.first_name).toBe("Roman");
-    expect(payload.validationErrors).toContain("Email format must be valid.");
+    expect(payload.validationErrors).toContain("Email Address must be a valid email address.");
   });
 
   it("requires email consent for stay-connected submissions", () => {
@@ -49,7 +50,42 @@ describe("unified contact form logic", () => {
     });
 
     expect(payload.validationErrors).toContain(
-      "I consent to email updates about launch news, pre-sales updates, and Founding Member VIP offers. is required.",
+      "Yes, I’d like to receive email updates about launch news, pre-sales, and Founding Member VIP offers. is required.",
+    );
+  });
+
+  it("adds the referral permission checkbox only when referred-person information is present", () => {
+    expect(
+      shouldRequireReferralPermission({
+        referred_first_name: "",
+        referred_email: "",
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldRequireReferralPermission({
+        referred_first_name: "Alex",
+      }),
+    ).toBe(true);
+  });
+
+  it("requires referral permission only when referred-person details are supplied", () => {
+    const payload = buildSubmissionPayload("work_with_us", {
+      first_name: "Roman",
+      last_name: "Bediner",
+      email: "roman@example.com",
+      phone: "919-555-0100",
+      self_or_referral: "I’d like to refer someone",
+      role_interest: "Manager-Studio Development",
+      referral_reason: "Trusted connector with strong local credibility.",
+      referred_email: "candidate@example.com",
+      email_follow_up_consent: true,
+      text_follow_up_consent: true,
+      referral_permission_confirmed: false,
+    });
+
+    expect(payload.validationErrors).toContain(
+      "I confirm I have this person’s permission to share their contact information. is required.",
     );
   });
 });

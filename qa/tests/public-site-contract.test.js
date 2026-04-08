@@ -15,8 +15,24 @@ describe("public site contract", () => {
     expect(htmlDocument).toContain('id="front-of-house-team-member"');
     expect(htmlDocument).toContain('id="licensed-esthetician-opportunity"');
 
+    expect(htmlDocument).toContain("Raleigh Premium Wellness Prototype");
     expect(htmlDocument).not.toContain("The Tox");
+    expect(htmlDocument).not.toContain("The Tox Technique");
+    expect(htmlDocument).not.toContain("franchisor");
     expect(htmlDocument).not.toContain("franchise");
     expect(htmlDocument).not.toContain("national brand");
+  });
+
+  it("keeps the studio development manager narrative as the visible work-with-us centerpiece", () => {
+    const htmlDocument = readFileSync("site/index.html", "utf8");
+
+    expect(htmlDocument).toContain("Help launch Raleigh’s next premium wellness destination.");
+    expect(htmlDocument).toContain("You may be a great fit if...");
+    expect(htmlDocument).toContain("Why this is exciting");
+    expect(htmlDocument).toContain("What you might find yourself doing");
+    expect(htmlDocument).toContain("Interested? Know someone?");
+
+    expect(htmlDocument).not.toContain("<h3>Front of House Team Member</h3>");
+    expect(htmlDocument).not.toContain("<h3>Licensed Esthetician Opportunity</h3>");
   });
 });

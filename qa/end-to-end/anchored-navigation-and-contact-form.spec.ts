@@ -12,15 +12,18 @@ test("homepage exposes anchored sections and adaptive form states", async ({ pag
   await expect(
     primaryNavigation.getByRole("link", { name: "Work With Us", exact: true }),
   ).toHaveAttribute("href", "#work-with-us");
+  await expect(
+    page.getByRole("heading", { name: "Help launch Raleigh’s next premium wellness destination." }),
+  ).toBeVisible();
 
   await page.getByLabel("I want to partner with you").check();
-  await expect(page.getByLabel("Business or Organization Name")).toBeVisible();
+  await expect(page.getByLabel("Business / Organization Name")).toBeVisible();
   await expect(page.getByRole("button", { name: /partnership/i })).toBeVisible();
 
   await page.getByLabel("I want to stay connected").check();
   await expect(
     page.getByLabel(
-      "I consent to email updates about launch news, pre-sales updates, and Founding Member VIP offers.",
+      "Yes, I’d like to receive email updates about launch news, pre-sales, and Founding Member VIP offers.",
     ),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: /stay connected/i })).toBeVisible();

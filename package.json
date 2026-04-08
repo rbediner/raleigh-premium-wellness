@@ -1,7 +1,7 @@
 {
   "name": "raleigh-premium-wellness",
   "version": "1.0.0",
-  "description": "This repository will hold the placeholder outreach site for The Tox Raleigh launch.",
+  "description": "Founder-led premium wellness prototype for Raleigh outreach and early interest capture.",
   "scripts": {
     "assets:optimize:founder-photo": "node scripts/assets/generate-founder-photo-variants.mjs",
     "preview:staging": "node scripts/release/build-site-artifact.mjs --mode preview && SITE_OUTPUT_DIR=dist/preview node scripts/qa/serve-static-site.mjs",
