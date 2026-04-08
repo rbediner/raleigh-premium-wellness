@@ -21,6 +21,11 @@ describe("public site contract", () => {
     expect(htmlDocument).not.toContain("franchisor");
     expect(htmlDocument).not.toContain("franchise");
     expect(htmlDocument).not.toContain("national brand");
+    expect(htmlDocument).not.toContain("This page exists");
+    expect(htmlDocument).not.toContain("This is the main reason the page exists");
+    expect(htmlDocument).not.toContain("We are not trying to");
+    expect(htmlDocument).not.toContain("This prototype keeps the structure realistic");
+    expect(htmlDocument).not.toContain("Integration hooks");
   });
 
   it("keeps the studio development manager narrative as the visible work-with-us centerpiece", () => {
