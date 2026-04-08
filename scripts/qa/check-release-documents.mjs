@@ -20,6 +20,7 @@ const requiredDocumentRules = [
       "Open `README.md`.",
       "Run `npm run session:ready`.",
       "npm run handoff:update",
+      "Do not rely on cloud-synced `.gdoc` or `.gsheet` shortcut files as tracked repo state.",
     ],
   },
   {
@@ -45,6 +46,14 @@ const requiredDocumentRules = [
       "Current CI Or Deploy Status Summary",
       "Operator Notes For Next Session",
     ],
+  },
+  {
+    filePath: "planning/the-raleigh-tox-prd-reference.md",
+    requiredSnippets: ["Google Doc URL:", "Purpose:"],
+  },
+  {
+    filePath: "data-sources/the-tox-raleigh-outreach-sheet-reference.md",
+    requiredSnippets: ["Google Sheet URL:", "Purpose:"],
   },
 ];
 

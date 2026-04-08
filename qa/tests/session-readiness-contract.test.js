@@ -23,6 +23,7 @@ describe("session readiness contract", () => {
     expect(readme).toContain("Open `docs/release/release-sop.md`.");
     expect(readme).toContain("Run `npm run session:ready`.");
     expect(readme).toContain("npm run handoff:update");
+    expect(readme).toContain("Do not rely on cloud-synced `.gdoc` or `.gsheet` shortcut files");
 
     expect(sop).toContain("Every new machine or new Codex session must read `README.md` first.");
     expect(sop).toContain("Run `npm run session:ready` before writing code.");

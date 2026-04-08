@@ -13,8 +13,8 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 ## Repository Structure
 
 - `assets/` stores reusable visual assets and source imagery
-- `data-sources/` stores shortcuts to connected planning/data files such as Google Sheets
-- `planning/` stores shortcuts to source planning documents such as the PRD
+- `data-sources/` stores stable reference docs for connected spreadsheets and data sources
+- `planning/` stores stable reference docs for source planning documents such as the PRD
 - `qa/` stores unit tests, end-to-end tests, and QA configuration
 - `scripts/` stores browser scripts and local automation helpers
 - `site/` stores the main HTML document for the website
@@ -23,8 +23,8 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 
 ## Working Notes
 
-- Primary PRD source: `planning/the-raleigh-tox-prd.gdoc`
-- Google Sheet source: `data-sources/the-tox-raleigh-outreach-sheet.gsheet`
+- Primary PRD source: `planning/the-raleigh-tox-prd-reference.md`
+- Google Sheet source: `data-sources/the-tox-raleigh-outreach-sheet-reference.md`
 - GitHub repository: `rbediner/the-tox-raleigh-outreach-site`
 - Repository visibility: private
 
@@ -185,6 +185,11 @@ This repo is set up so you can switch laptops or Codex sessions without dependin
 - `docs/handoff/latest.md`
 
 That file is single-entry only. We keep only the latest repo state there and rely on Git history for older handoffs.
+
+One important repo-safety rule:
+
+- Do not rely on cloud-synced `.gdoc` or `.gsheet` shortcut files as tracked repo state.
+- This repo keeps stable markdown reference files instead, so another machine can always recover the source document URLs even if Drive shortcuts disappear.
 
 ### Fresh Machine Or New Session Startup Flow
 
