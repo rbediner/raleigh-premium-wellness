@@ -36,12 +36,17 @@ describe("public site contract", () => {
 
   it("keeps the studio development manager narrative as the visible work-with-us centerpiece", () => {
     const htmlDocument = readFileSync("site/index.html", "utf8");
+    const normalizedHtmlDocument = readNormalizedHtmlDocument();
 
     expect(htmlDocument).toContain('nav id="manager-studio-development" class="role-subnav"');
     expect(htmlDocument).toContain("Help launch Raleigh’s next premium wellness destination.");
-    expect(htmlDocument).toContain("You may be a great fit if...");
-    expect(htmlDocument).toContain("Why this is exciting");
-    expect(htmlDocument).toContain("What you might find yourself doing");
+    expect(htmlDocument).toContain("Who This Could Be For");
+    expect(htmlDocument).toContain("You may be a strong fit if you are well connected in your community");
+    expect(htmlDocument).toContain("Why This Is Exciting");
+    expect(htmlDocument).toContain("What You Might Find Yourself Doing");
+    expect(normalizedHtmlDocument).toContain("Hosting launch events, open houses, networking nights, pop-ups, and wellness gatherings that introduce the studio to the market");
+    expect(normalizedHtmlDocument).toContain("Building smart relationships with gyms, fitness studios, apartment communities, members’ clubs, and other local partners");
+    expect(normalizedHtmlDocument).toContain("Coordinating the moving pieces that help the studio open strong, including setup, vendor coordination, inventory readiness, training support, and pre-opening organization");
     expect(htmlDocument).toContain("Interested? Know someone?");
 
     expect(htmlDocument).not.toContain("<h3>Front of House Team Member</h3>");
@@ -52,13 +57,13 @@ describe("public site contract", () => {
     const htmlDocument = readNormalizedHtmlDocument();
 
     expect(htmlDocument).toContain("Community Presence");
-    expect(htmlDocument).toContain("Creating community-building moments that genuinely make a difference");
-    expect(htmlDocument).toContain("Organizing and hosting events that introduce the studio to the market");
-    expect(htmlDocument).toContain("Helping create educational and experiential moments that make the brand feel approachable");
-    expect(htmlDocument).toContain("Identifying smart co-branded opportunities with gyms, fitness studios, apartment communities");
-    expect(htmlDocument).toContain("Turning local visibility into real momentum through follow-up, relationship building");
-    expect(htmlDocument).toContain("Helping shape signature local experiences, such as members-only open houses");
-    expect(htmlDocument).toContain("Working closely with ownership on launch planning, community presence, early growth");
+    expect(htmlDocument).toContain("Creating community moments people remember, including local give-back events");
+    expect(htmlDocument).toContain("Hosting launch events, open houses, networking nights, pop-ups, and wellness gatherings that introduce the studio to the market");
+    expect(htmlDocument).toContain("Helping create educational and experiential moments that make the brand approachable");
+    expect(htmlDocument).toContain("Building smart relationships with gyms, fitness studios, apartment communities");
+    expect(htmlDocument).toContain("Turning local visibility into momentum through follow-up, introductions");
+    expect(htmlDocument).toContain("Helping shape signature local experiences that make the brand feel social, shareable, and exciting");
+    expect(htmlDocument).toContain("Working closely with ownership on launch planning, community presence, early growth, and overall market momentum");
     expect(htmlDocument).toContain("Helping recruit, energize, and support the team across technicians and front-of-house roles");
     expect(htmlDocument).toContain("Coordinating the moving pieces that help the studio open strong");
   });
