@@ -1,0 +1,37 @@
+{
+  "stagingUrl": "https://rbediner.github.io/raleigh-premium-wellness/staging/?v=2e55445",
+  "observed": {
+    "title": "New Premium Wellness Experience Coming to Raleigh",
+    "metaDescription": "A new premium body-focused wellness experience is taking shape in Raleigh. Work with us, partner with us, or stay connected from the beginning.",
+    "ogTitle": "A New Premium Wellness Experience Is Coming to Raleigh",
+    "ogDescription": "We’re bringing something special to Raleigh and inviting the people who want to help shape it, partner with it, or stay connected from the very beginning.",
+    "ogUrl": "https://rbediner.github.io/raleigh-premium-wellness/staging/",
+    "ogImage": "https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/open-graph-preview-1200x630.png",
+    "twitterTitle": "A New Premium Wellness Experience Is Coming to Raleigh",
+    "twitterDescription": "We’re bringing something special to Raleigh and inviting the people who want to help shape it, partner with it, or stay connected from the very beginning.",
+    "twitterImage": "https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/open-graph-preview-1200x630.png",
+    "faviconHref": "https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/favicon.svg"
+  },
+  "assetChecks": {
+    "faviconSvg": {
+      "url": "https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/favicon.svg",
+      "status": 200,
+      "contentType": "image/svg+xml"
+    },
+    "faviconIco": {
+      "url": "https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/favicon.ico",
+      "status": 200,
+      "contentType": "image/vnd.microsoft.icon"
+    },
+    "faviconPng": {
+      "url": "https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/favicon-64.png",
+      "status": 200,
+      "contentType": "image/png"
+    },
+    "openGraphImage": {
+      "url": "https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/open-graph-preview-1200x630.png",
+      "status": 200,
+      "contentType": "image/png"
+    }
+  }
+}
