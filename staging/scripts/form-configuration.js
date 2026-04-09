@@ -12,21 +12,21 @@ export const FORM_VARIANT_CONFIG = {
       "If you see yourself in this opportunity, or someone came to mind while reading about it, we’d love to hear from you. Share a few details below and we’ll take it from there.",
     submitLabel: "Start the Conversation",
     successMessage:
-      "Thank you. Your message has been saved for this review build, and we’ll be ready to connect the live follow-up flow next.",
+      "Thanks for reaching out. We’ve received your note and will review it carefully. If there looks to be a strong fit, we’ll be in touch about next steps.",
   },
   partner_with_us: {
     introduction:
       "If you see an opportunity to collaborate, host something together, or introduce us to your community, we’d love to hear from you. Share a few details below and let’s explore it.",
     submitLabel: "Explore a Partnership",
     successMessage:
-      "Thank you. Your partnership note has been saved for this review build.",
+      "Thanks so much for reaching out. We’re grateful for your interest and excited to learn more about you, your business, and the kind of collaboration you have in mind. We’ll review your note and be back in touch soon.",
   },
   stay_connected: {
     introduction:
       "Want to be first in line when pre-sales opens? Sign up below to be notified when a limited number of discounted Founding Member VIP packages become available and to stay connected as we build toward launch in Raleigh.",
     submitLabel: "Join the List",
     successMessage:
-      "Thank you. Your early-access note has been saved for this review build.",
+      "Thank you so much for joining us early. We’re truly grateful for your interest and excited to keep you in the loop as launch plans take shape. We’ll share updates along the way and let you know as soon as founding-member opportunities become available. If you know someone in your circle who’d want to be part of this early, feel free to share the page with them.",
   },
 };
 
@@ -296,8 +296,6 @@ export function getFormVariantConfig(pathKey, currentValues = {}) {
       introduction:
         "If someone came to mind while reading this, share a few details below and tell us why they feel like the right fit. We’d love strong referrals from the community.",
       submitLabel: "Share a Referral",
-      successMessage:
-        "Thank you. Your referral has been saved for this review build, and we’ll be ready to follow up thoughtfully.",
     };
   }
 
