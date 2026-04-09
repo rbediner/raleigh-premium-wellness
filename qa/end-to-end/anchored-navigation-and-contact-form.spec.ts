@@ -13,6 +13,9 @@ test("homepage exposes anchored sections and adaptive form states", async ({ pag
     primaryNavigation.getByRole("link", { name: "Work With Us", exact: true }),
   ).toHaveAttribute("href", "#work-with-us");
   await expect(
+    primaryNavigation.getByRole("link", { name: "Stay Connected", exact: true }),
+  ).toHaveAttribute("href", "#contact");
+  await expect(
     page.getByRole("heading", { name: "Help launch Raleigh’s next premium wellness destination." }),
   ).toBeVisible();
 
@@ -154,6 +157,16 @@ test("mobile navigation uses a compact menu pattern and closes after selection",
   await expect(menuButton).toHaveAttribute("aria-label", "Open navigation menu");
   await expect(page.locator("body")).not.toHaveClass(/body--menu-open/);
   await expect(page).toHaveURL(/#about$/);
+
+  await menuButton.click();
+  const stayConnectedLink = page
+    .locator("#site-navigation-links")
+    .getByRole("link", { name: "Stay Connected", exact: true });
+  await expect(stayConnectedLink).toBeVisible();
+  await stayConnectedLink.click();
+
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(menuButton).toHaveAttribute("aria-expanded", "false");
 });
 
 test("manager deep link lands on the role pill instead of overshooting into the heading", async ({ page }) => {

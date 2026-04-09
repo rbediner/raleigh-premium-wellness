@@ -719,9 +719,9 @@ button {
 
 .form-checkbox__row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 1.18rem minmax(0, 1fr);
   align-items: flex-start;
-  column-gap: 0.9rem;
+  column-gap: 0.95rem;
   width: 100%;
 }
 
@@ -735,18 +735,60 @@ button {
   display: block;
   width: 100%;
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 1.45;
   cursor: pointer;
 }
 
 .form-checkbox input {
-  width: 1.15rem;
-  height: 1.15rem;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.18rem;
+  height: 1.18rem;
+  min-height: 0;
+  padding: 0;
   margin: 0;
-  margin-top: 0.24rem;
-  accent-color: var(--accent);
+  margin-top: 0.16rem;
+  border: 1px solid rgba(247, 239, 231, 0.28);
+  border-radius: 0.24rem;
+  background: rgba(247, 239, 231, 0.03);
+  display: grid;
+  place-items: center;
   cursor: pointer;
   flex-shrink: 0;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+/* Use one controlled checkbox treatment so every workflow keeps the square
+   aligned with the opening line of copy instead of relying on browser defaults. */
+.form-checkbox input::after {
+  content: "";
+  width: 0.56rem;
+  height: 0.3rem;
+  margin-top: -0.04rem;
+  border-left: 2px solid var(--ink-deep);
+  border-bottom: 2px solid var(--ink-deep);
+  transform: rotate(-45deg) scale(0);
+  transform-origin: center;
+  transition: transform 120ms ease;
+}
+
+.form-checkbox input:hover,
+.form-checkbox input:focus-visible {
+  border-color: rgba(247, 239, 231, 0.4);
+  box-shadow: 0 0 0 3px rgba(191, 139, 99, 0.12);
+}
+
+.form-checkbox input:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.form-checkbox input:checked::after {
+  transform: rotate(-45deg) scale(1);
 }
 
 .form-checkbox__label-text {
@@ -1007,7 +1049,7 @@ button {
   }
 
   .form-checkbox input {
-    margin-top: 0.18rem;
+    margin-top: 0.12rem;
   }
 
   .site-footer {

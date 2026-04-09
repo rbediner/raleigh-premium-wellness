@@ -48,6 +48,21 @@ describe("public site contract", () => {
     expect(htmlDocument).not.toContain("<h3>Licensed Esthetician Opportunity</h3>");
   });
 
+  it("keeps visible bullet starters capitalized while preserving the editorial groups", () => {
+    const htmlDocument = readNormalizedHtmlDocument();
+
+    expect(htmlDocument).toContain("Community Presence");
+    expect(htmlDocument).toContain("Creating community-building moments that genuinely make a difference");
+    expect(htmlDocument).toContain("Organizing and hosting events that introduce the studio to the market");
+    expect(htmlDocument).toContain("Helping create educational and experiential moments that make the brand feel approachable");
+    expect(htmlDocument).toContain("Identifying smart co-branded opportunities with gyms, fitness studios, apartment communities");
+    expect(htmlDocument).toContain("Turning local visibility into real momentum through follow-up, relationship building");
+    expect(htmlDocument).toContain("Helping shape signature local experiences, such as members-only open houses");
+    expect(htmlDocument).toContain("Working closely with ownership on launch planning, community presence, early growth");
+    expect(htmlDocument).toContain("Helping recruit, energize, and support the team across technicians and front-of-house roles");
+    expect(htmlDocument).toContain("Coordinating the moving pieces that help the studio open strong");
+  });
+
   it("keeps the hero and footer outward-facing rather than meta or defensive", () => {
     const htmlDocument = readNormalizedHtmlDocument();
 
@@ -98,6 +113,7 @@ describe("public site contract", () => {
     expect(htmlDocument).toContain('class="site-navigation__menu-button"');
     expect(htmlDocument).toContain('class="site-navigation__scrim"');
     expect(htmlDocument).toContain('class="site-footer__closing-line"');
+    expect(htmlDocument).toContain('data-nav-link="contact">Stay Connected</a>');
     expect(formConfiguration).toContain('submitLabel: "Start the Conversation"');
     expect(formConfiguration).toContain('submitLabel: "Explore a Partnership"');
     expect(formConfiguration).toContain('submitLabel: "Join the VIP List"');
