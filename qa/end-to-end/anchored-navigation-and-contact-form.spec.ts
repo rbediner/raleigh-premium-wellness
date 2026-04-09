@@ -20,13 +20,16 @@ test("homepage exposes anchored sections and adaptive form states", async ({ pag
   await expect(page.getByLabel("Business / Organization Name")).toBeVisible();
   await expect(page.getByRole("button", { name: "Explore a Partnership" })).toBeVisible();
 
-  await page.getByLabel("I want to stay connected").check();
+  await page.getByLabel("I want to join the Founding Member VIP list").check();
+  await expect(
+    page.getByLabel("I want to join the Founding Member VIP list"),
+  ).toBeChecked();
   await expect(
     page.getByLabel(
-      "Yes, I’d like to receive email updates about launch news, pre-sales, and Founding Member VIP offers.",
+      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available.",
     ),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: /join the list/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Join the VIP List" })).toBeVisible();
   await expect(
     page.getByText(
       "Founding Member VIP is for people who want to be first in line when our founding-member offers become available.",
@@ -59,8 +62,8 @@ test("cta routing preselects the matching form path", async ({ page }) => {
   await page.locator(".hero-section__actions").getByRole("link", { name: "Stay Connected", exact: true }).click();
   await expect(page).toHaveURL(/interestPath=stay_connected/);
   await expect(page).toHaveURL(/#contact$/);
-  await expect(page.getByLabel("I want to stay connected")).toBeChecked();
-  await expect(page.getByRole("button", { name: /join the list/i })).toBeVisible();
+  await expect(page.getByLabel("I want to join the Founding Member VIP list")).toBeChecked();
+  await expect(page.getByRole("button", { name: "Join the VIP List" })).toBeVisible();
 });
 
 test("partner path keeps partnership-specific helper chips only", async ({ page }) => {
@@ -72,6 +75,15 @@ test("partner path keeps partnership-specific helper chips only", async ({ page 
   await expect(page.getByText("Why I’m interested", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Referral opportunity", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("textbox", { name: /Partnership Idea/ })).toBeVisible();
+  await expect(
+    page.getByText(
+      "Tell us a bit about your business, your audience, or the kind of collaboration you have in mind.",
+    ),
+  ).toBeVisible();
+  await expect(page.getByLabel("Additional Details")).toHaveCount(0);
+  await expect(page.getByLabel("Website URL")).toHaveCount(0);
+  await expect(page.getByLabel("Social Media Link")).toHaveCount(0);
+  await expect(page.getByLabel("Yes, you may text me about this inquiry.")).toHaveCount(0);
 });
 
 test("work path stays light for first-touch outreach", async ({ page }) => {
@@ -98,6 +110,29 @@ test("work path stays light for first-touch outreach", async ({ page }) => {
     page.getByLabel("Yes, I’d be glad to hear from you by email about this opportunity."),
   ).toBeVisible();
   await expect(page.getByLabel("Yes, you may text me about this inquiry.")).toHaveCount(0);
+});
+
+test("vip path uses the tighter founding-member field set", async ({ page }) => {
+  await page.goto("/?interestPath=stay_connected#contact");
+
+  await expect(page.getByLabel("I want to join the Founding Member VIP list")).toBeChecked();
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByLabel("Email Address")).toBeVisible();
+  await expect(page.getByLabel("Mobile Phone Number")).toBeVisible();
+  await expect(
+    page.getByLabel(
+      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available.",
+    ),
+  ).toBeVisible();
+  await expect(page.getByLabel("Interest Type")).toHaveCount(0);
+  await expect(page.getByLabel("Short Note")).toHaveCount(0);
+  await expect(
+    page.getByLabel(
+      "Yes, I agree to receive text messages about launch updates, pre-sales, and Founding Member VIP offers.",
+    ),
+  ).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Join the VIP List" })).toBeVisible();
 });
 
 test("mobile navigation uses a compact menu pattern and closes after selection", async ({ page }) => {
@@ -141,6 +176,7 @@ test("each form path shows the approved success state after a valid submission",
   await page.getByLabel("Mobile Phone Number").fill("919-555-0100");
   await page.getByLabel("Partnership Type").selectOption("Community partnership");
   await page.getByRole("textbox", { name: /Partnership Idea/ }).fill("A neighborhood collaboration could be a strong fit.");
+  await page.getByLabel("Yes, I’d be glad to hear from you by email about this opportunity.").check();
   await page.getByRole("button", { name: "Explore a Partnership" }).click();
 
   await expect(
@@ -154,12 +190,13 @@ test("each form path shows the approved success state after a valid submission",
   await page.getByLabel("First Name").fill("Marianna");
   await page.getByLabel("Last Name").fill("Bediner");
   await page.getByLabel("Email Address").fill("marianna@example.com");
+  await page.getByLabel("Mobile Phone Number").fill("919-555-0100");
   await page
     .getByLabel(
-      "Yes, I’d like to receive email updates about launch news, pre-sales, and Founding Member VIP offers.",
+      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available.",
     )
     .check();
-  await page.getByRole("button", { name: "Join the List" }).click();
+  await page.getByRole("button", { name: "Join the VIP List" }).click();
 
   await expect(
     page.getByText(

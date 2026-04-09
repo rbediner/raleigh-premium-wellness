@@ -18,11 +18,8 @@ describe("unified contact form logic", () => {
       "first_name",
       "last_name",
       "email",
-      "email_updates_consent",
       "phone",
-      "text_updates_consent",
-      "interest_type",
-      "short_note",
+      "email_updates_consent",
     ]);
   });
 
@@ -35,6 +32,9 @@ describe("unified contact form logic", () => {
     const partnerMessageField = getFieldPresentation("short_message", "partner_with_us", {});
 
     expect(partnerMessageField.label).toBe("Partnership Idea");
+    expect(partnerMessageField.helperText).toBe(
+      "Tell us a bit about your business, your audience, or the kind of collaboration you have in mind.",
+    );
     expect(partnerMessageField.composerChips.map((chip) => chip.label)).toEqual([
       "Partnership idea",
       "Audience/community",
@@ -70,6 +70,19 @@ describe("unified contact form logic", () => {
     );
   });
 
+  it("keeps partner-with-us to one primary textarea and one email consent checkbox", () => {
+    expect(getFieldSequence("partner_with_us")).toEqual([
+      "first_name",
+      "last_name",
+      "organization_name",
+      "email",
+      "phone",
+      "partnership_type",
+      "short_message",
+      "email_follow_up_consent",
+    ]);
+  });
+
   it("uses the approved work-with-us consent wording", () => {
     expect(FIELD_DEFINITIONS.email_follow_up_consent.label).toBe(
       "Yes, I’d be glad to hear from you by email about this opportunity.",
@@ -85,6 +98,13 @@ describe("unified contact form logic", () => {
     );
     expect(getFormVariantConfig("stay_connected").successMessage).toBe(
       "Thank you so much for joining us early. We’re truly grateful for your interest and excited to keep you in the loop as launch plans take shape. We’ll share updates along the way and let you know as soon as founding-member opportunities become available. If you know someone in your circle who’d want to be part of this early, feel free to share the page with them.",
+    );
+  });
+
+  it("uses the approved VIP path label, CTA, and consent model", () => {
+    expect(getFormVariantConfig("stay_connected").submitLabel).toBe("Join the VIP List");
+    expect(FIELD_DEFINITIONS.email_updates_consent.label).toBe(
+      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available.",
     );
   });
 
@@ -124,11 +144,13 @@ describe("unified contact form logic", () => {
       first_name: "Marianna",
       last_name: "Bediner",
       email: "marianna@example.com",
+      phone: "",
       email_updates_consent: false,
     });
 
+    expect(payload.validationErrors).toContain("Mobile Phone Number is required.");
     expect(payload.validationErrors).toContain(
-      "Yes, I’d like to receive email updates about launch news, pre-sales, and Founding Member VIP offers. is required.",
+      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available. is required.",
     );
   });
 });
