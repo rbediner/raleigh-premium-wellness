@@ -22,7 +22,7 @@ export const FORM_VARIANT_CONFIG = {
   stay_connected: {
     introduction:
       "Want to be first in line when pre-sales opens? Sign up below to be notified when a limited number of discounted Founding Member VIP packages become available and to stay connected as we build toward launch in Raleigh.",
-    submitLabel: "Join the List",
+    submitLabel: "Join the VIP List",
     successMessage:
       "Thank you so much for joining us early. We’re truly grateful for your interest and excited to keep you in the loop as launch plans take shape. We’ll share updates along the way and let you know as soon as founding-member opportunities become available. If you know someone in your circle who’d want to be part of this early, feel free to share the page with them.",
   },
@@ -199,7 +199,7 @@ export const FIELD_DEFINITIONS = {
   },
   email_updates_consent: {
     label:
-      "Yes, I’d like to receive email updates about launch news, pre-sales, and Founding Member VIP offers.",
+      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available.",
     type: "checkbox",
   },
   text_updates_consent: {
@@ -222,24 +222,13 @@ export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
       return {
         ...baseField,
         label: "Partnership Idea",
-        helperText: "Share the collaboration, introduction, or activation you have in mind.",
+        helperText:
+          "Tell us a bit about your business, your audience, or the kind of collaboration you have in mind.",
         composerChips: [
           { label: "Partnership idea", text: "Partnership idea: " },
           { label: "Audience/community", text: "Audience/community: " },
           { label: "Activation concept", text: "Activation concept: " },
           { label: "Venue/business fit", text: "Venue/business fit: " },
-        ],
-      };
-    }
-
-    if (fieldKey === "collaboration_idea") {
-      return {
-        ...baseField,
-        label: "Additional Details",
-        helperText: "Optional if you want to outline timing, logistics, or what would make this a strong fit.",
-        composerChips: [
-          { label: "Timing", text: "Timing: " },
-          { label: "What success looks like", text: "What success looks like: " },
         ],
       };
     }
@@ -287,11 +276,7 @@ export function getFieldGroups(pathKey, currentValues = {}) {
           "phone",
           "partnership_type",
           "short_message",
-          "website_url",
-          "social_media_link",
-          "collaboration_idea",
           "email_follow_up_consent",
-          "text_follow_up_consent",
         ],
       },
     ];
@@ -306,11 +291,8 @@ export function getFieldGroups(pathKey, currentValues = {}) {
           "first_name",
           "last_name",
           "email",
-          "email_updates_consent",
           "phone",
-          "text_updates_consent",
-          "interest_type",
-          "short_note",
+          "email_updates_consent",
         ],
       },
     ];
@@ -367,11 +349,12 @@ export function getRequiredFields(pathKey, currentValues = {}) {
       "phone",
       "partnership_type",
       "short_message",
+      "email_follow_up_consent",
     ];
   }
 
   if (pathKey === "stay_connected") {
-    return ["first_name", "last_name", "email", "email_updates_consent"];
+    return ["first_name", "last_name", "email", "phone", "email_updates_consent"];
   }
 
   const workRequiredFields = [
