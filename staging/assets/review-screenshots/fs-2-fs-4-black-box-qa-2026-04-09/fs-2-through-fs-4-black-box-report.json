@@ -1,0 +1,50 @@
+{
+  "siteUnderTest": "https://rbediner.github.io/raleigh-premium-wellness/staging/?v=b68cf49",
+  "verdicts": {
+    "FS2": "PASS",
+    "FS3": "PASS",
+    "FS4": "PASS"
+  },
+  "work": {
+    "url": "https://rbediner.github.io/raleigh-premium-wellness/staging/?v=b68cf49&interestPath=work_with_us#contact",
+    "videoFieldCount": 0,
+    "additionalLinksCount": 1,
+    "additionalLinksHelperCount": 1,
+    "consentTextCount": 1,
+    "successVisible": true
+  },
+  "partner": {
+    "url": "https://rbediner.github.io/raleigh-premium-wellness/staging/?v=b68cf49&interestPath=partner_with_us#contact",
+    "primaryTextareaCount": 1,
+    "partnershipIdeaLabelCount": 2,
+    "helperCount": 1,
+    "additionalDetailsCount": 0,
+    "websiteCount": 0,
+    "socialCount": 0,
+    "smsConsentCount": 0,
+    "successVisible": true,
+    "labelAmbiguityFromChipRow": true,
+    "partnershipIdeaTextareaCount": 1,
+    "partnershipIdeaLabelAmbiguityFromChipRow": true,
+    "notes": "getByLabel(\"Partnership Idea\") matched both the textarea and the preserved chip row aria-label, but only one actual textarea rendered."
+  },
+  "vip": {
+    "url": "https://rbediner.github.io/raleigh-premium-wellness/staging/?v=b68cf49&interestPath=stay_connected#contact",
+    "pathLabelCount": 1,
+    "submitCount": 1,
+    "phoneCount": 1,
+    "emailConsentCount": 1,
+    "interestTypeCount": 0,
+    "shortNoteCount": 0,
+    "smsConsentCount": 0,
+    "definitionCount": 1,
+    "phoneRequiredErrorVisible": true,
+    "successVisible": true
+  },
+  "carryForward": {
+    "footerLayoutStillParagraphLike": true,
+    "mobileNavStillNeedsPolish": true,
+    "partnerCtaLanguageStillVisible": true,
+    "checkboxAlignmentStillVisuallyBroken": true
+  }
+}
