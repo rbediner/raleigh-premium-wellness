@@ -2,6 +2,9 @@ export const GOOGLE_SHEET_TARGET_URL =
   "https://docs.google.com/spreadsheets/d/1rRNeWWqNsdbr1kuwpQfzuFWHaIAXx--MfyhgdhDyWV0/edit?usp=sharing";
 
 export const EMAIL_NOTIFICATION_TARGET = "roman.bediner@thetox.com";
+export const WORK_SELF_OPTION = "I’m interested for myself";
+export const WORK_REFERRAL_OPTION = "I’d like to refer someone";
+export const STUDIO_DEVELOPMENT_MANAGER_LABEL = "Studio Development Manager";
 
 export const FORM_VARIANT_CONFIG = {
   work_with_us: {
@@ -51,13 +54,13 @@ export const FIELD_DEFINITIONS = {
   self_or_referral: {
     label: "Are you reaching out for yourself or referring someone?",
     type: "select",
-    options: ["I’m interested for myself", "I’d like to refer someone"],
+    options: [WORK_SELF_OPTION, WORK_REFERRAL_OPTION],
   },
   role_interest: {
     label: "Role of Interest",
     type: "select",
     options: [
-      "Manager-Studio Development",
+      STUDIO_DEVELOPMENT_MANAGER_LABEL,
       "Front of House (FOH) Team Member",
       "Licensed Esthetician Opportunity",
     ],
@@ -66,20 +69,7 @@ export const FIELD_DEFINITIONS = {
     label: "Short Message",
     type: "textarea",
     helperText: "A few thoughtful details are plenty.",
-    composerChips: [
-      {
-        label: "Why I’m interested",
-        text: "I’m interested because ",
-      },
-      {
-        label: "Relevant experience",
-        text: "Relevant experience: ",
-      },
-      {
-        label: "LinkedIn profile",
-        text: "LinkedIn: https://",
-      },
-    ],
+    composerChips: [],
   },
   city_area: {
     label: "City / Area",
@@ -183,20 +173,7 @@ export const FIELD_DEFINITIONS = {
     label: "Collaboration Idea",
     type: "textarea",
     helperText: "Outline the idea, audience, or format you have in mind.",
-    composerChips: [
-      {
-        label: "Audience",
-        text: "Audience: ",
-      },
-      {
-        label: "Activation idea",
-        text: "Activation idea: ",
-      },
-      {
-        label: "Timing",
-        text: "Ideal timing: ",
-      },
-    ],
+    composerChips: [],
   },
   short_note: {
     label: "Short Note",
@@ -240,8 +217,92 @@ export const FIELD_DEFINITIONS = {
   },
 };
 
-export function getFormVariantConfig(pathKey) {
-  return FORM_VARIANT_CONFIG[pathKey] ?? FORM_VARIANT_CONFIG.work_with_us;
+export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
+  const baseField = FIELD_DEFINITIONS[fieldKey];
+
+  if (!baseField) {
+    return undefined;
+  }
+
+  const isWorkReferral = pathKey === "work_with_us" && currentValues.self_or_referral === WORK_REFERRAL_OPTION;
+
+  if (pathKey === "partner_with_us") {
+    if (fieldKey === "short_message") {
+      return {
+        ...baseField,
+        label: "Partnership Idea",
+        helperText: "Share the collaboration, introduction, or activation you have in mind.",
+        composerChips: [
+          { label: "Partnership idea", text: "Partnership idea: " },
+          { label: "Audience/community", text: "Audience/community: " },
+          { label: "Activation concept", text: "Activation concept: " },
+          { label: "Venue/business fit", text: "Venue/business fit: " },
+          { label: "Referral opportunity", text: "Referral opportunity: " },
+        ],
+      };
+    }
+
+    if (fieldKey === "collaboration_idea") {
+      return {
+        ...baseField,
+        label: "Additional Details",
+        helperText: "Optional if you want to outline timing, logistics, or what would make this a strong fit.",
+        composerChips: [
+          { label: "Timing", text: "Timing: " },
+          { label: "What success looks like", text: "What success looks like: " },
+        ],
+      };
+    }
+  }
+
+  if (pathKey === "work_with_us" && !isWorkReferral) {
+    if (fieldKey === "short_message") {
+      return {
+        ...baseField,
+        helperText: "Share what sparked your interest, what feels aligned, or anything helpful for a first conversation.",
+        composerChips: [
+          { label: "Why I’m interested", text: "I’m interested because " },
+          { label: "Community connection", text: "I’m connected to Raleigh through " },
+          { label: "Relevant experience", text: "Relevant experience: " },
+        ],
+      };
+    }
+  }
+
+  if (isWorkReferral) {
+    const referringPersonLabels = {
+      first_name: "Your First Name",
+      last_name: "Your Last Name",
+      email: "Your Email Address",
+      phone: "Your Mobile Phone Number",
+    };
+
+    if (referringPersonLabels[fieldKey]) {
+      return {
+        ...baseField,
+        label: referringPersonLabels[fieldKey],
+      };
+    }
+  }
+
+  return baseField;
+}
+
+export function getFormVariantConfig(pathKey, currentValues = {}) {
+  const baseVariant = FORM_VARIANT_CONFIG[pathKey] ?? FORM_VARIANT_CONFIG.work_with_us;
+
+  if (pathKey === "work_with_us" && currentValues.self_or_referral === WORK_REFERRAL_OPTION) {
+    return {
+      ...baseVariant,
+      introduction:
+        "If someone came to mind while reading this, share a few details below and tell us why they feel like the right fit. We’d love strong referrals from the community.",
+      submitLabel: "Share a Referral",
+      successMessage:
+        "Thank you. Your referral has been saved for this review build, and we’ll be ready to follow up thoughtfully.",
+    };
+  }
+
+  return baseVariant;
 }
 
 export function getFieldGroups(pathKey, currentValues = {}) {
@@ -287,13 +348,13 @@ export function getFieldGroups(pathKey, currentValues = {}) {
     ];
   }
 
-  const isReferral = currentValues.self_or_referral === "I’d like to refer someone";
+  const isReferral = currentValues.self_or_referral === WORK_REFERRAL_OPTION;
   const showPermissionCheckbox = shouldRequireReferralPermission(currentValues);
 
   const groups = [
     {
       key: "work_core",
-      label: "Your Details",
+      label: isReferral ? "Referring Person Details" : "Your Details",
       fields: [
         "first_name",
         "last_name",
@@ -308,7 +369,7 @@ export function getFieldGroups(pathKey, currentValues = {}) {
   if (!isReferral) {
     groups.push({
       key: "work_self",
-      label: "Tell Us More",
+      label: "A Few Helpful Details",
       fields: [
         "short_message",
         "city_area",
@@ -326,7 +387,7 @@ export function getFieldGroups(pathKey, currentValues = {}) {
 
   groups.push({
     key: "work_referral_reason",
-    label: "Referral Context",
+    label: "Why They Came to Mind",
     fields: [
       "referral_reason",
       "email_follow_up_consent",
@@ -336,7 +397,7 @@ export function getFieldGroups(pathKey, currentValues = {}) {
 
   groups.push({
     key: "work_referred_person",
-    label: "Referred Person Details",
+    label: "About the Person You’re Referring",
     fields: [
       "referred_first_name",
       "referred_last_name",
@@ -420,7 +481,7 @@ export function getRequiredFields(pathKey, currentValues = {}) {
     "text_follow_up_consent",
   ];
 
-  if (currentValues.self_or_referral === "I’d like to refer someone") {
+  if (currentValues.self_or_referral === WORK_REFERRAL_OPTION) {
     workRequiredFields.push("referral_reason");
     if (shouldRequireReferralPermission(currentValues)) {
       workRequiredFields.push("referral_permission_confirmed");
@@ -463,7 +524,7 @@ export function validateFormValues(pathKey, rawValues) {
 
   for (const requiredField of requiredFields) {
     const fieldValue = normalizedValues[requiredField];
-    const fieldDefinition = FIELD_DEFINITIONS[requiredField];
+    const fieldDefinition = getFieldPresentation(requiredField, pathKey, normalizedValues);
 
     if (fieldDefinition?.type === "checkbox") {
       if (!fieldValue) {
@@ -478,7 +539,7 @@ export function validateFormValues(pathKey, rawValues) {
   }
 
   for (const [fieldKey, fieldValue] of Object.entries(normalizedValues)) {
-    const fieldDefinition = FIELD_DEFINITIONS[fieldKey];
+    const fieldDefinition = getFieldPresentation(fieldKey, pathKey, normalizedValues);
 
     if (!fieldDefinition) {
       continue;
@@ -508,7 +569,7 @@ export function buildSubmissionPayload(pathKey, rawValues) {
 
   return {
     interestPath: pathKey,
-    formLabel: getFormVariantConfig(pathKey).submitLabel,
+    formLabel: getFormVariantConfig(pathKey, normalizedValues).submitLabel,
     normalizedValues,
     validationErrors,
     integrationHooks: {

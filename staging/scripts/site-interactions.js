@@ -1,7 +1,11 @@
 import {
   FIELD_DEFINITIONS,
+  WORK_REFERRAL_OPTION,
+  WORK_SELF_OPTION,
+  STUDIO_DEVELOPMENT_MANAGER_LABEL,
   buildSubmissionPayload,
   getFieldGroups,
+  getFieldPresentation,
   getRequiredFields,
   getFormVariantConfig,
 } from "./form-configuration.js";
@@ -21,8 +25,8 @@ const prototypeStorageKey = "raleigh-premium-wellness-prototype-submissions";
 
 let currentFormValues = {
   interestPath: "work_with_us",
-  self_or_referral: "I’m interested for myself",
-  role_interest: "Manager-Studio Development",
+  self_or_referral: WORK_SELF_OPTION,
+  role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
 };
 
 function setMobileMenuState(isOpen) {
@@ -86,7 +90,7 @@ function buildRequiredMarker(fieldKey, isRequired) {
     return "";
   }
 
-  const fieldDefinition = FIELD_DEFINITIONS[fieldKey];
+  const fieldDefinition = getFieldPresentation(fieldKey, currentFormValues.interestPath, currentFormValues);
   if (fieldDefinition.type === "checkbox") {
     return "";
   }
@@ -96,7 +100,7 @@ function buildRequiredMarker(fieldKey, isRequired) {
 }
 
 function buildComposerChips(fieldKey) {
-  const fieldDefinition = FIELD_DEFINITIONS[fieldKey];
+  const fieldDefinition = getFieldPresentation(fieldKey, currentFormValues.interestPath, currentFormValues);
   const composerChips = fieldDefinition.composerChips ?? [];
 
   if (composerChips.length === 0) {
@@ -135,7 +139,7 @@ function autoResizeTextarea(textareaElement) {
 }
 
 function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired) {
-  const field = FIELD_DEFINITIONS[fieldKey];
+  const field = getFieldPresentation(fieldKey, currentFormValues.interestPath, currentFormValues);
   const fieldClassName =
     field.type === "textarea" || field.type === "checkbox" ? "form-field form-field--full" : "form-field";
   const helperMarkup = field.helperText
@@ -224,12 +228,13 @@ function getFieldValidationMap(pathKey, currentValues) {
   const validationMap = new Map();
 
   for (const errorMessage of submissionPayload.validationErrors) {
-    const matchingEntry = Object.entries(FIELD_DEFINITIONS).find(([, fieldDefinition]) =>
-      errorMessage.startsWith(fieldDefinition.label),
-    );
+    const matchingEntry = Object.keys(FIELD_DEFINITIONS).find((fieldKey) => {
+      const fieldDefinition = getFieldPresentation(fieldKey, pathKey, currentValues);
+      return errorMessage.startsWith(fieldDefinition?.label ?? "");
+    });
 
     if (matchingEntry) {
-      validationMap.set(matchingEntry[0], errorMessage);
+      validationMap.set(matchingEntry, errorMessage);
     }
   }
 
@@ -242,7 +247,15 @@ function renderVariant(pathKey, nextValues = currentFormValues, options = {}) {
     ...nextValues,
   };
 
-  const variant = getFormVariantConfig(pathKey);
+  const activePathInput = contactFormElement?.querySelector(
+    `input[name="interestPath"][value="${CSS.escape(pathKey)}"]`,
+  );
+
+  if (activePathInput instanceof HTMLInputElement) {
+    activePathInput.checked = true;
+  }
+
+  const variant = getFormVariantConfig(pathKey, currentFormValues);
   const fieldGroups = getFieldGroups(pathKey, currentFormValues);
   const validationMap = options.showValidation ? getFieldValidationMap(pathKey, currentFormValues) : new Map();
   const requiredFieldSet = new Set(getRequiredFields(pathKey, currentFormValues));
@@ -299,11 +312,46 @@ function storeSubmission(submissionPayload) {
 function resetForCurrentPath(pathKey) {
   currentFormValues = {
     interestPath: pathKey,
-    self_or_referral: "I’m interested for myself",
-    role_interest: "Manager-Studio Development",
+    self_or_referral: WORK_SELF_OPTION,
+    role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
   };
 
   renderVariant(pathKey, currentFormValues);
+}
+
+function parseIntentStateFromUrl() {
+  const currentUrl = new URL(window.location.href);
+  const interestPath = currentUrl.searchParams.get("interestPath");
+  const selfOrReferral = currentUrl.searchParams.get("selfOrReferral");
+  const nextValues = {};
+
+  if (["work_with_us", "partner_with_us", "stay_connected"].includes(interestPath)) {
+    nextValues.interestPath = interestPath;
+  }
+
+  if (selfOrReferral === "referral") {
+    nextValues.self_or_referral = WORK_REFERRAL_OPTION;
+  }
+
+  return nextValues;
+}
+
+function syncIntentStateToUrl(pathKey, currentValues = {}) {
+  const currentUrl = new URL(window.location.href);
+
+  currentUrl.searchParams.set("interestPath", pathKey);
+
+  if (pathKey === "work_with_us" && currentValues.self_or_referral === WORK_REFERRAL_OPTION) {
+    currentUrl.searchParams.set("selfOrReferral", "referral");
+  } else {
+    currentUrl.searchParams.delete("selfOrReferral");
+  }
+
+  if (!currentUrl.hash) {
+    currentUrl.hash = "#contact";
+  }
+
+  window.history.replaceState({}, "", currentUrl);
 }
 
 function updateActiveNavigation(activeSectionId) {
@@ -358,6 +406,7 @@ function handleFormChange(event) {
   if (event.target.name === "interestPath") {
     trackEvent("form_path_selection", { interestPath: event.target.value });
     resetForCurrentPath(event.target.value);
+    syncIntentStateToUrl(event.target.value, currentFormValues);
     setStatusMessage("", "idle");
     return;
   }
@@ -373,6 +422,7 @@ function handleFormChange(event) {
 
   if (selectedPath === "work_with_us" && (event.target.name === "self_or_referral" || event.target.name?.startsWith("referred_"))) {
     renderVariant(selectedPath, currentFormValues);
+    syncIntentStateToUrl(selectedPath, currentFormValues);
   }
 
   setStatusMessage("", "idle");
@@ -419,10 +469,11 @@ function handleFormSubmit(event) {
 
   storeSubmission(submissionPayload);
   trackEvent("form_submission_success", { interestPath: selectedPath });
-  setStatusMessage(getFormVariantConfig(selectedPath).successMessage, "success");
+  setStatusMessage(getFormVariantConfig(selectedPath, currentFormValues).successMessage, "success");
   contactFormElement.reset();
   resetForCurrentPath(selectedPath);
   contactFormElement.querySelector(`input[name="interestPath"][value="${selectedPath}"]`).checked = true;
+  syncIntentStateToUrl(selectedPath, currentFormValues);
 }
 
 function handleNavClick(event) {
@@ -466,6 +517,16 @@ function handleEscapeForMobileMenu(event) {
 
 function handleHashNavigation() {
   closeMobileMenu();
+
+  const nextIntentState = parseIntentStateFromUrl();
+  if (window.location.hash === "#contact" && nextIntentState.interestPath) {
+    currentFormValues = {
+      ...currentFormValues,
+      ...nextIntentState,
+      role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
+    };
+    renderVariant(nextIntentState.interestPath, currentFormValues);
+  }
 }
 
 function handleSectionActionClick(event) {
@@ -476,15 +537,24 @@ function handleSectionActionClick(event) {
   }
 
   const targetPath = actionLink.dataset.interestPathLink;
+  const referralMode = actionLink.dataset.selfOrReferralLink;
   const targetInput = contactFormElement.querySelector(`input[name="interestPath"][value="${targetPath}"]`);
 
   if (!targetInput) {
     return;
   }
 
+  event.preventDefault();
   targetInput.checked = true;
+  currentFormValues = {
+    interestPath: targetPath,
+    self_or_referral: referralMode === "referral" ? WORK_REFERRAL_OPTION : WORK_SELF_OPTION,
+    role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
+  };
   trackEvent("form_path_selection", { interestPath: targetPath });
-  resetForCurrentPath(targetPath);
+  renderVariant(targetPath, currentFormValues);
+  syncIntentStateToUrl(targetPath, currentFormValues);
+  document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
   setStatusMessage("", "idle");
 }
 
@@ -499,5 +569,9 @@ document.addEventListener("keydown", handleEscapeForMobileMenu);
 window.addEventListener("hashchange", handleHashNavigation);
 
 trackEvent("page_load", { page: window.location.pathname });
-renderVariant("work_with_us", currentFormValues);
+currentFormValues = {
+  ...currentFormValues,
+  ...parseIntentStateFromUrl(),
+};
+renderVariant(currentFormValues.interestPath, currentFormValues);
 observeSectionsForNavigation();
