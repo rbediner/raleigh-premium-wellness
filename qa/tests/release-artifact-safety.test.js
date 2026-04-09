@@ -2,6 +2,15 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+function readPngDimensions(filePath) {
+  const imageBuffer = readFileSync(filePath);
+
+  return {
+    width: imageBuffer.readUInt32BE(16),
+    height: imageBuffer.readUInt32BE(20),
+  };
+}
+
 describe("release artifact safety", () => {
   it("builds a preview artifact that is blocked from indexing", () => {
     execSync("node scripts/release/build-site-artifact.mjs --mode preview", {
@@ -44,5 +53,14 @@ describe("release artifact safety", () => {
     expect(existsSync("dist/production/assets/share-surfaces/favicon.svg")).toBe(true);
     expect(existsSync("dist/production/assets/share-surfaces/favicon.ico")).toBe(true);
     expect(existsSync("dist/production/assets/share-surfaces/open-graph-preview-1200x630.png")).toBe(true);
+  });
+
+  it("keeps the Open Graph image at the expected share-preview dimensions", () => {
+    const ogImageDimensions = readPngDimensions("assets/share-surfaces/open-graph-preview-1200x630.png");
+
+    expect(ogImageDimensions).toEqual({
+      width: 1200,
+      height: 630,
+    });
   });
 });

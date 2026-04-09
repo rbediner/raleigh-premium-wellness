@@ -23,6 +23,7 @@ OG_IMAGE_PATH = OUTPUT_DIRECTORY / "open-graph-preview-1200x630.png"
 BACKGROUND_COLOR = "#171311"
 TEXT_COLOR = "#f6efe7"
 SUBLINE_COLOR = "#cfb28f"
+FRAME_COLOR = "#241d1a"
 
 
 def load_font(font_name: str, font_size: int) -> ImageFont.FreeTypeFont:
@@ -30,6 +31,23 @@ def load_font(font_name: str, font_size: int) -> ImageFont.FreeTypeFont:
         return ImageFont.truetype(font_name, font_size)
     except OSError:
         return ImageFont.load_default()
+
+
+def draw_centered_text_block(
+    draw: ImageDraw.ImageDraw,
+    *,
+    lines: list[tuple[str, ImageFont.FreeTypeFont, str]],
+    top: int,
+    line_spacing: int,
+    canvas_width: int,
+) -> None:
+    current_top = top
+
+    for text, font, fill in lines:
+        text_box = draw.textbbox((0, 0), text, font=font)
+        text_width = text_box[2] - text_box[0]
+        draw.text(((canvas_width - text_width) / 2, current_top), text, fill=fill, font=font)
+        current_top += (text_box[3] - text_box[1]) + line_spacing
 
 
 def generate_favicon_assets() -> None:
@@ -63,21 +81,24 @@ def generate_open_graph_image() -> None:
     image = Image.new("RGB", (1200, 630), BACKGROUND_COLOR)
     draw = ImageDraw.Draw(image)
 
-    headline_font = load_font("Georgia Bold.ttf", 92)
-    subline_font = load_font("Helvetica.ttc", 34)
+    primary_headline_font = load_font("Georgia Bold.ttf", 66)
+    supporting_line_font = load_font("Helvetica.ttc", 34)
 
-    draw.rectangle((72, 72, 1128, 558), outline="#2d2420", width=1)
+    # A restrained frame keeps the card polished without competing with the
+    # message hierarchy in small social-preview contexts.
+    draw.rounded_rectangle((118, 132, 1082, 498), radius=36, outline=FRAME_COLOR, width=1)
 
-    subline = "A new premium wellness experience"
-    headline = "Coming to Raleigh"
-
-    subline_box = draw.textbbox((0, 0), subline, font=subline_font)
-    subline_width = subline_box[2] - subline_box[0]
-    headline_box = draw.textbbox((0, 0), headline, font=headline_font)
-    headline_width = headline_box[2] - headline_box[0]
-
-    draw.text(((1200 - subline_width) / 2, 215), subline, fill=SUBLINE_COLOR, font=subline_font)
-    draw.text(((1200 - headline_width) / 2, 270), headline, fill=TEXT_COLOR, font=headline_font)
+    draw_centered_text_block(
+        draw,
+        lines=[
+            ("A New Premium", primary_headline_font, TEXT_COLOR),
+            ("Wellness Experience", primary_headline_font, TEXT_COLOR),
+            ("Coming to Raleigh", supporting_line_font, SUBLINE_COLOR),
+        ],
+        top=214,
+        line_spacing=20,
+        canvas_width=1200,
+    )
 
     image.save(OG_IMAGE_PATH, quality=95)
 
