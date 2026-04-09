@@ -77,6 +77,7 @@ describe("public site contract", () => {
 
     expect(htmlDocument).toContain('class="site-navigation__menu-button"');
     expect(htmlDocument).toContain('class="site-navigation__scrim"');
+    expect(htmlDocument).toContain('class="site-footer__closing-line"');
     expect(formConfiguration).toContain('submitLabel: "Start the Conversation"');
     expect(formConfiguration).toContain('submitLabel: "Explore a Partnership"');
     expect(formConfiguration).toContain('submitLabel: "Join the VIP List"');

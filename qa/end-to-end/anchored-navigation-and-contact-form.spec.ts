@@ -139,15 +139,20 @@ test("mobile navigation uses a compact menu pattern and closes after selection",
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
-  const menuButton = page.getByRole("button", { name: /open navigation menu/i });
+  const menuButton = page.locator(".site-navigation__menu-button");
   await expect(menuButton).toBeVisible();
+  await expect(menuButton).toHaveAttribute("aria-label", "Open navigation menu");
   await menuButton.click();
+  await expect(menuButton).toHaveAttribute("aria-label", "Close navigation menu");
+  await expect(page.locator("body")).toHaveClass(/body--menu-open/);
 
   const aboutLink = page.getByRole("link", { name: "About", exact: true }).last();
   await expect(aboutLink).toBeVisible();
   await aboutLink.click();
 
   await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+  await expect(menuButton).toHaveAttribute("aria-label", "Open navigation menu");
+  await expect(page.locator("body")).not.toHaveClass(/body--menu-open/);
   await expect(page).toHaveURL(/#about$/);
 });
 
