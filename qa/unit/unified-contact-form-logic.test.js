@@ -44,9 +44,9 @@ describe("unified contact form logic", () => {
       "Audience/community",
       "Activation concept",
       "Venue/business fit",
-      "Referral opportunity",
     ]);
     expect(partnerMessageField.composerChips.map((chip) => chip.label)).not.toContain("Why I’m interested");
+    expect(partnerMessageField.composerChips.map((chip) => chip.label)).not.toContain("Referral opportunity");
   });
 
   it("makes the referral path visibly different for the referrer", () => {

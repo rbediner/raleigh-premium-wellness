@@ -60,6 +60,7 @@ test("partner path keeps partnership-specific helper chips only", async ({ page 
   await expect(page.getByText("Partnership idea", { exact: true })).toBeVisible();
   await expect(page.getByText("Audience/community", { exact: true })).toBeVisible();
   await expect(page.getByText("Why I’m interested", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Referral opportunity", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("textbox", { name: /Partnership Idea/ })).toBeVisible();
 });
 

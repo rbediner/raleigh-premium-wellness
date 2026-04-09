@@ -237,7 +237,6 @@ export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
           { label: "Audience/community", text: "Audience/community: " },
           { label: "Activation concept", text: "Activation concept: " },
           { label: "Venue/business fit", text: "Venue/business fit: " },
-          { label: "Referral opportunity", text: "Referral opportunity: " },
         ],
       };
     }
