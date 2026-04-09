@@ -29,7 +29,12 @@ function setMobileMenuState(isOpen) {
     return;
   }
 
+  // Keep the trigger label in sync so screen readers get the same state change as sighted users.
   mobileMenuButtonElement.setAttribute("aria-expanded", String(isOpen));
+  mobileMenuButtonElement.setAttribute(
+    "aria-label",
+    isOpen ? "Close navigation menu" : "Open navigation menu",
+  );
   mobileMenuLinksElement.dataset.menuState = isOpen ? "open" : "closed";
   mobileMenuScrimElement.hidden = !isOpen;
   document.body.classList.toggle("body--menu-open", isOpen);
@@ -171,14 +176,19 @@ function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired
     return `
       <div class="${fieldClassName}">
         <div class="form-checkbox">
-          <label for="${fieldKey}">
+          <!-- Bind the checkbox and its disclosure copy into one shared layout so every path aligns the same way. -->
+          <div class="form-checkbox__row">
             <input id="${fieldKey}" name="${fieldKey}" type="checkbox" ${isChecked} />
-            <span class="form-checkbox__copy">
-              <span class="form-checkbox__label-text">${escapeHtml(field.label)}</span>${requiredLabel}
-            </span>
-          </label>
-          ${helperMarkup}
-          ${errorMarkup}
+            <div class="form-checkbox__content">
+              <label for="${fieldKey}" class="form-checkbox__label">
+                <span class="form-checkbox__copy">
+                  <span class="form-checkbox__label-text">${escapeHtml(field.label)}</span>${requiredLabel}
+                </span>
+              </label>
+              ${helperMarkup}
+              ${errorMarkup}
+            </div>
+          </div>
         </div>
       </div>
     `;
