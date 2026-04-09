@@ -1,0 +1,41 @@
+{
+  "report": [
+    {
+      "item": "clarity-line-visible",
+      "ok": true
+    },
+    {
+      "item": "partner-copy-visible",
+      "ok": true
+    },
+    {
+      "item": "vip-definition-visible",
+      "ok": true
+    },
+    {
+      "item": "footer-copy-visible",
+      "ok": true
+    },
+    {
+      "item": "work-success-visible",
+      "ok": true
+    },
+    {
+      "item": "partner-success-visible",
+      "ok": true
+    },
+    {
+      "item": "stay-success-visible",
+      "ok": true
+    }
+  ],
+  "screenshots": {
+    "clarityShot": "assets/review-screenshots/group-2-trust-copy-qa-2026-04-09/tc5-clarity-line.png",
+    "partnerShot": "assets/review-screenshots/group-2-trust-copy-qa-2026-04-09/tc4-partner-section.png",
+    "vipShot": "assets/review-screenshots/group-2-trust-copy-qa-2026-04-09/tc1-founding-member-vip.png",
+    "footerShot": "assets/review-screenshots/group-2-trust-copy-qa-2026-04-09/tc3-footer-closing-language.png",
+    "workSuccessShot": "assets/review-screenshots/group-2-trust-copy-qa-2026-04-09/tc2-work-success-state.png",
+    "partnerSuccessShot": "assets/review-screenshots/group-2-trust-copy-qa-2026-04-09/tc2-partner-success-state.png",
+    "staySuccessShot": "assets/review-screenshots/group-2-trust-copy-qa-2026-04-09/tc2-stay-success-state.png"
+  }
+}
