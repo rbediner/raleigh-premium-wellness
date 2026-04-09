@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  FIELD_DEFINITIONS,
+  STUDIO_DEVELOPMENT_MANAGER_LABEL,
+  WORK_REFERRAL_OPTION,
   buildSubmissionPayload,
+  getFieldPresentation,
   getFieldSequence,
   getFormVariantConfig,
   shouldRequireReferralPermission,
@@ -24,6 +28,37 @@ describe("unified contact form logic", () => {
       "interest_type",
       "short_note",
     ]);
+  });
+
+  it("uses the Studio Development Manager label consistently in the role selector", () => {
+    expect(FIELD_DEFINITIONS.role_interest.options).toContain(STUDIO_DEVELOPMENT_MANAGER_LABEL);
+    expect(FIELD_DEFINITIONS.role_interest.options).not.toContain("Manager-Studio Development");
+  });
+
+  it("uses partner-specific helper chips without candidate leakage", () => {
+    const partnerMessageField = getFieldPresentation("short_message", "partner_with_us", {});
+
+    expect(partnerMessageField.label).toBe("Partnership Idea");
+    expect(partnerMessageField.composerChips.map((chip) => chip.label)).toEqual([
+      "Partnership idea",
+      "Audience/community",
+      "Activation concept",
+      "Venue/business fit",
+      "Referral opportunity",
+    ]);
+    expect(partnerMessageField.composerChips.map((chip) => chip.label)).not.toContain("Why I’m interested");
+  });
+
+  it("makes the referral path visibly different for the referrer", () => {
+    const referralField = getFieldPresentation("first_name", "work_with_us", {
+      self_or_referral: WORK_REFERRAL_OPTION,
+    });
+    const referralVariant = getFormVariantConfig("work_with_us", {
+      self_or_referral: WORK_REFERRAL_OPTION,
+    });
+
+    expect(referralField.label).toBe("Your First Name");
+    expect(referralVariant.submitLabel).toBe("Share a Referral");
   });
 
   it("trims values and validates email formatting", () => {
@@ -75,8 +110,8 @@ describe("unified contact form logic", () => {
       last_name: "Bediner",
       email: "roman@example.com",
       phone: "919-555-0100",
-      self_or_referral: "I’d like to refer someone",
-      role_interest: "Manager-Studio Development",
+      self_or_referral: WORK_REFERRAL_OPTION,
+      role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
       referral_reason: "Trusted connector with strong local credibility.",
       referred_email: "candidate@example.com",
       email_follow_up_consent: true,
