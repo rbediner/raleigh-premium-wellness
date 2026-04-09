@@ -90,16 +90,16 @@ export const FIELD_DEFINITIONS = {
     helperText: "Share what stands out about this person and why they came to mind.",
     composerChips: [
       {
-        label: "How I know them",
-        text: "I know them through ",
+        label: "How I Know Them",
+        text: "How I Know Them: ",
       },
       {
-        label: "Why they stand out",
-        text: "They stand out because ",
+        label: "Why They Stand Out",
+        text: "Why They Stand Out: ",
       },
       {
-        label: "Community credibility",
-        text: "They’re well regarded in the community because ",
+        label: "Community Credibility",
+        text: "Community Credibility: ",
       },
     ],
   },
@@ -224,6 +224,8 @@ export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
         label: "Partnership Idea",
         helperText:
           "Tell us a bit about your business, your audience, or the kind of collaboration you have in mind.",
+        // Keep helper-chip labels in title case so every visible category cue
+        // follows the same polished label style across the site.
         composerChips: [
           { label: "Partnership Idea", text: "Partnership Idea: " },
           { label: "Audience / Community", text: "Audience / Community: " },
