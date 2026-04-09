@@ -74,18 +74,30 @@ test("partner path keeps partnership-specific helper chips only", async ({ page 
   await expect(page.getByRole("textbox", { name: /Partnership Idea/ })).toBeVisible();
 });
 
-test("work path uses the Studio Development Manager label consistently and adapts for referrals", async ({ page }) => {
+test("work path stays light for first-touch outreach", async ({ page }) => {
   await page.goto("/?interestPath=work_with_us#contact");
 
-  await expect(page.getByLabel("Role of Interest")).toHaveValue("Studio Development Manager");
-  await expect(page.locator("option[value='Manager-Studio Development']")).toHaveCount(0);
-
-  await page.getByLabel("Are you reaching out for yourself or referring someone?").selectOption("I’d like to refer someone");
-
-  await expect(page.getByText("Referring Person Details", { exact: true })).toBeVisible();
-  await expect(page.getByLabel("Your First Name")).toBeVisible();
-  await expect(page.getByText("About the Person You’re Referring", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Share a Referral" })).toBeVisible();
+  await expect(page.getByText("If someone came to mind while reading this, feel free to share this page with them.")).toBeVisible();
+  await expect(page.getByLabel("Role of Interest")).toHaveCount(0);
+  await expect(page.getByLabel("Are you reaching out for yourself or referring someone?")).toHaveCount(0);
+  await expect(page.getByLabel("Personal Website / Portfolio URL")).toHaveCount(0);
+  await expect(page.getByLabel("Video Introduction URL")).toHaveCount(0);
+  await expect(page.getByLabel("Social Media Link")).toHaveCount(0);
+  await expect(page.getByLabel("Additional Links")).toBeVisible();
+  await expect(
+    page.getByText(
+      "Optional. Feel free to share anything helpful, such as LinkedIn, a portfolio, a personal website, or a short introduction video.",
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "Share what sparked your interest, what feels aligned, or anything helpful for a first conversation.",
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("Yes, I’d be glad to hear from you by email about this opportunity."),
+  ).toBeVisible();
+  await expect(page.getByLabel("Yes, you may text me about this inquiry.")).toHaveCount(0);
 });
 
 test("mobile navigation uses a compact menu pattern and closes after selection", async ({ page }) => {
@@ -110,10 +122,8 @@ test("each form path shows the approved success state after a valid submission",
   await page.getByLabel("First Name").fill("Roman");
   await page.getByLabel("Last Name").fill("Bediner");
   await page.getByLabel("Email Address").fill("roman@example.com");
-  await page.getByLabel("Mobile Phone Number").fill("919-555-0100");
   await page.getByRole("textbox", { name: /Short Message/ }).fill("I’d love to be considered for this opportunity.");
-  await page.getByLabel("Yes, you may email me about this inquiry.").check();
-  await page.getByLabel("Yes, you may text me about this inquiry.").check();
+  await page.getByLabel("Yes, I’d be glad to hear from you by email about this opportunity.").check();
   await page.getByRole("button", { name: "Start the Conversation" }).click();
 
   await expect(

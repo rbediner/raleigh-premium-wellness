@@ -1,8 +1,5 @@
 import {
   FIELD_DEFINITIONS,
-  WORK_REFERRAL_OPTION,
-  WORK_SELF_OPTION,
-  STUDIO_DEVELOPMENT_MANAGER_LABEL,
   buildSubmissionPayload,
   getFieldGroups,
   getFieldPresentation,
@@ -25,8 +22,6 @@ const prototypeStorageKey = "raleigh-premium-wellness-prototype-submissions";
 
 let currentFormValues = {
   interestPath: "work_with_us",
-  self_or_referral: WORK_SELF_OPTION,
-  role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
 };
 
 function setMobileMenuState(isOpen) {
@@ -197,7 +192,8 @@ function createFieldMarkup(fieldKey, currentValue, validationMessage, isRequired
         <textarea
           id="${fieldKey}"
           name="${fieldKey}"
-          class="form-textarea"
+          class="form-textarea${fieldKey === "short_message" ? " form-textarea--conversation" : ""}"
+          rows="${field.rows ?? 5}"
           aria-invalid="${validationMessage ? "true" : "false"}"
         >${escapeHtml(currentValue ?? "")}</textarea>
         ${helperMarkup}
@@ -312,8 +308,6 @@ function storeSubmission(submissionPayload) {
 function resetForCurrentPath(pathKey) {
   currentFormValues = {
     interestPath: pathKey,
-    self_or_referral: WORK_SELF_OPTION,
-    role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
   };
 
   renderVariant(pathKey, currentFormValues);
@@ -322,15 +316,10 @@ function resetForCurrentPath(pathKey) {
 function parseIntentStateFromUrl() {
   const currentUrl = new URL(window.location.href);
   const interestPath = currentUrl.searchParams.get("interestPath");
-  const selfOrReferral = currentUrl.searchParams.get("selfOrReferral");
   const nextValues = {};
 
   if (["work_with_us", "partner_with_us", "stay_connected"].includes(interestPath)) {
     nextValues.interestPath = interestPath;
-  }
-
-  if (selfOrReferral === "referral") {
-    nextValues.self_or_referral = WORK_REFERRAL_OPTION;
   }
 
   return nextValues;
@@ -340,12 +329,7 @@ function syncIntentStateToUrl(pathKey, currentValues = {}) {
   const currentUrl = new URL(window.location.href);
 
   currentUrl.searchParams.set("interestPath", pathKey);
-
-  if (pathKey === "work_with_us" && currentValues.self_or_referral === WORK_REFERRAL_OPTION) {
-    currentUrl.searchParams.set("selfOrReferral", "referral");
-  } else {
-    currentUrl.searchParams.delete("selfOrReferral");
-  }
+  currentUrl.searchParams.delete("selfOrReferral");
 
   if (!currentUrl.hash) {
     currentUrl.hash = "#contact";
@@ -418,11 +402,6 @@ function handleFormChange(event) {
 
   if (event.target instanceof HTMLTextAreaElement) {
     autoResizeTextarea(event.target);
-  }
-
-  if (selectedPath === "work_with_us" && (event.target.name === "self_or_referral" || event.target.name?.startsWith("referred_"))) {
-    renderVariant(selectedPath, currentFormValues);
-    syncIntentStateToUrl(selectedPath, currentFormValues);
   }
 
   setStatusMessage("", "idle");
@@ -523,7 +502,6 @@ function handleHashNavigation() {
     currentFormValues = {
       ...currentFormValues,
       ...nextIntentState,
-      role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
     };
     renderVariant(nextIntentState.interestPath, currentFormValues);
   }
@@ -537,7 +515,6 @@ function handleSectionActionClick(event) {
   }
 
   const targetPath = actionLink.dataset.interestPathLink;
-  const referralMode = actionLink.dataset.selfOrReferralLink;
   const targetInput = contactFormElement.querySelector(`input[name="interestPath"][value="${targetPath}"]`);
 
   if (!targetInput) {
@@ -548,8 +525,6 @@ function handleSectionActionClick(event) {
   targetInput.checked = true;
   currentFormValues = {
     interestPath: targetPath,
-    self_or_referral: referralMode === "referral" ? WORK_REFERRAL_OPTION : WORK_SELF_OPTION,
-    role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
   };
   trackEvent("form_path_selection", { interestPath: targetPath });
   renderVariant(targetPath, currentFormValues);

@@ -2,8 +2,6 @@ export const GOOGLE_SHEET_TARGET_URL =
   "https://docs.google.com/spreadsheets/d/1rRNeWWqNsdbr1kuwpQfzuFWHaIAXx--MfyhgdhDyWV0/edit?usp=sharing";
 
 export const EMAIL_NOTIFICATION_TARGET = "roman.bediner@thetox.com";
-export const WORK_SELF_OPTION = "I’m interested for myself";
-export const WORK_REFERRAL_OPTION = "I’d like to refer someone";
 export const STUDIO_DEVELOPMENT_MANAGER_LABEL = "Studio Development Manager";
 
 export const FORM_VARIANT_CONFIG = {
@@ -51,11 +49,6 @@ export const FIELD_DEFINITIONS = {
     type: "tel",
     autocomplete: "tel",
   },
-  self_or_referral: {
-    label: "Are you reaching out for yourself or referring someone?",
-    type: "select",
-    options: [WORK_SELF_OPTION, WORK_REFERRAL_OPTION],
-  },
   role_interest: {
     label: "Role of Interest",
     type: "select",
@@ -68,7 +61,8 @@ export const FIELD_DEFINITIONS = {
   short_message: {
     label: "Short Message",
     type: "textarea",
-    helperText: "A few thoughtful details are plenty.",
+    helperText:
+      "Share what sparked your interest, what feels aligned, or anything helpful for a first conversation.",
     composerChips: [],
   },
   city_area: {
@@ -79,13 +73,12 @@ export const FIELD_DEFINITIONS = {
     label: "LinkedIn URL",
     type: "url",
   },
-  portfolio_url: {
-    label: "Personal Website / Portfolio URL",
-    type: "url",
-  },
-  video_intro_url: {
-    label: "Video Introduction URL",
-    type: "url",
+  additional_links: {
+    label: "Additional Links",
+    type: "textarea",
+    helperText:
+      "Optional. Feel free to share anything helpful, such as LinkedIn, a portfolio, a personal website, or a short introduction video.",
+    rows: 4,
   },
   social_media_link: {
     label: "Social Media Link",
@@ -196,7 +189,7 @@ export const FIELD_DEFINITIONS = {
     options: ["Founding Member VIP", "Launch updates", "General early access"],
   },
   email_follow_up_consent: {
-    label: "Yes, you may email me about this inquiry.",
+    label: "Yes, I’d be glad to hear from you by email about this opportunity.",
     type: "checkbox",
   },
   text_follow_up_consent: {
@@ -223,8 +216,6 @@ export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
   if (!baseField) {
     return undefined;
   }
-
-  const isWorkReferral = pathKey === "work_with_us" && currentValues.self_or_referral === WORK_REFERRAL_OPTION;
 
   if (pathKey === "partner_with_us") {
     if (fieldKey === "short_message") {
@@ -254,32 +245,21 @@ export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
     }
   }
 
-  if (pathKey === "work_with_us" && !isWorkReferral) {
+  if (pathKey === "work_with_us") {
     if (fieldKey === "short_message") {
       return {
         ...baseField,
-        helperText: "Share what sparked your interest, what feels aligned, or anything helpful for a first conversation.",
-        composerChips: [
-          { label: "Why I’m interested", text: "I’m interested because " },
-          { label: "Community connection", text: "I’m connected to Raleigh through " },
-          { label: "Relevant experience", text: "Relevant experience: " },
-        ],
+        helperText:
+          "Share what sparked your interest, what feels aligned, or anything helpful for a first conversation.",
+        composerChips: [],
       };
     }
-  }
 
-  if (isWorkReferral) {
-    const referringPersonLabels = {
-      first_name: "Your First Name",
-      last_name: "Your Last Name",
-      email: "Your Email Address",
-      phone: "Your Mobile Phone Number",
-    };
-
-    if (referringPersonLabels[fieldKey]) {
+    if (fieldKey === "additional_links") {
       return {
         ...baseField,
-        label: referringPersonLabels[fieldKey],
+        helperText:
+          "Optional. Feel free to share anything helpful, such as LinkedIn, a portfolio, a personal website, or a short introduction video.",
       };
     }
   }
@@ -289,15 +269,6 @@ export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
 
 export function getFormVariantConfig(pathKey, currentValues = {}) {
   const baseVariant = FORM_VARIANT_CONFIG[pathKey] ?? FORM_VARIANT_CONFIG.work_with_us;
-
-  if (pathKey === "work_with_us" && currentValues.self_or_referral === WORK_REFERRAL_OPTION) {
-    return {
-      ...baseVariant,
-      introduction:
-        "If someone came to mind while reading this, share a few details below and tell us why they feel like the right fit. We’d love strong referrals from the community.",
-      submitLabel: "Share a Referral",
-    };
-  }
 
   return baseVariant;
 }
@@ -345,92 +316,28 @@ export function getFieldGroups(pathKey, currentValues = {}) {
     ];
   }
 
-  const isReferral = currentValues.self_or_referral === WORK_REFERRAL_OPTION;
-  const showPermissionCheckbox = shouldRequireReferralPermission(currentValues);
-
-  const groups = [
+  return [
     {
       key: "work_core",
-      label: isReferral ? "Referring Person Details" : "Your Details",
-      fields: [
-        "first_name",
-        "last_name",
-        "email",
-        "phone",
-        "self_or_referral",
-        "role_interest",
-      ],
+      label: "Your Details",
+      fields: ["first_name", "last_name", "email", "phone"],
     },
-  ];
-
-  if (!isReferral) {
-    groups.push({
+    {
       key: "work_self",
       label: "A Few Helpful Details",
       fields: [
         "short_message",
         "city_area",
         "linkedin_url",
-        "portfolio_url",
-        "video_intro_url",
-        "social_media_link",
+        "additional_links",
         "email_follow_up_consent",
-        "text_follow_up_consent",
       ],
-    });
-
-    return groups;
-  }
-
-  groups.push({
-    key: "work_referral_reason",
-    label: "Why They Came to Mind",
-    fields: [
-      "referral_reason",
-      "email_follow_up_consent",
-      "text_follow_up_consent",
-    ],
-  });
-
-  groups.push({
-    key: "work_referred_person",
-    label: "About the Person You’re Referring",
-    fields: [
-      "referred_first_name",
-      "referred_last_name",
-      "referred_email",
-      "referred_phone",
-      "referred_city_area",
-      "referred_linkedin_url",
-      "referred_portfolio_url",
-      "referred_video_intro_url",
-      "referred_social_media_link",
-      ...(showPermissionCheckbox ? ["referral_permission_confirmed"] : []),
-    ],
-  });
-
-  return groups;
+    },
+  ];
 }
 
 export function getFieldSequence(pathKey, currentValues = {}) {
   return getFieldGroups(pathKey, currentValues).flatMap((group) => group.fields);
-}
-
-export function shouldRequireReferralPermission(currentValues = {}) {
-  return [
-    "referred_first_name",
-    "referred_last_name",
-    "referred_email",
-    "referred_phone",
-    "referred_city_area",
-    "referred_linkedin_url",
-    "referred_portfolio_url",
-    "referred_video_intro_url",
-    "referred_social_media_link",
-  ].some((fieldKey) => {
-    const fieldValue = currentValues[fieldKey];
-    return typeof fieldValue === "string" && fieldValue.trim().length > 0;
-  });
 }
 
 export function trimOptionalValue(rawValue) {
@@ -471,21 +378,9 @@ export function getRequiredFields(pathKey, currentValues = {}) {
     "first_name",
     "last_name",
     "email",
-    "phone",
-    "self_or_referral",
-    "role_interest",
+    "short_message",
     "email_follow_up_consent",
-    "text_follow_up_consent",
   ];
-
-  if (currentValues.self_or_referral === WORK_REFERRAL_OPTION) {
-    workRequiredFields.push("referral_reason");
-    if (shouldRequireReferralPermission(currentValues)) {
-      workRequiredFields.push("referral_permission_confirmed");
-    }
-  } else {
-    workRequiredFields.push("short_message");
-  }
 
   return workRequiredFields;
 }

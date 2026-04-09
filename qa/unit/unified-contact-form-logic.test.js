@@ -2,19 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   FIELD_DEFINITIONS,
   STUDIO_DEVELOPMENT_MANAGER_LABEL,
-  WORK_REFERRAL_OPTION,
   buildSubmissionPayload,
   getFieldPresentation,
   getFieldSequence,
   getFormVariantConfig,
-  shouldRequireReferralPermission,
 } from "../../scripts/site/form-configuration.js";
 
 describe("unified contact form logic", () => {
   it("returns the work-with-us configuration by default", () => {
-    expect(getFormVariantConfig("unknown_path").submitLabel).toBe(
-      "Start the Conversation",
-    );
+    expect(getFormVariantConfig("unknown_path").submitLabel).toBe("Start the Conversation");
   });
 
   it("lists stay-connected required fields before optional fields", () => {
@@ -30,7 +26,7 @@ describe("unified contact form logic", () => {
     ]);
   });
 
-  it("uses the Studio Development Manager label consistently in the role selector", () => {
+  it("keeps the Studio Development Manager label available for future role-driven flows", () => {
     expect(FIELD_DEFINITIONS.role_interest.options).toContain(STUDIO_DEVELOPMENT_MANAGER_LABEL);
     expect(FIELD_DEFINITIONS.role_interest.options).not.toContain("Manager-Studio Development");
   });
@@ -49,16 +45,35 @@ describe("unified contact form logic", () => {
     expect(partnerMessageField.composerChips.map((chip) => chip.label)).not.toContain("Referral opportunity");
   });
 
-  it("makes the referral path visibly different for the referrer", () => {
-    const referralField = getFieldPresentation("first_name", "work_with_us", {
-      self_or_referral: WORK_REFERRAL_OPTION,
-    });
-    const referralVariant = getFormVariantConfig("work_with_us", {
-      self_or_referral: WORK_REFERRAL_OPTION,
-    });
+  it("keeps the work-with-us path intentionally light for first-touch outreach", () => {
+    expect(getFieldSequence("work_with_us")).toEqual([
+      "first_name",
+      "last_name",
+      "email",
+      "phone",
+      "short_message",
+      "city_area",
+      "linkedin_url",
+      "additional_links",
+      "email_follow_up_consent",
+    ]);
 
-    expect(referralField.label).toBe("Your First Name");
-    expect(referralVariant.submitLabel).toBe("Share a Referral");
+    const shortMessageField = getFieldPresentation("short_message", "work_with_us", {});
+    const additionalLinksField = getFieldPresentation("additional_links", "work_with_us", {});
+
+    expect(shortMessageField.helperText).toBe(
+      "Share what sparked your interest, what feels aligned, or anything helpful for a first conversation.",
+    );
+    expect(shortMessageField.composerChips).toEqual([]);
+    expect(additionalLinksField.helperText).toBe(
+      "Optional. Feel free to share anything helpful, such as LinkedIn, a portfolio, a personal website, or a short introduction video.",
+    );
+  });
+
+  it("uses the approved work-with-us consent wording", () => {
+    expect(FIELD_DEFINITIONS.email_follow_up_consent.label).toBe(
+      "Yes, I’d be glad to hear from you by email about this opportunity.",
+    );
   });
 
   it("uses the approved path-specific success states", () => {
@@ -70,13 +85,6 @@ describe("unified contact form logic", () => {
     );
     expect(getFormVariantConfig("stay_connected").successMessage).toBe(
       "Thank you so much for joining us early. We’re truly grateful for your interest and excited to keep you in the loop as launch plans take shape. We’ll share updates along the way and let you know as soon as founding-member opportunities become available. If you know someone in your circle who’d want to be part of this early, feel free to share the page with them.",
-    );
-    expect(
-      getFormVariantConfig("work_with_us", {
-        self_or_referral: WORK_REFERRAL_OPTION,
-      }).successMessage,
-    ).toBe(
-      "Thanks for reaching out. We’ve received your note and will review it carefully. If there looks to be a strong fit, we’ll be in touch about next steps.",
     );
   });
 
@@ -95,6 +103,22 @@ describe("unified contact form logic", () => {
     expect(payload.validationErrors).toContain("Email Address must be a valid email address.");
   });
 
+  it("requires only the lighter first-touch work-with-us fields", () => {
+    const payload = buildSubmissionPayload("work_with_us", {
+      first_name: "Roman",
+      last_name: "Bediner",
+      email: "roman@example.com",
+      short_message: "",
+      email_follow_up_consent: false,
+    });
+
+    expect(payload.validationErrors).toContain("Short Message is required.");
+    expect(payload.validationErrors).toContain(
+      "Yes, I’d be glad to hear from you by email about this opportunity. is required.",
+    );
+    expect(payload.validationErrors).not.toContain("Mobile Phone Number is required.");
+  });
+
   it("requires email consent for stay-connected submissions", () => {
     const payload = buildSubmissionPayload("stay_connected", {
       first_name: "Marianna",
@@ -105,41 +129,6 @@ describe("unified contact form logic", () => {
 
     expect(payload.validationErrors).toContain(
       "Yes, I’d like to receive email updates about launch news, pre-sales, and Founding Member VIP offers. is required.",
-    );
-  });
-
-  it("adds the referral permission checkbox only when referred-person information is present", () => {
-    expect(
-      shouldRequireReferralPermission({
-        referred_first_name: "",
-        referred_email: "",
-      }),
-    ).toBe(false);
-
-    expect(
-      shouldRequireReferralPermission({
-        referred_first_name: "Alex",
-      }),
-    ).toBe(true);
-  });
-
-  it("requires referral permission only when referred-person details are supplied", () => {
-    const payload = buildSubmissionPayload("work_with_us", {
-      first_name: "Roman",
-      last_name: "Bediner",
-      email: "roman@example.com",
-      phone: "919-555-0100",
-      self_or_referral: WORK_REFERRAL_OPTION,
-      role_interest: STUDIO_DEVELOPMENT_MANAGER_LABEL,
-      referral_reason: "Trusted connector with strong local credibility.",
-      referred_email: "candidate@example.com",
-      email_follow_up_consent: true,
-      text_follow_up_consent: true,
-      referral_permission_confirmed: false,
-    });
-
-    expect(payload.validationErrors).toContain(
-      "I confirm I have this person’s permission to share their contact information. is required.",
     );
   });
 });
