@@ -19,7 +19,7 @@ describe("public site contract", () => {
     expect(htmlDocument).toContain('id="front-of-house-team-member"');
     expect(htmlDocument).toContain('id="licensed-esthetician-opportunity"');
 
-    expect(htmlDocument).toContain("Raleigh Premium Wellness Prototype");
+    expect(htmlDocument).toContain("New Premium Wellness Experience Coming to Raleigh");
     expect(htmlDocument).not.toContain("The Tox");
     expect(htmlDocument).not.toContain("The Tox Technique");
     expect(htmlDocument).not.toContain("franchisor");
@@ -30,6 +30,8 @@ describe("public site contract", () => {
     expect(htmlDocument).not.toContain("We are not trying to");
     expect(htmlDocument).not.toContain("This prototype keeps the structure realistic");
     expect(htmlDocument).not.toContain("Integration hooks");
+    expect(htmlDocument).not.toContain("Prototype");
+    expect(htmlDocument).not.toContain("Staging");
   });
 
   it("keeps the studio development manager narrative as the visible work-with-us centerpiece", () => {
@@ -78,5 +80,18 @@ describe("public site contract", () => {
     expect(formConfiguration).toContain('submitLabel: "Start the Conversation"');
     expect(formConfiguration).toContain('submitLabel: "Explore a Partnership"');
     expect(formConfiguration).toContain('submitLabel: "Join the List"');
+  });
+
+  it("uses the approved metadata and share-surface values", () => {
+    const htmlDocument = readNormalizedHtmlDocument();
+
+    expect(htmlDocument).toContain("<title>New Premium Wellness Experience Coming to Raleigh</title>");
+    expect(htmlDocument).toContain('name="description" content="A new premium body-focused wellness experience is taking shape in Raleigh. Work with us, partner with us, or stay connected from the beginning."');
+    expect(htmlDocument).toContain('property="og:title" content="A New Premium Wellness Experience Is Coming to Raleigh"');
+    expect(htmlDocument).toContain('property="og:description" content="We’re bringing something special to Raleigh and inviting the people who want to help shape it, partner with it, or stay connected from the very beginning."');
+    expect(htmlDocument).toContain('property="twitter:title" content="A New Premium Wellness Experience Is Coming to Raleigh"');
+    expect(htmlDocument).toContain('property="twitter:description" content="We’re bringing something special to Raleigh and inviting the people who want to help shape it, partner with it, or stay connected from the very beginning."');
+    expect(htmlDocument).toContain("../assets/share-surfaces/favicon.svg");
+    expect(htmlDocument).toContain("../assets/share-surfaces/open-graph-preview-1200x630.png");
   });
 });

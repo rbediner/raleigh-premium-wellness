@@ -13,9 +13,14 @@ describe("release artifact safety", () => {
 
     expect(previewHtml).toContain('data-release-channel="preview"');
     expect(previewHtml).toContain('name="robots" content="noindex, noarchive, nofollow"');
+    expect(previewHtml).toContain('property="og:url" content="https://rbediner.github.io/raleigh-premium-wellness/staging/"');
+    expect(previewHtml).toContain('property="og:image" content="https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/open-graph-preview-1200x630.png"');
     expect(previewHtml).not.toContain('rel="canonical"');
     expect(previewRobots).toContain("Disallow: /");
     expect(existsSync("dist/preview/assets/optimized-images/founders/rb-mb-social-photo-960.jpg")).toBe(true);
+    expect(existsSync("dist/preview/assets/share-surfaces/favicon.svg")).toBe(true);
+    expect(existsSync("dist/preview/assets/share-surfaces/favicon.ico")).toBe(true);
+    expect(existsSync("dist/preview/assets/share-surfaces/open-graph-preview-1200x630.png")).toBe(true);
   });
 
   it("builds a production artifact that is not blocked from indexing", () => {
@@ -28,7 +33,12 @@ describe("release artifact safety", () => {
 
     expect(productionHtml).toContain('data-release-channel="production"');
     expect(productionHtml).not.toContain('name="robots" content="noindex, noarchive, nofollow"');
+    expect(productionHtml).toContain('property="og:url" content="https://rbediner.github.io/raleigh-premium-wellness/"');
+    expect(productionHtml).toContain('property="og:image" content="https://rbediner.github.io/raleigh-premium-wellness/assets/share-surfaces/open-graph-preview-1200x630.png"');
     expect(productionRobots).toContain("Allow: /");
     expect(existsSync("dist/production/assets/optimized-images/founders/rb-mb-social-photo-960.jpg")).toBe(true);
+    expect(existsSync("dist/production/assets/share-surfaces/favicon.svg")).toBe(true);
+    expect(existsSync("dist/production/assets/share-surfaces/favicon.ico")).toBe(true);
+    expect(existsSync("dist/production/assets/share-surfaces/open-graph-preview-1200x630.png")).toBe(true);
   });
 });

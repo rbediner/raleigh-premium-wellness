@@ -44,17 +44,39 @@ const sourceAssetsDirectory = resolve(repositoryRoot, "assets");
 
 const currentCommitSha = process.env.GITHUB_SHA || execSync("git rev-parse HEAD").toString().trim();
 const canonicalUrl = process.env.PRODUCTION_CANONICAL_URL?.replace(/\/$/, "") || "";
+const repositorySlug =
+  process.env.GITHUB_REPOSITORY ||
+  execSync("git config --get remote.origin.url").toString().trim().match(/[:/]([^/]+\/[^/.]+)(?:\.git)?$/)?.[1] ||
+  "";
+const [repositoryOwner = "rbediner", repositoryName = "raleigh-premium-wellness"] = repositorySlug.split("/");
+const githubPagesBaseUrl = `https://${repositoryOwner}.github.io/${repositoryName}`;
+const releaseSiteUrl =
+  buildMode === "preview"
+    ? `${githubPagesBaseUrl}/staging/`
+    : canonicalUrl
+      ? `${canonicalUrl}/`
+      : `${githubPagesBaseUrl}/`;
+const openGraphImageUrl = `${releaseSiteUrl}assets/share-surfaces/open-graph-preview-1200x630.png`;
 
 const previewHeadMarkup = `
     <meta name="robots" content="noindex, noarchive, nofollow" />
     <meta name="googlebot" content="noindex, noarchive, nofollow" />
+    <meta property="og:url" content="${releaseSiteUrl}" />
+    <meta property="og:image" content="${openGraphImageUrl}" />
+    <meta property="twitter:image" content="${openGraphImageUrl}" />
     <meta name="release-channel" content="preview" />`;
 
 const productionHeadMarkup = canonicalUrl
   ? `
     <link rel="canonical" href="${canonicalUrl}/" />
+    <meta property="og:url" content="${releaseSiteUrl}" />
+    <meta property="og:image" content="${openGraphImageUrl}" />
+    <meta property="twitter:image" content="${openGraphImageUrl}" />
     <meta name="release-channel" content="production" />`
   : `
+    <meta property="og:url" content="${releaseSiteUrl}" />
+    <meta property="og:image" content="${openGraphImageUrl}" />
+    <meta property="twitter:image" content="${openGraphImageUrl}" />
     <meta name="release-channel" content="production" />`;
 
 const previewBannerMarkup = `
