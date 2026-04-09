@@ -83,6 +83,9 @@ describe("public site contract", () => {
     expect(formConfiguration).toContain('label: "Audience / Community"');
     expect(formConfiguration).toContain('label: "Activation Concept"');
     expect(formConfiguration).toContain('label: "Venue / Business Fit"');
+    expect(formConfiguration).toContain('label: "How I Know Them"');
+    expect(formConfiguration).toContain('label: "Why They Stand Out"');
+    expect(formConfiguration).toContain('label: "Community Credibility"');
     expect(formConfiguration).toContain('"Community Partnership"');
     expect(formConfiguration).toContain('"Launch Updates"');
     expect(formConfiguration).toContain('"General Early Access"');
