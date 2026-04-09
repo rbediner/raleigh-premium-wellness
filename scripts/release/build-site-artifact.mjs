@@ -62,21 +62,15 @@ const previewHeadMarkup = `
     <meta name="robots" content="noindex, noarchive, nofollow" />
     <meta name="googlebot" content="noindex, noarchive, nofollow" />
     <meta property="og:url" content="${releaseSiteUrl}" />
-    <meta property="og:image" content="${openGraphImageUrl}" />
-    <meta property="twitter:image" content="${openGraphImageUrl}" />
     <meta name="release-channel" content="preview" />`;
 
 const productionHeadMarkup = canonicalUrl
   ? `
     <link rel="canonical" href="${canonicalUrl}/" />
     <meta property="og:url" content="${releaseSiteUrl}" />
-    <meta property="og:image" content="${openGraphImageUrl}" />
-    <meta property="twitter:image" content="${openGraphImageUrl}" />
     <meta name="release-channel" content="production" />`
   : `
     <meta property="og:url" content="${releaseSiteUrl}" />
-    <meta property="og:image" content="${openGraphImageUrl}" />
-    <meta property="twitter:image" content="${openGraphImageUrl}" />
     <meta name="release-channel" content="production" />`;
 
 const previewBannerMarkup = `
@@ -92,6 +86,14 @@ function buildHtmlForMode() {
     .replace("../styles/site.css", "./styles/site.css")
     .replace("../scripts/site/site-interactions.js", "./scripts/site-interactions.js")
     .replaceAll("../assets/", "./assets/")
+    .replace(
+      'property="og:image" content="./assets/share-surfaces/open-graph-preview-1200x630.png"',
+      `property="og:image" content="${openGraphImageUrl}"`,
+    )
+    .replace(
+      'property="twitter:image" content="./assets/share-surfaces/open-graph-preview-1200x630.png"',
+      `property="twitter:image" content="${openGraphImageUrl}"`,
+    )
     .replace("<!-- BUILD_ENVIRONMENT_HEAD -->", environmentHeadMarkup)
     .replace("<!-- BUILD_ENVIRONMENT_BANNER -->", environmentBannerMarkup)
     .replace("<body>", `<body data-release-channel="${buildMode}">`);

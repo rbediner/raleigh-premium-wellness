@@ -15,6 +15,8 @@ describe("release artifact safety", () => {
     expect(previewHtml).toContain('name="robots" content="noindex, noarchive, nofollow"');
     expect(previewHtml).toContain('property="og:url" content="https://rbediner.github.io/raleigh-premium-wellness/staging/"');
     expect(previewHtml).toContain('property="og:image" content="https://rbediner.github.io/raleigh-premium-wellness/staging/assets/share-surfaces/open-graph-preview-1200x630.png"');
+    expect(previewHtml.match(/property="og:image"/g)?.length).toBe(1);
+    expect(previewHtml.match(/property="twitter:image"/g)?.length).toBe(1);
     expect(previewHtml).not.toContain('rel="canonical"');
     expect(previewRobots).toContain("Disallow: /");
     expect(existsSync("dist/preview/assets/optimized-images/founders/rb-mb-social-photo-960.jpg")).toBe(true);
@@ -35,6 +37,8 @@ describe("release artifact safety", () => {
     expect(productionHtml).not.toContain('name="robots" content="noindex, noarchive, nofollow"');
     expect(productionHtml).toContain('property="og:url" content="https://rbediner.github.io/raleigh-premium-wellness/"');
     expect(productionHtml).toContain('property="og:image" content="https://rbediner.github.io/raleigh-premium-wellness/assets/share-surfaces/open-graph-preview-1200x630.png"');
+    expect(productionHtml.match(/property="og:image"/g)?.length).toBe(1);
+    expect(productionHtml.match(/property="twitter:image"/g)?.length).toBe(1);
     expect(productionRobots).toContain("Allow: /");
     expect(existsSync("dist/production/assets/optimized-images/founders/rb-mb-social-photo-960.jpg")).toBe(true);
     expect(existsSync("dist/production/assets/share-surfaces/favicon.svg")).toBe(true);
