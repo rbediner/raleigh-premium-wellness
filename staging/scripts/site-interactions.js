@@ -515,6 +515,16 @@ function handleHashNavigation() {
     };
     renderVariant(nextIntentState.interestPath, currentFormValues);
   }
+
+  const hashTargetId = window.location.hash.replace("#", "");
+  const hashTargetElement = hashTargetId ? document.getElementById(hashTargetId) : null;
+
+  if (hashTargetElement) {
+    // Re-assert direct-entry anchor alignment after the browser finishes laying out sticky chrome.
+    window.requestAnimationFrame(() => {
+      hashTargetElement.scrollIntoView({ block: "start" });
+    });
+  }
 }
 
 function handleSectionActionClick(event) {
