@@ -661,6 +661,10 @@ button {
   overflow: hidden;
 }
 
+.form-textarea--conversation {
+  min-height: 11.5rem;
+}
+
 .composer-chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -738,6 +742,13 @@ button {
 .form-checkbox__helper,
 .form-checkbox [data-field-error] {
   padding-left: calc(1.35rem + 0.95rem);
+}
+
+.manager-feature__share-line {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+  line-height: 1.75;
 }
 
 .button-link {
