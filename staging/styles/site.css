@@ -900,8 +900,8 @@ button {
     position: fixed;
     inset: 0;
     z-index: 21;
-    background: rgba(7, 5, 5, 0.72);
-    backdrop-filter: blur(14px);
+    background: rgba(6, 4, 4, 0.82);
+    backdrop-filter: blur(18px);
   }
 
   .site-navigation__links {
@@ -916,10 +916,10 @@ button {
     padding: 0.82rem;
     border: 1px solid rgba(247, 239, 231, 0.09);
     border-radius: 1.4rem;
-    background:
-      linear-gradient(180deg, rgba(20, 15, 14, 0.995), rgba(14, 11, 10, 0.992)),
-      rgba(15, 11, 10, 0.98);
-    box-shadow: var(--shadow-strong);
+    background: linear-gradient(180deg, #191311 0%, #120e0d 100%);
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(247, 239, 231, 0.03);
     transform: translateY(-0.32rem) scale(0.985);
     transform-origin: top center;
     opacity: 0;
