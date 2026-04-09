@@ -151,10 +151,10 @@ export const FIELD_DEFINITIONS = {
     label: "Partnership Type",
     type: "select",
     options: [
-      "Community partnership",
-      "Event collaboration",
-      "Referral partnership",
-      "Wellness collaboration",
+      "Community Partnership",
+      "Event Collaboration",
+      "Referral Partnership",
+      "Wellness Collaboration",
       "Other",
     ],
   },
@@ -178,7 +178,7 @@ export const FIELD_DEFINITIONS = {
         text: "I’m most interested in Founding Member VIP because ",
       },
       {
-        label: "Launch updates",
+        label: "Launch Updates",
         text: "I’d like updates about ",
       },
     ],
@@ -186,7 +186,7 @@ export const FIELD_DEFINITIONS = {
   interest_type: {
     label: "Interest Type",
     type: "select",
-    options: ["Founding Member VIP", "Launch updates", "General early access"],
+    options: ["Founding Member VIP", "Launch Updates", "General Early Access"],
   },
   email_follow_up_consent: {
     label: "Yes, I’d be glad to hear from you by email about this opportunity.",
@@ -225,10 +225,10 @@ export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
         helperText:
           "Tell us a bit about your business, your audience, or the kind of collaboration you have in mind.",
         composerChips: [
-          { label: "Partnership idea", text: "Partnership idea: " },
-          { label: "Audience/community", text: "Audience/community: " },
-          { label: "Activation concept", text: "Activation concept: " },
-          { label: "Venue/business fit", text: "Venue/business fit: " },
+          { label: "Partnership Idea", text: "Partnership Idea: " },
+          { label: "Audience / Community", text: "Audience / Community: " },
+          { label: "Activation Concept", text: "Activation Concept: " },
+          { label: "Venue / Business Fit", text: "Venue / Business Fit: " },
         ],
       };
     }

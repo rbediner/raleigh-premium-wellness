@@ -396,6 +396,7 @@ button {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 2.2rem;
+  scroll-margin-top: calc(var(--header-offset) + 0.3rem);
 }
 
 .role-subnav__link {

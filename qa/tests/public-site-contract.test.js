@@ -37,6 +37,7 @@ describe("public site contract", () => {
   it("keeps the studio development manager narrative as the visible work-with-us centerpiece", () => {
     const htmlDocument = readFileSync("site/index.html", "utf8");
 
+    expect(htmlDocument).toContain('nav id="manager-studio-development" class="role-subnav"');
     expect(htmlDocument).toContain("Help launch Raleigh’s next premium wellness destination.");
     expect(htmlDocument).toContain("You may be a great fit if...");
     expect(htmlDocument).toContain("Why this is exciting");
@@ -69,6 +70,22 @@ describe("public site contract", () => {
     expect(htmlDocument).toContain("If there’s a natural fit, we’d love to explore collaborations through events, activations, community touchpoints, and referral-friendly partnerships that create awareness, bring people together, and make the launch feel local from day one.");
     expect(htmlDocument).toContain("Founding Member VIP is for people who want to be first in line when our founding-member offers become available.");
     expect(htmlDocument).toContain("You’ll receive early updates, priority notice when pre-sales open, and first access to discounted services reserved for founding members.");
+  });
+
+  it("keeps label-style bullets and chips in title case", () => {
+    const htmlDocument = readNormalizedHtmlDocument();
+    const formConfiguration = readFileSync("scripts/site/form-configuration.js", "utf8");
+
+    expect(htmlDocument).toContain("Community Presence");
+    expect(htmlDocument).toContain("Partnership and Growth");
+    expect(htmlDocument).toContain("Launch Leadership");
+    expect(formConfiguration).toContain('label: "Partnership Idea"');
+    expect(formConfiguration).toContain('label: "Audience / Community"');
+    expect(formConfiguration).toContain('label: "Activation Concept"');
+    expect(formConfiguration).toContain('label: "Venue / Business Fit"');
+    expect(formConfiguration).toContain('"Community Partnership"');
+    expect(formConfiguration).toContain('"Launch Updates"');
+    expect(formConfiguration).toContain('"General Early Access"');
   });
 
   it("keeps the compact mobile menu structure and preferred submit CTA copy", () => {

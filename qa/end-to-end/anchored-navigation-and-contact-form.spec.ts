@@ -70,8 +70,8 @@ test("partner path keeps partnership-specific helper chips only", async ({ page 
   await page.goto("/?interestPath=partner_with_us#contact");
 
   await expect(page.getByLabel("I want to partner with you")).toBeChecked();
-  await expect(page.getByText("Partnership idea", { exact: true })).toBeVisible();
-  await expect(page.getByText("Audience/community", { exact: true })).toBeVisible();
+  await expect(page.getByText("Partnership Idea", { exact: true })).toBeVisible();
+  await expect(page.getByText("Audience / Community", { exact: true })).toBeVisible();
   await expect(page.getByText("Why I’m interested", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Referral opportunity", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("textbox", { name: /Partnership Idea/ })).toBeVisible();
@@ -156,6 +156,44 @@ test("mobile navigation uses a compact menu pattern and closes after selection",
   await expect(page).toHaveURL(/#about$/);
 });
 
+test("manager deep link lands on the role pill instead of overshooting into the heading", async ({ page }) => {
+  await page.goto("/#manager-studio-development");
+
+  const rolePill = page.getByRole("link", { name: "Studio Development Manager", exact: true });
+  const heading = page.getByRole("heading", { name: "Help launch Raleigh’s next premium wellness destination." });
+
+  await expect
+    .poll(async () => {
+      const rolePillBox = await rolePill.boundingBox();
+      return rolePillBox?.y ?? Number.POSITIVE_INFINITY;
+    })
+    .toBeLessThan(140);
+
+  const rolePillBox = await rolePill.boundingBox();
+  const headingBox = await heading.boundingBox();
+  expect(headingBox.y).toBeGreaterThan(rolePillBox.y + 40);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#manager-studio-development");
+
+  await expect
+    .poll(async () => {
+      const mobileRolePillBox = await page
+        .getByRole("link", { name: "Studio Development Manager", exact: true })
+        .boundingBox();
+      return mobileRolePillBox?.y ?? Number.POSITIVE_INFINITY;
+    })
+    .toBeLessThan(150);
+
+  const mobileRolePillBox = await page
+    .getByRole("link", { name: "Studio Development Manager", exact: true })
+    .boundingBox();
+  const mobileHeadingBox = await page
+    .getByRole("heading", { name: "Help launch Raleigh’s next premium wellness destination." })
+    .boundingBox();
+  expect(mobileHeadingBox.y).toBeGreaterThan(mobileRolePillBox.y + 36);
+});
+
 test("each form path shows the approved success state after a valid submission", async ({ page }) => {
   await page.goto("/?interestPath=work_with_us#contact");
 
@@ -179,7 +217,7 @@ test("each form path shows the approved success state after a valid submission",
   await page.getByLabel("Business / Organization Name").fill("Bediner Wellness Circle");
   await page.getByLabel("Email Address").fill("roman@example.com");
   await page.getByLabel("Mobile Phone Number").fill("919-555-0100");
-  await page.getByLabel("Partnership Type").selectOption("Community partnership");
+  await page.getByLabel("Partnership Type").selectOption("Community Partnership");
   await page.getByRole("textbox", { name: /Partnership Idea/ }).fill("A neighborhood collaboration could be a strong fit.");
   await page.getByLabel("Yes, I’d be glad to hear from you by email about this opportunity.").check();
   await page.getByRole("button", { name: "Explore a Partnership" }).click();

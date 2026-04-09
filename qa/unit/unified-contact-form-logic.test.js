@@ -36,10 +36,10 @@ describe("unified contact form logic", () => {
       "Tell us a bit about your business, your audience, or the kind of collaboration you have in mind.",
     );
     expect(partnerMessageField.composerChips.map((chip) => chip.label)).toEqual([
-      "Partnership idea",
-      "Audience/community",
-      "Activation concept",
-      "Venue/business fit",
+      "Partnership Idea",
+      "Audience / Community",
+      "Activation Concept",
+      "Venue / Business Fit",
     ]);
     expect(partnerMessageField.composerChips.map((chip) => chip.label)).not.toContain("Why I’m interested");
     expect(partnerMessageField.composerChips.map((chip) => chip.label)).not.toContain("Referral opportunity");
@@ -115,7 +115,7 @@ describe("unified contact form logic", () => {
       organization_name: "Bediner Wellness Circle",
       email: "not-an-email",
       phone: "919-555-0100",
-      partnership_type: "Community partnership",
+      partnership_type: "Community Partnership",
       short_message: "Interested in collaborating.",
     });
 
