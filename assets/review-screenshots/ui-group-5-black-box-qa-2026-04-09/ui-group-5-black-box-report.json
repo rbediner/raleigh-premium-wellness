@@ -1,0 +1,16 @@
+{
+  "siteUnderTest": "https://rbediner.github.io/raleigh-premium-wellness/staging/?v=1ee5892",
+  "capturedAt": "2026-04-09T16:03:42.472Z",
+  "verdicts": {
+    "UI_3A": "PASS",
+    "UI_3": "PASS",
+    "UI_4": "PASS",
+    "UI_2": "PASS"
+  },
+  "carryForward": {
+    "checkboxConsentRowAlignmentStillVisuallyBroken": false,
+    "footerStillTooParagraphLikeOnDesktop": false,
+    "mobileNavStillAwkwardOrCluttered": false,
+    "partnerCtaInconsistencyStillVisible": false
+  }
+}
