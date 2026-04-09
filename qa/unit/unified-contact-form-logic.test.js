@@ -61,6 +61,25 @@ describe("unified contact form logic", () => {
     expect(referralVariant.submitLabel).toBe("Share a Referral");
   });
 
+  it("uses the approved path-specific success states", () => {
+    expect(getFormVariantConfig("work_with_us").successMessage).toBe(
+      "Thanks for reaching out. We’ve received your note and will review it carefully. If there looks to be a strong fit, we’ll be in touch about next steps.",
+    );
+    expect(getFormVariantConfig("partner_with_us").successMessage).toBe(
+      "Thanks so much for reaching out. We’re grateful for your interest and excited to learn more about you, your business, and the kind of collaboration you have in mind. We’ll review your note and be back in touch soon.",
+    );
+    expect(getFormVariantConfig("stay_connected").successMessage).toBe(
+      "Thank you so much for joining us early. We’re truly grateful for your interest and excited to keep you in the loop as launch plans take shape. We’ll share updates along the way and let you know as soon as founding-member opportunities become available. If you know someone in your circle who’d want to be part of this early, feel free to share the page with them.",
+    );
+    expect(
+      getFormVariantConfig("work_with_us", {
+        self_or_referral: WORK_REFERRAL_OPTION,
+      }).successMessage,
+    ).toBe(
+      "Thanks for reaching out. We’ve received your note and will review it carefully. If there looks to be a strong fit, we’ll be in touch about next steps.",
+    );
+  });
+
   it("trims values and validates email formatting", () => {
     const payload = buildSubmissionPayload("partner_with_us", {
       first_name: " Roman ",

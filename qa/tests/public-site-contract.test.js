@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("public site contract", () => {
+  function readNormalizedHtmlDocument() {
+    return readFileSync("site/index.html", "utf8").replace(/\s+/g, " ");
+  }
+
   it("keeps the public-facing page neutral and deep-linkable", () => {
     const htmlDocument = readFileSync("site/index.html", "utf8");
 
@@ -42,16 +46,27 @@ describe("public site contract", () => {
   });
 
   it("keeps the hero and footer outward-facing rather than meta or defensive", () => {
-    const htmlDocument = readFileSync("site/index.html", "utf8");
+    const htmlDocument = readNormalizedHtmlDocument();
 
     expect(htmlDocument).toContain("A NEW STANDARD IN");
     expect(htmlDocument).toContain("PREMIUM WELLNESS");
     expect(htmlDocument).toContain("IS COMING TO RALEIGH");
-    expect(htmlDocument).toContain("A quiet preview of what may be coming to Raleigh.");
+    expect(htmlDocument).toContain("We’re bringing a premium body-focused wellness experience to Raleigh, designed to feel restorative, elevated, and worth making part of your routine.");
+    expect(htmlDocument).toContain("A new premium wellness experience is taking shape in Raleigh.");
+    expect(htmlDocument).toContain("We’re grateful to be building it with and for this community, and we’d love to stay connected with the people who want to help shape it, support it, or be part of it early.");
 
     expect(htmlDocument).not.toContain("This page is a simple invitation");
     expect(htmlDocument).not.toContain("prototype note");
     expect(htmlDocument).not.toContain("debug");
+  });
+
+  it("uses the approved partner and stay-connected trust copy", () => {
+    const htmlDocument = readNormalizedHtmlDocument();
+
+    expect(htmlDocument).toContain("We’re looking to connect with a small number of thoughtful local partners who care about wellness, community, and elevated everyday experiences.");
+    expect(htmlDocument).toContain("If there’s a natural fit, we’d love to explore collaborations through events, activations, community touchpoints, and referral-friendly partnerships that create awareness, bring people together, and make the launch feel local from day one.");
+    expect(htmlDocument).toContain("Founding Member VIP is for people who want to be first in line when our founding-member offers become available.");
+    expect(htmlDocument).toContain("You’ll receive early updates, priority notice when pre-sales open, and first access to discounted services reserved for founding members.");
   });
 
   it("keeps the compact mobile menu structure and preferred submit CTA copy", () => {
