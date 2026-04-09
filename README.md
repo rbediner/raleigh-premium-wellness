@@ -21,6 +21,29 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 - `styles/` stores site styling
 - `docs/` stores release workflow, handoff notes, and QA guidance
 
+## Reference File Safety
+
+Do not delete Google-linked reference files or shortcut files that help this repo recover its product source of truth across machines.
+
+Keep these kinds of files intact unless there is an explicit migration plan:
+
+- `*.gdoc`
+- `*.gsheet`
+- `*.gslides`
+- `*.webloc`
+- markdown reference files in `planning/` and `data-sources/`
+
+Why this matters:
+
+- the Google-native files and shortcut links are part of the repo's continuity system
+- they help recover the PRD, spreadsheet, and related source materials quickly
+- deleting them casually can break handoff and source-of-truth recovery even if the site code still builds
+
+Repo-cleanup rule:
+
+- stale local screenshots or ad hoc QA artifacts should be removed or moved into a dated folder under `assets/review-screenshots/`
+- Google Docs, Sheets, Slides, and their reference-link files should be preserved unless a deliberate replacement is being checked in at the same time
+
 ## Working Notes
 
 - Primary PRD source: `planning/the-raleigh-tox-prd-reference.md`

@@ -16,14 +16,22 @@ describe("session readiness contract", () => {
   it("documents the cross-machine startup flow for humans and Codex", () => {
     const readme = readFileSync("README.md", "utf8");
     const sop = readFileSync("docs/release/release-sop.md", "utf8");
+    const gitignore = readFileSync(".gitignore", "utf8");
 
     expect(readme).toContain("## Cross-Machine Continuity");
+    expect(readme).toContain("## Reference File Safety");
+    expect(readme).toContain("Do not delete Google-linked reference files or shortcut files");
+    expect(readme).toContain("`*.gslides`");
+    expect(readme).toContain("assets/review-screenshots/");
     expect(readme).toContain("Open `README.md`.");
     expect(readme).toContain("Open `docs/handoff/latest.md`.");
     expect(readme).toContain("Open `docs/release/release-sop.md`.");
     expect(readme).toContain("Run `npm run session:ready`.");
     expect(readme).toContain("npm run handoff:update");
     expect(readme).toContain("Do not rely on cloud-synced `.gdoc` or `.gsheet` shortcut files");
+    expect(gitignore).toContain("*.gslides");
+    expect(gitignore).toContain("/assets/review-screenshots/*.png");
+    expect(gitignore).toContain("/assets/review-screenshots/*.json");
 
     expect(sop).toContain("Every new machine or new Codex session must read `README.md` first.");
     expect(sop).toContain("Run `npm run session:ready` before writing code.");

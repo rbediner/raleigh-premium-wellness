@@ -8,8 +8,15 @@ coverage/
 playwright-report/
 test-results/
 
-# Local Google Drive shortcut files are convenient on one machine but unstable
-# across cloud-synced machines, so we do not track .gdoc or .gsheet artifacts.
-# Stable project links live as checked-in .webloc and markdown reference files.
+# Local Google Drive shortcut files are useful working references, but they are
+# not stable cross-machine repo state, so we leave them untracked rather than
+# deleting them during cleanup work. Stable project links live as checked-in
+# .webloc and markdown reference files.
 *.gdoc
 *.gsheet
+*.gslides
+
+# Root-level review screenshots are usually ad hoc local artifacts. Committed
+# QA evidence should live in a dated subfolder under assets/review-screenshots/.
+/assets/review-screenshots/*.png
+/assets/review-screenshots/*.json
