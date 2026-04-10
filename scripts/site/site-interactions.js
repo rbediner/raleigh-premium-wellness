@@ -6,6 +6,7 @@ import {
   getRequiredFields,
   getFormVariantConfig,
 } from "./form-configuration.js";
+import { getIsTestSubmissionFlag, submitUnifiedFormSubmission } from "./submission-gateway.js";
 
 const contactFormElement = document.querySelector("#unified-contact-form");
 const formFieldGridElement = document.querySelector("#form-field-grid");
@@ -18,8 +19,6 @@ const siteNavigationElement = document.querySelector(".site-navigation");
 const mobileMenuButtonElement = document.querySelector(".site-navigation__menu-button");
 const mobileMenuScrimElement = document.querySelector(".site-navigation__scrim");
 const mobileMenuLinksElement = document.querySelector("#site-navigation-links");
-const prototypeStorageKey = "raleigh-premium-wellness-prototype-submissions";
-
 let currentFormValues = {
   interestPath: "work_with_us",
 };
@@ -55,6 +54,9 @@ function trackEvent(eventName, eventData = {}) {
     event: eventName,
     ...eventData,
   });
+  if (typeof gtag === "function") {
+    gtag("event", eventName, eventData);
+  }
 }
 
 function escapeHtml(rawValue = "") {
@@ -294,25 +296,9 @@ function renderVariant(pathKey, nextValues = currentFormValues, options = {}) {
   }
 }
 
-function readStoredSubmissions() {
-  try {
-    return JSON.parse(window.localStorage.getItem(prototypeStorageKey) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function storeSubmission(submissionPayload) {
-  const storedSubmissions = readStoredSubmissions();
-  const nextSubmission = {
-    ...submissionPayload,
-    storedAt: new Date().toISOString(),
-  };
-
-  window.localStorage.setItem(
-    prototypeStorageKey,
-    JSON.stringify([...storedSubmissions, nextSubmission]),
-  );
+function setSubmittingState(isSubmitting) {
+  submitButtonElement.disabled = isSubmitting;
+  contactFormElement.classList.toggle("contact-form--submitting", isSubmitting);
 }
 
 function resetForCurrentPath(pathKey) {
@@ -436,10 +422,11 @@ function handleComposerChipClick(event) {
   currentFormValues[fieldKey] = targetTextarea.value;
 }
 
-function handleFormSubmit(event) {
+async function handleFormSubmit(event) {
   event.preventDefault();
 
   const selectedPath = contactFormElement.elements.interestPath.value;
+  trackEvent("form_submission_attempt", { interestPath: selectedPath });
   const formValues = {
     ...currentFormValues,
     ...readCurrentFormValues(),
@@ -456,13 +443,34 @@ function handleFormSubmit(event) {
     return;
   }
 
-  storeSubmission(submissionPayload);
-  trackEvent("form_submission_success", { interestPath: selectedPath });
-  setStatusMessage(getFormVariantConfig(selectedPath, currentFormValues).successMessage, "success");
-  contactFormElement.reset();
-  resetForCurrentPath(selectedPath);
-  contactFormElement.querySelector(`input[name="interestPath"][value="${selectedPath}"]`).checked = true;
-  syncIntentStateToUrl(selectedPath, currentFormValues);
+  setSubmittingState(true);
+  setStatusMessage("", "idle");
+
+  try {
+    await submitUnifiedFormSubmission(submissionPayload, {
+      sourceUrl: window.location.href,
+      isTestSubmission: getIsTestSubmissionFlag(window.location.href, document.body?.dataset),
+    });
+    trackEvent("form_submission_success", { interestPath: selectedPath });
+    setStatusMessage(getFormVariantConfig(selectedPath, currentFormValues).successMessage, "success");
+    contactFormElement.reset();
+    resetForCurrentPath(selectedPath);
+    contactFormElement.querySelector(`input[name="interestPath"][value="${selectedPath}"]`).checked = true;
+    syncIntentStateToUrl(selectedPath, currentFormValues);
+  } catch (error) {
+    trackEvent("form_submission_error", {
+      interestPath: selectedPath,
+      message: error instanceof Error ? error.message : "Unknown submission error",
+    });
+    setStatusMessage(
+      error instanceof Error
+        ? error.message
+        : "We’re sorry, your note could not be submitted right now. Please try again in a moment.",
+      "error",
+    );
+  } finally {
+    setSubmittingState(false);
+  }
 }
 
 function handleNavClick(event) {
