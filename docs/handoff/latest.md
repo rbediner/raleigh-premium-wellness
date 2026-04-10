@@ -74,7 +74,7 @@ BL-3 accidentally introduced a broken dependency: `site-interactions.js` was com
 
 ---
 
-## What Still Needs to Happen
+## Blockers Or Manual Follow-Ups
 
 ### BL-2: Email Notifications — OPEN
 - Target email: `roman.bediner@thetox.com`
