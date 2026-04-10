@@ -39,6 +39,9 @@ jobs:
 
       - name: Run production preflight
         run: npm run release:preflight:production
+        env:
+          FORM_SUBMISSION_ENDPOINT_URL: ${{ vars.FORM_SUBMISSION_ENDPOINT_URL }}
+          PRODUCTION_CANONICAL_URL: ${{ vars.PRODUCTION_CANONICAL_URL }}
 
       - name: Publish production artifact to gh-pages
         run: node scripts/release/publish-github-pages-branch.mjs --mode production
@@ -47,6 +50,7 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRODUCTION_CANONICAL_URL: ${{ vars.PRODUCTION_CANONICAL_URL }}
+          FORM_SUBMISSION_ENDPOINT_URL: ${{ vars.FORM_SUBMISSION_ENDPOINT_URL }}
 
       - name: Verify production URL
         run: >

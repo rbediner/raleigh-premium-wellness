@@ -40,9 +40,16 @@ const sourceFormConfigPath = resolve(
   "site",
   "form-configuration.js",
 );
+const sourceSubmissionGatewayPath = resolve(
+  repositoryRoot,
+  "scripts",
+  "site",
+  "submission-gateway.js",
+);
 const sourceAssetsDirectory = resolve(repositoryRoot, "assets");
 
 const currentCommitSha = process.env.GITHUB_SHA || execSync("git rev-parse HEAD").toString().trim();
+const formSubmissionEndpointUrl = process.env.FORM_SUBMISSION_ENDPOINT_URL?.trim() || "";
 const canonicalUrl = process.env.PRODUCTION_CANONICAL_URL?.replace(/\/$/, "") || "";
 const repositorySlug =
   process.env.GITHUB_REPOSITORY ||
@@ -58,20 +65,24 @@ const releaseSiteUrl =
       : `${githubPagesBaseUrl}/`;
 const openGraphImageUrl = `${releaseSiteUrl}assets/share-surfaces/open-graph-preview-1200x630.png`;
 
+const endpointScript = formSubmissionEndpointUrl
+  ? `\n    <script>window.__RaleighPremiumWellnessFormEndpoint = ${JSON.stringify(formSubmissionEndpointUrl)};</script>`
+  : "";
+
 const previewHeadMarkup = `
     <meta name="robots" content="noindex, noarchive, nofollow" />
     <meta name="googlebot" content="noindex, noarchive, nofollow" />
     <meta property="og:url" content="${releaseSiteUrl}" />
-    <meta name="release-channel" content="preview" />`;
+    <meta name="release-channel" content="preview" />${endpointScript}`;
 
 const productionHeadMarkup = canonicalUrl
   ? `
     <link rel="canonical" href="${canonicalUrl}/" />
     <meta property="og:url" content="${releaseSiteUrl}" />
-    <meta name="release-channel" content="production" />`
+    <meta name="release-channel" content="production" />${endpointScript}`
   : `
     <meta property="og:url" content="${releaseSiteUrl}" />
-    <meta name="release-channel" content="production" />`;
+    <meta name="release-channel" content="production" />${endpointScript}`;
 
 const previewBannerMarkup = `
     <div class="environment-banner" role="status">
@@ -115,6 +126,7 @@ mkdirSync(outputAssetsDirectory, { recursive: true });
 copyFileSync(sourceStylesPath, join(outputStylesDirectory, "site.css"));
 copyFileSync(sourceInteractionScriptPath, join(outputScriptsDirectory, "site-interactions.js"));
 copyFileSync(sourceFormConfigPath, join(outputScriptsDirectory, "form-configuration.js"));
+copyFileSync(sourceSubmissionGatewayPath, join(outputScriptsDirectory, "submission-gateway.js"));
 cpSync(sourceAssetsDirectory, outputAssetsDirectory, { recursive: true });
 
 writeFileSync(join(outputDirectory, "index.html"), buildHtmlForMode());
