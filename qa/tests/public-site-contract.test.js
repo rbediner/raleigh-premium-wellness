@@ -137,6 +137,15 @@ describe("public site contract", () => {
     expect(formConfiguration).toContain('submitLabel: "Join the VIP List"');
   });
 
+  it("uses Stay Connected consistently for visible route and navigation labels", () => {
+    const htmlDocument = readFileSync("site/index.html", "utf8");
+
+    expect(htmlDocument).toContain('<p class="eyebrow-label">Stay Connected</p>');
+    expect(htmlDocument).toContain('<a href="#contact">Stay Connected</a>');
+    expect(htmlDocument).not.toContain('<p class="eyebrow-label">Connect</p>');
+    expect(htmlDocument).not.toContain('<a href="#contact">Connect</a>');
+  });
+
   it("uses the approved metadata and share-surface values", () => {
     const htmlDocument = readNormalizedHtmlDocument();
 
