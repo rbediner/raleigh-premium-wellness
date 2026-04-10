@@ -83,6 +83,19 @@ describe("public site contract", () => {
     expect(htmlDocument).not.toContain("debug");
   });
 
+  it("keeps the hero and founder-image structure needed for the final polish pass", () => {
+    const htmlDocument = readFileSync("site/index.html", "utf8");
+    const stylesheet = readFileSync("styles/site.css", "utf8");
+
+    expect(htmlDocument).toContain('class="hero-section hero-shell"');
+    expect(htmlDocument).toContain('class="hero-section__actions"');
+    expect(htmlDocument).toContain('class="founder-photo-card"');
+    expect(htmlDocument).toContain('class="founder-photo-card__image"');
+    expect(stylesheet).toContain(".hero-section__actions .button-link:last-child");
+    expect(stylesheet).toContain(".founder-photo-card");
+    expect(stylesheet).toContain(".founder-photo-card__image");
+  });
+
   it("uses the approved partner and stay-connected trust copy", () => {
     const htmlDocument = readNormalizedHtmlDocument();
 
