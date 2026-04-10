@@ -208,6 +208,29 @@ test("manager deep link lands on the role pill instead of overshooting into the 
 });
 
 test("each form path shows the approved success state after a valid submission", async ({ page }) => {
+  // Mock the submission endpoint so this test runs without a real Apps Script deployment.
+  // The endpoint variable may not be configured in all CI environments.
+  await page.route("**/*", async (route) => {
+    const url = route.request().url();
+    const isSubmissionEndpoint =
+      url.includes("script.google.com") || url.includes("macros");
+    if (isSubmissionEndpoint && route.request().method() === "POST") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, message: "Recorded", sheet_name: "work_with_us", row_number: 1 }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Inject a fake endpoint so the gateway doesn't throw before fetching.
+  await page.addInitScript(() => {
+    window.__RaleighPremiumWellnessFormEndpoint =
+      "https://script.google.com/macros/s/test-mock/exec";
+  });
+
   await page.goto("/?interestPath=work_with_us#contact");
 
   await page.getByLabel("First Name").fill("Roman");
