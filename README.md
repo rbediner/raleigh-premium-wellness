@@ -7,7 +7,7 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 - One mobile-first anchored landing page for MVP
 - Primary goal is to support Studio Development Manager outreach and referrals
 - Secondary goals include partner outreach and future client/community list building
-- Form submissions will flow into Google Sheets during the next integration phase
+- Form submission storage is being wired through Google Sheets and Apps Script as the operational intake path
 - Hosting target is GitHub Pages using a dedicated `gh-pages` publish branch
 
 ## Repository Structure
@@ -20,6 +20,7 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 - `site/` stores the main HTML document for the website
 - `styles/` stores site styling
 - `docs/` stores release workflow, handoff notes, and QA guidance
+- `integrations/` stores backend-adjacent integration source such as Apps Script code for Google services
 
 ## Reference File Safety
 
@@ -48,6 +49,7 @@ Repo-cleanup rule:
 
 - Primary PRD source: `planning/the-raleigh-tox-prd-reference.md`
 - Google Sheet source: `data-sources/the-tox-raleigh-outreach-sheet-reference.md`
+- Google account ownership + auth setup: `docs/integrations/google-service-ownership.md`
 - GitHub repository: `rbediner/raleigh-premium-wellness`
 - Repository visibility: private
 
@@ -252,10 +254,11 @@ Do these steps every time you open this repo on a new machine or in a new Codex 
 1. Open `README.md`.
 2. Open `docs/handoff/latest.md`.
 3. Open `docs/release/release-sop.md`.
-4. Align your local checkout to the handoff branch before editing.
-5. Make sure the branch is committed or clean before editing.
-6. Run `npm run session:ready`.
-7. Before ending the session, run the terminal/process sweep from this README and make sure the app terminal is back at a shell prompt.
+4. If the work touches Google integrations, open `docs/integrations/google-service-ownership.md`.
+5. Align your local checkout to the handoff branch before editing.
+6. Make sure the branch is committed or clean before editing.
+7. Run `npm run session:ready`.
+8. Before ending the session, run the terminal/process sweep from this README and make sure the app terminal is back at a shell prompt.
 
 ### What `npm run session:ready` checks
 

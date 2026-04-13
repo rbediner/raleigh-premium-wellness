@@ -103,6 +103,7 @@ If that future case happens, the cleanup path is:
 
 - Every new machine or new Codex session must read `README.md` first.
 - Then read `docs/handoff/latest.md`.
+- If the work touches Google services, read `docs/integrations/google-service-ownership.md`.
 - Then read this SOP before making changes.
 - Align the local checkout to the handoff branch before editing.
 - Run `npm run session:ready` before writing code.

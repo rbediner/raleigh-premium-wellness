@@ -1,12 +1,12 @@
 # Latest Handoff
 
-Handoff sequence: `12`
+Handoff sequence: `14`
 
-Updated at (UTC): `2026-04-10T21:00:00.000Z`
+Updated at (UTC): `2026-04-13T19:46:00.000Z`
 
 Source branch: `staging`
 
-Source commit: `88621b4` (verify with `git rev-parse HEAD`)
+Source commit: `59bf2af` (verify with `git rev-parse HEAD`)
 
 ## Current Branch Model
 
@@ -17,8 +17,8 @@ Source commit: `88621b4` (verify with `git rev-parse HEAD`)
 ## Branch Alignment Or Divergence Notes
 
 - Current branch at update time: `staging`.
-- Working tree: clean. All files committed.
-- Compared with `origin/staging`: ahead 0, behind 0.
+- Remote branch alignment at last checked state: local `staging` matched `origin/staging`.
+- Working tree is not currently clean because local cleanup and integration follow-up work may be in progress.
 
 ## Preview Or Staging URL
 
@@ -26,90 +26,79 @@ Source commit: `88621b4` (verify with `git rev-parse HEAD`)
 
 ## Current CI Or Deploy Status Summary
 
-- Latest Preview Deploy: **PASSED** (run 24263219444, commit 88621b4)
-- All 8 E2E tests passing.
-- GA4 tag confirmed live in deployed staging HTML.
-- Production Deploy on main: not yet run. BL-3 has not been promoted to production.
+- Latest recorded staging commit in handoff context: `59bf2af`
+- Preview deploy history after BL-3 has been green, but BL-1 operational wiring should be re-verified after the Google account ownership cleanup
+- GA4 wiring is in the site code and should remain associated with the Ads / analytics Google account, not the operational Sheets / Apps Script account
 
 ---
 
-## What Was Done This Session (BL-3 + CI Repair)
+## What Was Done Before This Cleanup Review
 
 ### BL-3: GA4 Analytics — COMPLETE
 
-**Files changed:**
-- `site/index.html` — GA4 snippet (`G-3FW9JG7S27`) added to `<head>`
-- `scripts/site/site-interactions.js` — `trackEvent()` now calls `gtag('event', ...)` in addition to `dataLayer.push()`; `form_submission_attempt` added to `handleFormSubmit()`
+Files already on `staging` include:
+- `site/index.html`
+- `scripts/site/site-interactions.js`
 
-**Event map:**
+Current intent:
+- GA4 remains in place
+- Ads / analytics ownership should stay with `rbediner@gmail.com`
 
-| Event | Trigger | Parameters |
-|---|---|---|
-| `page_view` | Auto on load (gtag config) | `page_location`, `page_title` |
-| `page_load` | DOMContentLoaded | `page` |
-| `hero_cta_click` | Hero CTA clicked | `target` |
-| `nav_click` | Nav anchor clicked | `target` |
-| `form_path_selection` | Path radio changed | `interestPath` |
-| `form_submission_attempt` | Submit clicked (pre-validation) | `interestPath` |
-| `form_submission_success` | Successful server response | `interestPath` |
-| `form_submission_error` | Error / network failure | `interestPath`, `message` |
+### BL-1 Scaffolding: PARTIAL
 
-**GA4 property:** `G-3FW9JG7S27` under `roman@romanbediner.com`
+Repo-side work already present on `staging` includes:
+- `scripts/site/submission-gateway.js`
+- `scripts/release/build-site-artifact.mjs`
+- `.github/workflows/preview-deploy.yml`
+- `.github/workflows/production-deploy.yml`
+- `qa/unit/submission-gateway.test.js`
+- mocked browser coverage in `qa/end-to-end/anchored-navigation-and-contact-form.spec.ts`
 
----
-
-### CI Repair — COMPLETE
-
-BL-3 accidentally introduced a broken dependency: `site-interactions.js` was committed with Codex's BL-1 import (`import { submitUnifiedFormSubmission } from "./submission-gateway.js"`) but `submission-gateway.js` had never been committed. This caused all 7 E2E tests to fail. Full root cause and resolution:
-
-**Files committed as part of CI repair:**
-- `scripts/site/submission-gateway.js` — Codex's BL-1 gateway (was untracked), now committed
-- `qa/unit/submission-gateway.test.js` — unit tests for gateway (was untracked), now committed
-- `scripts/release/build-site-artifact.mjs` — updated to:
-  - Copy `submission-gateway.js` into build artifact
-  - Read `FORM_SUBMISSION_ENDPOINT_URL` env var and inject as `window.__RaleighPremiumWellnessFormEndpoint` in both preview and production head markup
-- `.github/workflows/preview-deploy.yml` — `FORM_SUBMISSION_ENDPOINT_URL: ${{ vars.FORM_SUBMISSION_ENDPOINT_URL }}` added to preflight and publish steps
-- `.github/workflows/production-deploy.yml` — same env var added to preflight and publish steps
-- `qa/end-to-end/anchored-navigation-and-contact-form.spec.ts` — submission success test now mocks the Apps Script network call via `page.route()` and injects a fake endpoint via `page.addInitScript()` so CI passes without a real deployment
+This means:
+- the browser form is prepared to call a real endpoint
+- the build pipeline is prepared to inject `FORM_SUBMISSION_ENDPOINT_URL`
+- CI can validate the success path with a mocked endpoint
+- BL-1 should not be treated as fully live until the real Apps Script deployment, repo variable, and sheet-write QA are verified under the correct Google account
 
 ---
 
 ## Blockers Or Manual Follow-Ups
 
+### Google Service Account Split — NOW EXPLICIT
+
+- Google Ads and GA4 work should stay under `rbediner@gmail.com`
+- Google Sheets, Apps Script, and other operational Google work should use `roman.bediner@cormanity.com`
+- The spelling of `roman.bediner@cormanity.com` should be confirmed before provisioning additional Google resources
+- Read `docs/integrations/google-service-ownership.md` before doing Google-integrated work on a new machine
+
+### BL-1: Google Sheets Submission Wiring — STILL OPEN
+
+- The repo has the BL-1 frontend and Apps Script scaffolding, but operational completion still needs confirmation under the correct Google account
+- The GitHub repository variable `FORM_SUBMISSION_ENDPOINT_URL` should be checked and set to the correct deployed `/exec` URL
+- Real browser-to-sheet QA still needs to be rerun after the account ownership cleanup
+
+### `integrations/` Source Of Truth
+
+- `integrations/google-sheets-submissions/` should be committed as repo source of truth
+- Local `.clasp.json` bindings should remain machine-local until the canonical Apps Script owner account and script binding are finalized
+
 ### BL-2: Email Notifications — OPEN
-- Target email: `roman.bediner@thetox.com`
-- Recommended approach: add `MailApp.sendEmail()` inside `integrations/google-sheets-submissions/Code.js` after a successful row append
-- The Apps Script code is in `integrations/google-sheets-submissions/Code.js` (untracked locally — needs to be deployed to Google and the `/exec` URL set as `FORM_SUBMISSION_ENDPOINT_URL` repo variable in GitHub)
 
-### Apps Script Deployment — MANUAL STEP for Roman
-- Deploy `integrations/google-sheets-submissions/Code.js` as a Google Apps Script web app
-- Set the resulting `/exec` URL as `FORM_SUBMISSION_ENDPOINT_URL` in GitHub repo variables (Settings → Secrets and variables → Variables)
-- Until this is done, form submissions will silently fail in production
+- Target notification address remains `roman.bediner@thetox.com`
+- Recommended approach is still to add `MailApp.sendEmail()` after a successful row append inside `integrations/google-sheets-submissions/Code.js`
 
-### `integrations/` directory — UNTRACKED
-- `integrations/google-sheets-submissions/Code.js` and supporting files exist locally but have never been committed
-- They should be committed before promotion to main so the source of truth is in the repo
+### PRD Follow-Up
 
-### PRD Updates Needed
-- BL-3 → update status to DONE
-- UI-1, UI-3, UI-5 → still OPEN
-
-### Promotion to main
-- Staging is clean and CI is green. BL-3 is ready to promote.
-- Before promoting: consider whether to commit `integrations/` first (recommended)
-- Follow the standard release SOP: merge staging → main, push main
-
-### GA4 DebugView Verification (for Roman)
-- Open the staging URL with `?gtag_debug=1` appended
-- Go to GA4 console → property `G-3FW9JG7S27` → DebugView
-- Confirm events stream in live: `page_view`, `hero_cta_click`, `form_path_selection`, `form_submission_attempt`, `form_submission_success`
+- The PRD Google Doc has been updated to reflect the Google account ownership split, BL-1's partial/live status, and BL-3's implemented state
+- Continue keeping the PRD in sync as BL-1 and BL-2 move from scaffolded to fully operational
 
 ---
 
 ## Operator Notes For Next Session
 
-- Read README.md first, then this file, before making changes.
+- Read `README.md` first, then this file.
+- If the work touches Google services, also read `docs/integrations/google-service-ownership.md`.
 - Use the checked-in markdown reference files for the PRD and sheet.
 - Run `npm run session:ready` before starting work.
-- Monitor CI after every push to staging (`gh run list --repo rbediner/raleigh-premium-wellness --workflow preview-deploy.yml --limit 3`). This is required by the release SOP.
-- If picking up BL-2: add `MailApp.sendEmail()` to `Code.js` after the `appendRow()` call. Subject should identify the inquiry type. Body should include the submitted field values.
+- Monitor CI after every push to staging. This is required by the release SOP.
+- Do not assume the old BL-1 notes are still accurate; re-check the actual repo files and GitHub variable state before continuing backend work.

@@ -17,6 +17,7 @@ describe("session readiness contract", () => {
     const readme = readFileSync("README.md", "utf8");
     const sop = readFileSync("docs/release/release-sop.md", "utf8");
     const gitignore = readFileSync(".gitignore", "utf8");
+    const googleOwnershipGuide = readFileSync("docs/integrations/google-service-ownership.md", "utf8");
 
     expect(readme).toContain("## Cross-Machine Continuity");
     expect(readme).toContain("## Reference File Safety");
@@ -26,14 +27,22 @@ describe("session readiness contract", () => {
     expect(readme).toContain("Open `README.md`.");
     expect(readme).toContain("Open `docs/handoff/latest.md`.");
     expect(readme).toContain("Open `docs/release/release-sop.md`.");
+    expect(readme).toContain("docs/integrations/google-service-ownership.md");
     expect(readme).toContain("Run `npm run session:ready`.");
     expect(readme).toContain("npm run handoff:update");
     expect(readme).toContain("Do not rely on cloud-synced `.gdoc` or `.gsheet` shortcut files");
     expect(gitignore).toContain("*.gslides");
+    expect(gitignore).toContain("integrations/**/.clasp.json");
+    expect(gitignore).toContain("/RPW_UX_QA_Review.docx");
     expect(gitignore).toContain("/assets/review-screenshots/*.png");
     expect(gitignore).toContain("/assets/review-screenshots/*.json");
+    expect(googleOwnershipGuide).toContain("rbediner@gmail.com");
+    expect(googleOwnershipGuide).toContain("roman.bediner@cormanity.com");
+    expect(googleOwnershipGuide).toContain("npx @google/clasp login");
+    expect(googleOwnershipGuide).toContain("npx @google/clasp logout");
 
     expect(sop).toContain("Every new machine or new Codex session must read `README.md` first.");
+    expect(sop).toContain("docs/integrations/google-service-ownership.md");
     expect(sop).toContain("Run `npm run session:ready` before writing code.");
     expect(sop).toContain("Refresh the canonical handoff with `npm run handoff:update`");
   });

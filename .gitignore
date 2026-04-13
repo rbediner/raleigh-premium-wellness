@@ -16,7 +16,15 @@ test-results/
 *.gsheet
 *.gslides
 
+# Apps Script local bindings should stay machine-local until the team confirms
+# the correct owner account and the canonical script project to bind against.
+integrations/**/.clasp.json
+
 # Root-level review screenshots are usually ad hoc local artifacts. Committed
 # QA evidence should live in a dated subfolder under assets/review-screenshots/.
 /assets/review-screenshots/*.png
 /assets/review-screenshots/*.json
+
+# Keep this local ad hoc UX review file out of the readiness gate unless the
+# team decides to move it into a purpose-driven docs folder later.
+/RPW_UX_QA_Review.docx
