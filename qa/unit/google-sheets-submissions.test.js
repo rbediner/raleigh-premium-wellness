@@ -143,7 +143,8 @@ describe("google sheets submission gateway", () => {
     });
     expect(sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
-        to: "roman.bediner@thetox.com",
+        to: "roman.bediner+thetox@cormanity.com",
+        name: "Raleigh Premium Wellness Intake",
         subject: "New Raleigh Premium Wellness inquiry: Work With Us",
       }),
     );

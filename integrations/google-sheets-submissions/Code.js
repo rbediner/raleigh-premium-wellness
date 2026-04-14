@@ -1,5 +1,8 @@
 const SPREADSHEET_ID = "1rRNeWWqNsdbr1kuwpQfzuFWHaIAXx--MfyhgdhDyWV0";
-const NOTIFICATION_EMAIL = "roman.bediner@thetox.com";
+// Use the verified-working monitored inbox until the @thetox.com routing issue
+// is resolved at the mail/domain level.
+const NOTIFICATION_EMAIL = "roman.bediner+thetox@cormanity.com";
+const NOTIFICATION_SENDER_NAME = "Raleigh Premium Wellness Intake";
 
 // Mirror the public form paths one-to-one so each sheet tab stays readable and
 // does not collapse unrelated submissions into one mixed schema.
@@ -163,6 +166,9 @@ function sendNotificationEmail(pathKey, rowRecord, responseBody) {
     to: NOTIFICATION_EMAIL,
     subject: buildNotificationSubject(pathKey),
     body: buildNotificationBody(pathKey, rowRecord, responseBody),
+    // This improves the visible sender name for real recipients, though Gmail
+    // may still render self-sent alias tests as "me" inside the same mailbox.
+    name: NOTIFICATION_SENDER_NAME,
   });
 }
 

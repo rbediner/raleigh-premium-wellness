@@ -40,6 +40,13 @@ Source commit: `287554b` (verify with `git rev-parse HEAD`)
 - BL-2 code is implemented in-branch
 - Live Apps Script endpoint is now healthy and publicly reachable
 
+## Backend QA Trigger Policy
+
+- The durable QA trigger rule now lives in `docs/qa/backend-qa-trigger-sop.md`
+- Do not rerun the full live-staging backend validation pack for docs-only, copy-only, styling-only, metadata-only, or routine deploy changes
+- Reserve the full pack for submission-flow changes, Apps Script changes, Google Sheets mapping changes, notification-email changes, endpoint or ownership changes, suspected regressions, and milestone backend-readiness sign-off
+- For this specific SOP pass, only docs and workflow verification should run now unless a separate backend trigger appears
+
 ---
 
 ## What Was Completed In This Session
@@ -102,6 +109,13 @@ Behavior now implemented:
 - subject line identifies inquiry type
 - body includes row metadata and submitted fields
 - response includes notification send state
+- verified working notification destination now points to:
+  - `roman.bediner+thetox@cormanity.com`
+- this destination was chosen after direct delivery probes confirmed:
+  - Apps Script mail leaves `roman.bediner@cormanity.com`
+  - delivery to `roman.bediner@thetox.com` is not currently observable in the target inbox
+  - delivery to `thetox@cormanity.com` is not a reliable proof target because it is an alias on the sender mailbox
+  - delivery to `roman.bediner+thetox@cormanity.com` is observable and verified
 
 ### Browser QA Against Real Backend — COMPLETE LOCALLY
 
@@ -147,6 +161,9 @@ Confirmed:
 
 - Live backend responses reported `notification_email_sent: true`
 - But no inbox screenshot was captured in this session
+- Follow-up clarification:
+  - sent-mail proof exists from the `cormanity.com` sender account
+  - operational destination has been updated to the verified plus-address inbox for reliable receipt
 
 ### BL-3 Follow-Up — STILL PENDING
 
