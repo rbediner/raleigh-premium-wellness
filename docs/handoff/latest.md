@@ -24,7 +24,6 @@ Source commit: `287554b` (verify with `git rev-parse HEAD`)
   - `integrations/google-sheets-submissions/Code.js`
   - `integrations/google-sheets-submissions/appsscript.json`
   - `qa/unit/google-sheets-submissions.test.js`
-  - `assets/review-screenshots/2026-04-14-backend-readiness/`
 
 ## Preview Or Staging URL
 
@@ -127,12 +126,7 @@ The following browser flows were run end to end against a local staging-equivale
 Result:
 - each form submitted successfully through the real backend
 - each success state rendered after real backend completion
-- browser success screenshots were captured
-
-Evidence files saved in repo:
-- `assets/review-screenshots/2026-04-14-backend-readiness/work-with-us-browser-success.png`
-- `assets/review-screenshots/2026-04-14-backend-readiness/partner-with-us-browser-success.png`
-- `assets/review-screenshots/2026-04-14-backend-readiness/stay-connected-browser-success.png`
+- browser success was confirmed during the validation pass
 
 ### Repo Variable Wiring — COMPLETE
 
