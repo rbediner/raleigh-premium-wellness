@@ -1,12 +1,12 @@
 # Latest Handoff
 
-Handoff sequence: `16`
+Handoff sequence: `17`
 
-Updated at (UTC): `2026-04-14T13:40:00.000Z`
+Updated at (UTC): `2026-04-14T13:46:00.000Z`
 
-Source branch: `codex/backend-readiness-bl1-bl2`
+Source branch: `staging`
 
-Source commit: `cc7b4d8` (verify with `git rev-parse HEAD`)
+Source commit: `287554b` (verify with `git rev-parse HEAD`)
 
 ## Current Branch Model
 
@@ -16,8 +16,9 @@ Source commit: `cc7b4d8` (verify with `git rev-parse HEAD`)
 
 ## Branch Alignment Or Divergence Notes
 
-- Current working branch: `codex/backend-readiness-bl1-bl2`
-- `staging` has not yet been updated in this session
+- Current integration branch: `staging`
+- Feature branch snapshot also exists remotely at:
+  - `origin/codex/backend-readiness-bl1-bl2`
 - Working tree now includes:
   - `docs/handoff/latest.md`
   - `integrations/google-sheets-submissions/Code.js`
