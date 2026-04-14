@@ -34,7 +34,8 @@ Source commit: `287554b` (verify with `git rev-parse HEAD`)
 
 ## Current CI Or Deploy Status Summary
 
-- No push to `staging` yet in this session
+- `staging` has been pushed in this session
+- Preview Deploy is still blocked by handoff contract formatting, not backend code
 - GitHub repo variable `FORM_SUBMISSION_ENDPOINT_URL` is now set to the live Apps Script `/exec` URL
 - BL-2 code is implemented in-branch
 - Live Apps Script endpoint is now healthy and publicly reachable
@@ -127,12 +128,14 @@ Confirmed:
 
 ---
 
+## Blockers Or Manual Follow-Ups
+
 ## What Is Still Open
 
 ### Staging Branch Promotion — NOT YET DONE
 
-- The feature branch has not yet been merged into `staging`
-- Therefore the public GitHub Pages staging site has not yet been re-deployed with this live endpoint wiring
+- The code has been merged and pushed to `staging`
+- The published GitHub Pages staging URL is still not updated because Preview Deploy is failing on the handoff contract test
 
 ### Sheet Row Screenshot Evidence — STILL MISSING
 
@@ -180,7 +183,7 @@ Additional real browser verification performed:
 - success-state screenshots captured
 
 Important limitation:
-- this does **not** yet count as proof that the published GitHub Pages staging URL has been updated, because `staging` has not yet been pushed in this session
+- this does **not** yet count as proof that the published GitHub Pages staging URL has been updated, because Preview Deploy is still failing in CI
 
 ---
 
@@ -191,17 +194,14 @@ Important limitation:
 
 ### Exact Next Steps
 
-1. Decide whether to:
-   - commit + push the feature branch first
-   - then merge/promote into `staging`
-2. After `staging` is updated, wait for the preview deploy to finish
-3. Re-test the published staging URL:
+1. Fix the remaining handoff contract formatting issue until Preview Deploy passes
+2. After Preview Deploy succeeds, re-test the published staging URL:
    - https://rbediner.github.io/raleigh-premium-wellness/staging/
-4. Capture the remaining missing evidence:
+3. Capture the remaining missing evidence:
    - sheet row screenshots for all three tabs
    - notification email screenshot for at least one successful submission
    - GA4 follow-up evidence or explicit block reason
-5. Only after the public staging URL is verified should BL-1 be treated as fully complete from a release perspective
+4. Only after the public staging URL is verified should BL-1 be treated as fully complete from a release perspective
 
 ### Important IDs And URLs
 
