@@ -1,4 +1,5 @@
 const SPREADSHEET_ID = "1rRNeWWqNsdbr1kuwpQfzuFWHaIAXx--MfyhgdhDyWV0";
+const NOTIFICATION_EMAIL = "roman.bediner@thetox.com";
 
 // Mirror the public form paths one-to-one so each sheet tab stays readable and
 // does not collapse unrelated submissions into one mixed schema.
@@ -51,10 +52,20 @@ const SHARED_COLUMNS = [
   "is_test_submission",
 ];
 
+const PATH_LABELS = {
+  work_with_us: "Work With Us",
+  partner_with_us: "Partner With Us",
+  stay_connected: "Stay Connected / VIP",
+};
+
 function buildJsonResponse(responseBody) {
   return ContentService.createTextOutput(JSON.stringify(responseBody)).setMimeType(
     ContentService.MimeType.JSON,
   );
+}
+
+function getPathLabel(pathKey) {
+  return PATH_LABELS[pathKey] || pathKey;
 }
 
 function getSheetHeadersForPath(pathKey) {
@@ -117,6 +128,44 @@ function buildRowValues(pathKey, normalizedValues, payloadMetadata) {
   return [...sharedValues, ...fieldValues];
 }
 
+function buildRowRecord(pathKey, normalizedValues, payloadMetadata) {
+  const headers = getSheetHeadersForPath(pathKey);
+  const rowValues = buildRowValues(pathKey, normalizedValues, payloadMetadata);
+
+  return headers.reduce((record, header, index) => {
+    record[header] = rowValues[index];
+    return record;
+  }, {});
+}
+
+function buildNotificationSubject(pathKey) {
+  return `New Raleigh Premium Wellness inquiry: ${getPathLabel(pathKey)}`;
+}
+
+function buildNotificationBody(pathKey, rowRecord, responseBody) {
+  const orderedEntries = Object.entries(rowRecord).filter(([, value]) => String(value || "").trim() !== "");
+  const lines = [
+    "A new inquiry was submitted on the Raleigh Premium Wellness staging site.",
+    "",
+    `Inquiry type: ${getPathLabel(pathKey)}`,
+    `Sheet tab: ${responseBody.sheet_name}`,
+    `Row number: ${responseBody.row_number}`,
+    "",
+    "Submission details:",
+    ...orderedEntries.map(([fieldName, fieldValue]) => `${fieldName}: ${fieldValue}`),
+  ];
+
+  return lines.join("\n");
+}
+
+function sendNotificationEmail(pathKey, rowRecord, responseBody) {
+  MailApp.sendEmail({
+    to: NOTIFICATION_EMAIL,
+    subject: buildNotificationSubject(pathKey),
+    body: buildNotificationBody(pathKey, rowRecord, responseBody),
+  });
+}
+
 function parseIncomingPayload(event) {
   if (!event.postData || !event.postData.contents) {
     throw new Error("Missing request body.");
@@ -134,18 +183,32 @@ function parseIncomingPayload(event) {
 function writeSubmissionRow(payload) {
   const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ensureSheetForPath(spreadsheet, payload.path);
-  const rowValues = buildRowValues(payload.path, payload.normalized_values || {}, {
+  const payloadMetadata = {
     sourceUrl: payload.source_url,
     isTestSubmission: payload.is_test_submission,
-  });
-
-  sheet.appendRow(rowValues);
-
-  return {
+  };
+  const rowValues = buildRowValues(payload.path, payload.normalized_values || {}, payloadMetadata);
+  const rowRecord = buildRowRecord(payload.path, payload.normalized_values || {}, payloadMetadata);
+  const responseBody = {
     ok: true,
     sheet_name: sheet.getName(),
-    row_number: sheet.getLastRow(),
+    row_number: sheet.getLastRow() + 1,
   };
+
+  // Only send internal notification after the row append succeeds so the UI
+  // never claims success for a submission that was not captured in Sheets.
+  sheet.appendRow(rowValues);
+
+  try {
+    sendNotificationEmail(payload.path, rowRecord, responseBody);
+    responseBody.notification_email_sent = true;
+  } catch (error) {
+    responseBody.notification_email_sent = false;
+    responseBody.notification_email_error = error && error.message ? error.message : "Unknown email error.";
+    console.error("Submission notification email failed.", error);
+  }
+
+  return responseBody;
 }
 
 function doGet() {

@@ -1,12 +1,12 @@
 # Latest Handoff
 
-Handoff sequence: `14`
+Handoff sequence: `16`
 
-Updated at (UTC): `2026-04-13T19:46:00.000Z`
+Updated at (UTC): `2026-04-14T13:40:00.000Z`
 
-Source branch: `staging`
+Source branch: `codex/backend-readiness-bl1-bl2`
 
-Source commit: `59bf2af` (verify with `git rev-parse HEAD`)
+Source commit: `cc7b4d8` (verify with `git rev-parse HEAD`)
 
 ## Current Branch Model
 
@@ -16,89 +16,211 @@ Source commit: `59bf2af` (verify with `git rev-parse HEAD`)
 
 ## Branch Alignment Or Divergence Notes
 
-- Current branch at update time: `staging`.
-- Remote branch alignment at last checked state: local `staging` matched `origin/staging`.
-- Working tree is not currently clean because local cleanup and integration follow-up work may be in progress.
+- Current working branch: `codex/backend-readiness-bl1-bl2`
+- `staging` has not yet been updated in this session
+- Working tree now includes:
+  - `docs/handoff/latest.md`
+  - `integrations/google-sheets-submissions/Code.js`
+  - `integrations/google-sheets-submissions/appsscript.json`
+  - `qa/unit/google-sheets-submissions.test.js`
+  - `assets/review-screenshots/2026-04-14-backend-readiness/`
 
 ## Preview Or Staging URL
 
-- https://rbediner.github.io/raleigh-premium-wellness/staging/
+- Current published staging URL remains: https://rbediner.github.io/raleigh-premium-wellness/staging/
+- Local staging-equivalent preview with the real backend was verified at `http://127.0.0.1:4173`
+- GitHub repo variable has been updated so the next staging deploy will use the live Apps Script endpoint
 
 ## Current CI Or Deploy Status Summary
 
-- Latest recorded staging commit in handoff context: `59bf2af`
-- Preview deploy history after BL-3 has been green, but BL-1 operational wiring should be re-verified after the Google account ownership cleanup
-- GA4 wiring is in the site code and should remain associated with the Ads / analytics Google account, not the operational Sheets / Apps Script account
+- No push to `staging` yet in this session
+- GitHub repo variable `FORM_SUBMISSION_ENDPOINT_URL` is now set to the live Apps Script `/exec` URL
+- BL-2 code is implemented in-branch
+- Live Apps Script endpoint is now healthy and publicly reachable
 
 ---
 
-## What Was Done Before This Cleanup Review
+## What Was Completed In This Session
 
-### BL-3: GA4 Analytics — COMPLETE
+### Google Ownership Recovery — COMPLETE
 
-Files already on `staging` include:
-- `site/index.html`
-- `scripts/site/site-interactions.js`
+- Logged `clasp` out of the stale session
+- Re-authenticated `clasp` under `roman.bediner@cormanity.com`
+- Verified the active Google identity is the `cormanity.com` account
 
-Current intent:
-- GA4 remains in place
-- Ads / analytics ownership should stay with `rbediner@gmail.com`
+### New Apps Script Project — COMPLETE
 
-### BL-1 Scaffolding: PARTIAL
+New clean Apps Script project under the correct account:
+- Script ID: `1J4agDeFusQ0BB7KLAKtdG3QWKd_HuQeFngp3sd_KGCo2uGthHy0dn_Vu`
+- Script editor URL:
+  - https://script.google.com/d/1J4agDeFusQ0BB7KLAKtdG3QWKd_HuQeFngp3sd_KGCo2uGthHy0dn_Vu/edit
 
-Repo-side work already present on `staging` includes:
-- `scripts/site/submission-gateway.js`
-- `scripts/release/build-site-artifact.mjs`
-- `.github/workflows/preview-deploy.yml`
-- `.github/workflows/production-deploy.yml`
-- `qa/unit/submission-gateway.test.js`
-- mocked browser coverage in `qa/end-to-end/anchored-navigation-and-contact-form.spec.ts`
+Why this was necessary:
+- the older bound script appeared to come from the wrong Google account lineage
+- the cleanest path was to create a brand-new Apps Script project under `roman.bediner@cormanity.com`
 
-This means:
-- the browser form is prepared to call a real endpoint
-- the build pipeline is prepared to inject `FORM_SUBMISSION_ENDPOINT_URL`
-- CI can validate the success path with a mocked endpoint
-- BL-1 should not be treated as fully live until the real Apps Script deployment, repo variable, and sheet-write QA are verified under the correct Google account
+### Live Web App Deployment — COMPLETE
+
+Current live deployment details:
+- Deployment ID: `AKfycbwilm9PIHYu1ygTOqHNlAqzizXakxyfzZHw_KzCo1GJqy4x8INdeMDyVGALx8iNdrrX`
+- Live `/exec` URL:
+  - https://script.google.com/macros/s/AKfycbwilm9PIHYu1ygTOqHNlAqzizXakxyfzZHw_KzCo1GJqy4x8INdeMDyVGALx8iNdrrX/exec
+
+Important implementation note:
+- The web app initially failed anonymously because the manifest used the wrong public access enum
+- `integrations/google-sheets-submissions/appsscript.json` now uses:
+  - `"access": "ANYONE_ANONYMOUS"`
+- The script also required a first owner-side authorization run of `doGet` in the Apps Script editor before the public endpoint started returning JSON successfully
+
+### BL-1 Backend Wiring — COMPLETE AT BACKEND LEVEL
+
+Confirmed:
+- live anonymous `/exec` endpoint now returns JSON successfully
+- direct POST requests to the endpoint succeed for:
+  - `work_with_us`
+  - `partner_with_us`
+  - `stay_connected`
+- each response reported:
+  - correct tab name
+  - row number
+  - `notification_email_sent: true`
+
+Example direct live responses observed:
+- `work_with_us` -> `{"ok":true,"sheet_name":"work_with_us","row_number":2,"notification_email_sent":true}`
+- `partner_with_us` -> `{"ok":true,"sheet_name":"partner_with_us","row_number":2,"notification_email_sent":true}`
+- `stay_connected` -> `{"ok":true,"sheet_name":"stay_connected","row_number":2,"notification_email_sent":true}`
+
+### BL-2 Internal Notification Email — COMPLETE IN CODE AND LIVE RESPONSE
+
+Updated file:
+- `integrations/google-sheets-submissions/Code.js`
+
+Behavior now implemented:
+- sends internal email only after successful row append
+- subject line identifies inquiry type
+- body includes row metadata and submitted fields
+- response includes notification send state
+
+### Browser QA Against Real Backend — COMPLETE LOCALLY
+
+The following browser flows were run end to end against a local staging-equivalent preview built with the live `/exec` endpoint:
+- Work With Us
+- Partner With Us
+- Stay Connected / VIP
+
+Result:
+- each form submitted successfully through the real backend
+- each success state rendered after real backend completion
+- browser success screenshots were captured
+
+Evidence files saved in repo:
+- `assets/review-screenshots/2026-04-14-backend-readiness/work-with-us-browser-success.png`
+- `assets/review-screenshots/2026-04-14-backend-readiness/partner-with-us-browser-success.png`
+- `assets/review-screenshots/2026-04-14-backend-readiness/stay-connected-browser-success.png`
+
+### Repo Variable Wiring — COMPLETE
+
+Confirmed:
+- `FORM_SUBMISSION_ENDPOINT_URL` now points to:
+  - `https://script.google.com/macros/s/AKfycbwilm9PIHYu1ygTOqHNlAqzizXakxyfzZHw_KzCo1GJqy4x8INdeMDyVGALx8iNdrrX/exec`
 
 ---
 
-## Blockers Or Manual Follow-Ups
+## What Is Still Open
 
-### Google Service Account Split — NOW EXPLICIT
+### Staging Branch Promotion — NOT YET DONE
 
-- Google Ads and GA4 work should stay under `rbediner@gmail.com`
-- Google Sheets, Apps Script, and other operational Google work should use `roman.bediner@cormanity.com`
-- The spelling of `roman.bediner@cormanity.com` should be confirmed before provisioning additional Google resources
-- Read `docs/integrations/google-service-ownership.md` before doing Google-integrated work on a new machine
+- The feature branch has not yet been merged into `staging`
+- Therefore the public GitHub Pages staging site has not yet been re-deployed with this live endpoint wiring
 
-### BL-1: Google Sheets Submission Wiring — STILL OPEN
+### Sheet Row Screenshot Evidence — STILL MISSING
 
-- The repo has the BL-1 frontend and Apps Script scaffolding, but operational completion still needs confirmation under the correct Google account
-- The GitHub repository variable `FORM_SUBMISSION_ENDPOINT_URL` should be checked and set to the correct deployed `/exec` URL
-- Real browser-to-sheet QA still needs to be rerun after the account ownership cleanup
+- Direct backend POST responses confirm successful writes
+- However, sheet-row screenshot capture is still missing from this session
+- Attempts to use a connector shortcut for sheet retrieval were blocked by token expiration on the Google Drive connector
 
-### `integrations/` Source Of Truth
+### Notification Email Screenshot Evidence — STILL MISSING
 
-- `integrations/google-sheets-submissions/` should be committed as repo source of truth
-- Local `.clasp.json` bindings should remain machine-local until the canonical Apps Script owner account and script binding are finalized
+- Live backend responses reported `notification_email_sent: true`
+- But no inbox screenshot was captured in this session
 
-### BL-2: Email Notifications — OPEN
+### BL-3 Follow-Up — STILL PENDING
 
-- Target notification address remains `roman.bediner@thetox.com`
-- Recommended approach is still to add `MailApp.sendEmail()` after a successful row append inside `integrations/google-sheets-submissions/Code.js`
+- Core GA4 implementation remains untouched
+- BL-3 follow-up should happen only after the code is promoted to `staging` and the public staging site is actually using the live backend endpoint
 
-### PRD Follow-Up
+---
 
-- The PRD Google Doc has been updated to reflect the Google account ownership split, BL-1's partial/live status, and BL-3's implemented state
-- Continue keeping the PRD in sync as BL-1 and BL-2 move from scaffolded to fully operational
+## QA Run In This Session
+
+Commands run successfully:
+
+```bash
+npm run test:unit -- qa/unit/submission-gateway.test.js qa/unit/google-sheets-submissions.test.js
+node scripts/qa/run-browser-quality-checks.mjs
+```
+
+Additional live backend verification performed:
+
+```bash
+curl -L https://script.google.com/macros/s/AKfycbwilm9PIHYu1ygTOqHNlAqzizXakxyfzZHw_KzCo1GJqy4x8INdeMDyVGALx8iNdrrX/exec
+```
+
+Observed result:
+- returned JSON health payload with available paths and spreadsheet ID
+
+Additional real write verification performed:
+- posted live JSON submissions directly to the `/exec` endpoint for all three paths
+- all three returned `ok: true`
+
+Additional real browser verification performed:
+- local preview built with live endpoint
+- successful browser submissions across all three persona paths
+- success-state screenshots captured
+
+Important limitation:
+- this does **not** yet count as proof that the published GitHub Pages staging URL has been updated, because `staging` has not yet been pushed in this session
 
 ---
 
 ## Operator Notes For Next Session
 
-- Read `README.md` first, then this file.
-- If the work touches Google services, also read `docs/integrations/google-service-ownership.md`.
-- Use the checked-in markdown reference files for the PRD and sheet.
-- Run `npm run session:ready` before starting work.
-- Monitor CI after every push to staging. This is required by the release SOP.
-- Do not assume the old BL-1 notes are still accurate; re-check the actual repo files and GitHub variable state before continuing backend work.
+- Stay on branch `codex/backend-readiness-bl1-bl2`
+- Do not recreate the Apps Script project; the clean one already exists under the correct account
+
+### Exact Next Steps
+
+1. Decide whether to:
+   - commit + push the feature branch first
+   - then merge/promote into `staging`
+2. After `staging` is updated, wait for the preview deploy to finish
+3. Re-test the published staging URL:
+   - https://rbediner.github.io/raleigh-premium-wellness/staging/
+4. Capture the remaining missing evidence:
+   - sheet row screenshots for all three tabs
+   - notification email screenshot for at least one successful submission
+   - GA4 follow-up evidence or explicit block reason
+5. Only after the public staging URL is verified should BL-1 be treated as fully complete from a release perspective
+
+### Important IDs And URLs
+
+- New Apps Script script ID:
+  - `1J4agDeFusQ0BB7KLAKtdG3QWKd_HuQeFngp3sd_KGCo2uGthHy0dn_Vu`
+- Live deployment ID:
+  - `AKfycbwilm9PIHYu1ygTOqHNlAqzizXakxyfzZHw_KzCo1GJqy4x8INdeMDyVGALx8iNdrrX`
+- Live `/exec` URL:
+  - https://script.google.com/macros/s/AKfycbwilm9PIHYu1ygTOqHNlAqzizXakxyfzZHw_KzCo1GJqy4x8INdeMDyVGALx8iNdrrX/exec
+
+### Old Wrong-Account Script Cleanup
+
+- Old script deletion has **not** been completed
+- Reason:
+  - that cleanup likely requires access under the original owner account of the old script
+- Do not delete anything blindly until the old script is positively identified under the old account
+
+### Important Safety Reminders
+
+- Do not deploy Apps Script under `rbediner@gmail.com`
+- Do not move GA4 ownership away from `rbediner@gmail.com`
+- Do not reopen front-end polish or copy work during the backend completion pass
+- Keep `.clasp.json` machine-local if another machine needs its own local binding workflow
