@@ -101,6 +101,12 @@ Plain-English rule:
 - production deploys come from `main`
 - production is not considered complete until deploy verification passes
 
+Environment rule:
+
+- No environment is considered done just because code was pushed.
+- A deploy is only complete after the target workflow reaches a successful final state and the target environment is re-verified without errors.
+- If a deploy fails in any environment, keep working the failure until it is fixed or explicitly hand off the exact blocker. Do not report the environment as done while the deploy is red or still running.
+
 ### Normal Operator Flow
 
 1. Make changes on a feature branch.
@@ -187,6 +193,7 @@ git checkout main
 - Run the matching local command from this README.
 - Fix the issue on a feature branch or on `staging`, then rerun preview.
 - Do not hand off a preview URL until the replacement `staging` run has finished successfully.
+- Do not describe any environment as done while its deploy is still running or failing.
 
 ### Before Ending A Session
 
@@ -222,6 +229,7 @@ Best-practice note:
 - Treat the release as incomplete until the smoke check passes.
 - Re-check the workflow run, deploy summary, and live URL.
 - Only after the verification step is green should the release be considered live.
+- This same rule applies to every environment, not only production: preview, staging, production, and any future environment remain incomplete until deploy plus verification are both green.
 
 ### Release Evidence To Record
 

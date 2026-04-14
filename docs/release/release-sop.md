@@ -21,6 +21,8 @@ This file is the repo-local source of truth for how releases must move through t
 - Promote that exact approved commit to `main`.
 - The production workflow must confirm that the promoted commit already exists on `staging`.
 - Never announce production complete until verification passes.
+- Never report any environment as done while its deploy is still running or failing.
+- For any environment, deployment is only complete after the workflow is green and the target environment has been re-verified without errors.
 
 ## Standard Release Flow
 
@@ -83,6 +85,7 @@ If that future case happens, the cleanup path is:
 - Push again only after the local gate passes.
 - Stay with the replacement `staging` run until it reaches a final status.
 - Do not share a preview URL until the successful replacement run is complete.
+- Do not describe preview as done while the replacement run is pending or red.
 
 ### If production verification fails
 
@@ -90,6 +93,12 @@ If that future case happens, the cleanup path is:
 - Do not say it is live yet.
 - Re-check the workflow logs and the live URL.
 - Re-run the production smoke script until the site is actually serving correctly.
+
+### If any environment deploy fails
+
+- Treat that environment as incomplete.
+- Do not report success just because the code merge or push succeeded.
+- Keep working the deploy failure until it is fixed, or hand off the exact blocker with the failing run URL and current impact.
 
 ## Terminal And Process Cleanup
 
