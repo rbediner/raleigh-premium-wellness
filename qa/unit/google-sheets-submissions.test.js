@@ -1,10 +1,15 @@
 import { readFileSync } from "node:fs";
+import path from "node:path";
 import vm from "node:vm";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const codePath =
-  "/Users/roman.bediner/Library/CloudStorage/GoogleDrive-rbediner@gmail.com/My Drive/AI/Projects/The Tox/The Tox - Raleigh Outreach Site/integrations/google-sheets-submissions/Code.js";
+const codePath = path.resolve(
+  process.cwd(),
+  "integrations",
+  "google-sheets-submissions",
+  "Code.js",
+);
 const codeSource = readFileSync(codePath, "utf8");
 
 function loadAppsScriptContext(overrides = {}) {
