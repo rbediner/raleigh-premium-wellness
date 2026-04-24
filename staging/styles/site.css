@@ -1127,6 +1127,25 @@ button {
   }
 }
 
+@media (max-width: 480px) {
+  .site-footer__links {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.42rem;
+    width: 100%;
+    max-width: 14rem;
+  }
+
+  .site-footer__links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    width: 100%;
+    padding: 0.15rem 0.25rem;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
