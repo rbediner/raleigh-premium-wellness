@@ -171,14 +171,24 @@ function buildNotificationBody(pathKey, rowRecord, responseBody) {
 }
 
 function sendNotificationEmail(pathKey, rowRecord, responseBody) {
-  MailApp.sendEmail({
-    to: NOTIFICATION_EMAIL,
-    subject: buildNotificationSubject(pathKey),
-    body: buildNotificationBody(pathKey, rowRecord, responseBody),
-    // This improves the visible sender name for real recipients, though Gmail
-    // may still render self-sent alias tests as "me" inside the same mailbox.
-    name: NOTIFICATION_SENDER_NAME,
-  });
+  const subject = buildNotificationSubject(pathKey);
+  const body = buildNotificationBody(pathKey, rowRecord, responseBody);
+
+  // Prefer GmailApp first so message handling matches mailbox-native delivery
+  // behavior, and fall back to MailApp for resiliency.
+  try {
+    GmailApp.sendEmail(NOTIFICATION_EMAIL, subject, body, {
+      name: NOTIFICATION_SENDER_NAME,
+    });
+    return;
+  } catch (gmailError) {
+    MailApp.sendEmail({
+      to: NOTIFICATION_EMAIL,
+      subject,
+      body,
+      name: NOTIFICATION_SENDER_NAME,
+    });
+  }
 }
 
 function parseIncomingPayload(event) {
