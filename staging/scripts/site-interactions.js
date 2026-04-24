@@ -1,10 +1,12 @@
 import {
+  FIND_OUT_WHATS_COMING_PATH,
   FIELD_DEFINITIONS,
   buildSubmissionPayload,
   getFieldGroups,
   getFieldPresentation,
   getRequiredFields,
   getFormVariantConfig,
+  normalizeInterestPath,
 } from "./form-configuration.js";
 import { getIsTestSubmissionFlag, submitUnifiedFormSubmission } from "./submission-gateway.js";
 
@@ -311,10 +313,10 @@ function resetForCurrentPath(pathKey) {
 
 function parseIntentStateFromUrl() {
   const currentUrl = new URL(window.location.href);
-  const interestPath = currentUrl.searchParams.get("interestPath");
+  const interestPath = normalizeInterestPath(currentUrl.searchParams.get("interestPath"));
   const nextValues = {};
 
-  if (["work_with_us", "partner_with_us", "stay_connected"].includes(interestPath)) {
+  if (["work_with_us", "partner_with_us", FIND_OUT_WHATS_COMING_PATH].includes(interestPath)) {
     nextValues.interestPath = interestPath;
   }
 

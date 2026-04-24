@@ -3,6 +3,16 @@ export const GOOGLE_SHEET_TARGET_URL =
 
 export const EMAIL_NOTIFICATION_TARGET = "roman.bediner@thetox.com";
 export const STUDIO_DEVELOPMENT_MANAGER_LABEL = "Studio Development Manager";
+export const FIND_OUT_WHATS_COMING_PATH = "find_out_whats_coming";
+// Keep old deep links working while we migrate public language and routing to
+// the new curiosity-first path semantics.
+const LEGACY_PATH_ALIASES = {
+  stay_connected: FIND_OUT_WHATS_COMING_PATH,
+};
+
+export function normalizeInterestPath(pathKey) {
+  return LEGACY_PATH_ALIASES[pathKey] ?? pathKey;
+}
 
 export const FORM_VARIANT_CONFIG = {
   work_with_us: {
@@ -19,12 +29,12 @@ export const FORM_VARIANT_CONFIG = {
     successMessage:
       "Thanks so much for reaching out. We’re grateful for your interest and excited to learn more about you, your business, and the kind of collaboration you have in mind. We’ll review your note and be back in touch soon.",
   },
-  stay_connected: {
+  [FIND_OUT_WHATS_COMING_PATH]: {
     introduction:
-      "Want to be first in line when pre-sales opens? Sign up below to be notified when a limited number of discounted Founding Member VIP packages become available and to stay connected as we build toward launch in Raleigh.",
-    submitLabel: "Join the VIP List",
+      "A new premium wellness experience is coming to Raleigh. If you’d like to learn more as plans take shape, share your information below and we’ll follow up with more details.",
+    submitLabel: "Find Out What’s Coming",
     successMessage:
-      "Thank you so much for joining us early. We’re truly grateful for your interest and excited to keep you in the loop as launch plans take shape. We’ll share updates along the way and let you know as soon as founding-member opportunities become available. If you know someone in your circle who’d want to be part of this early, feel free to share the page with them.",
+      "Thanks for reaching out. We’ve received your note and will follow up with more information as plans take shape.",
   },
 };
 
@@ -174,19 +184,19 @@ export const FIELD_DEFINITIONS = {
     helperText: "Optional, but helpful if you want to share what interests you most.",
     composerChips: [
       {
-        label: "Founding Member VIP",
-        text: "I’m most interested in Founding Member VIP because ",
+        label: "What I’m Curious About",
+        text: "I’m most curious about ",
       },
       {
-        label: "Launch Updates",
-        text: "I’d like updates about ",
+        label: "What I Hope To Learn",
+        text: "I’d like to learn more about ",
       },
     ],
   },
   interest_type: {
     label: "Interest Type",
     type: "select",
-    options: ["Founding Member VIP", "Launch Updates", "General Early Access"],
+    options: ["What’s Coming", "Plans And Timeline", "General Curiosity"],
   },
   email_follow_up_consent: {
     label: "Yes, I’d be glad to hear from you by email about this opportunity.",
@@ -198,13 +208,11 @@ export const FIELD_DEFINITIONS = {
     helperText: "Message frequency varies. Message and data rates may apply. Reply STOP to opt out.",
   },
   email_updates_consent: {
-    label:
-      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available.",
+    label: "Yes, I’d be glad to hear from you by email and phone as plans take shape.",
     type: "checkbox",
   },
   text_updates_consent: {
-    label:
-      "Yes, I agree to receive text messages about launch updates, pre-sales, and Founding Member VIP offers.",
+    label: "Yes, I’d be glad to receive text updates as plans take shape.",
     type: "checkbox",
     helperText: "Message frequency varies. Message and data rates may apply. Reply STOP to opt out.",
   },
@@ -259,13 +267,16 @@ export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
 }
 
 export function getFormVariantConfig(pathKey, currentValues = {}) {
-  const baseVariant = FORM_VARIANT_CONFIG[pathKey] ?? FORM_VARIANT_CONFIG.work_with_us;
+  const normalizedPathKey = normalizeInterestPath(pathKey);
+  const baseVariant = FORM_VARIANT_CONFIG[normalizedPathKey] ?? FORM_VARIANT_CONFIG.work_with_us;
 
   return baseVariant;
 }
 
 export function getFieldGroups(pathKey, currentValues = {}) {
-  if (pathKey === "partner_with_us") {
+  const normalizedPathKey = normalizeInterestPath(pathKey);
+
+  if (normalizedPathKey === "partner_with_us") {
     return [
       {
         key: "partner_core",
@@ -284,11 +295,11 @@ export function getFieldGroups(pathKey, currentValues = {}) {
     ];
   }
 
-  if (pathKey === "stay_connected") {
+  if (normalizedPathKey === FIND_OUT_WHATS_COMING_PATH) {
     return [
       {
-        key: "stay_connected",
-        label: "Stay Connected",
+        key: FIND_OUT_WHATS_COMING_PATH,
+        label: "Find Out What’s Coming",
         fields: [
           "first_name",
           "last_name",
@@ -342,7 +353,9 @@ export function normalizeFormValues(rawValues) {
 }
 
 export function getRequiredFields(pathKey, currentValues = {}) {
-  if (pathKey === "partner_with_us") {
+  const normalizedPathKey = normalizeInterestPath(pathKey);
+
+  if (normalizedPathKey === "partner_with_us") {
     return [
       "first_name",
       "last_name",
@@ -355,7 +368,7 @@ export function getRequiredFields(pathKey, currentValues = {}) {
     ];
   }
 
-  if (pathKey === "stay_connected") {
+  if (normalizedPathKey === FIND_OUT_WHATS_COMING_PATH) {
     return ["first_name", "last_name", "email", "phone", "email_updates_consent"];
   }
 
@@ -442,11 +455,12 @@ export function validateFormValues(pathKey, rawValues) {
 }
 
 export function buildSubmissionPayload(pathKey, rawValues) {
-  const { normalizedValues, validationErrors } = validateFormValues(pathKey, rawValues);
+  const normalizedPathKey = normalizeInterestPath(pathKey);
+  const { normalizedValues, validationErrors } = validateFormValues(normalizedPathKey, rawValues);
 
   return {
-    interestPath: pathKey,
-    formLabel: getFormVariantConfig(pathKey, normalizedValues).submitLabel,
+    interestPath: normalizedPathKey,
+    formLabel: getFormVariantConfig(normalizedPathKey, normalizedValues).submitLabel,
     normalizedValues,
     validationErrors,
     integrationHooks: {
