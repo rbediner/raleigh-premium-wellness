@@ -2,6 +2,7 @@ const SPREADSHEET_ID = "1rRNeWWqNsdbr1kuwpQfzuFWHaIAXx--MfyhgdhDyWV0";
 // Use the verified-working monitored inbox until the @thetox.com routing issue
 // is resolved at the mail/domain level.
 const NOTIFICATION_EMAIL = "roman.bediner+thetox@cormanity.com";
+const NOTIFICATION_EMAIL_FALLBACK = "roman.bediner@cormanity.com";
 const NOTIFICATION_SENDER_NAME = "Raleigh Premium Wellness Intake";
 // Preserve support for older deployed clients while normalizing all writes to
 // the updated curiosity path key.
@@ -63,6 +64,28 @@ const SHARED_COLUMNS = [
   "source_url",
   "is_test_submission",
 ];
+const TEST_SUBMISSIONS_SHEET_NAME = "test_submissions";
+const TEST_SUBMISSION_CONTEXT_COLUMNS = ["Path Label", "Routed Production Sheet"];
+
+function buildUnifiedTestFieldColumns() {
+  const seenFieldKeys = {};
+  const unifiedFieldColumns = [];
+
+  Object.values(PATH_SCHEMAS).forEach((pathSchema) => {
+    pathSchema.fieldColumns.forEach(([fieldKey, fieldLabel]) => {
+      if (seenFieldKeys[fieldKey]) {
+        return;
+      }
+
+      seenFieldKeys[fieldKey] = true;
+      unifiedFieldColumns.push([fieldKey, fieldLabel]);
+    });
+  });
+
+  return unifiedFieldColumns;
+}
+
+const UNIFIED_TEST_FIELD_COLUMNS = buildUnifiedTestFieldColumns();
 
 const PATH_LABELS = {
   work_with_us: "Work With Us",
@@ -80,25 +103,48 @@ function getPathLabel(pathKey) {
   return PATH_LABELS[pathKey] || pathKey;
 }
 
-function getSheetHeadersForPath(pathKey) {
+function getSheetHeadersForPath(pathKey, isTestSubmission) {
   const pathSchema = PATH_SCHEMAS[pathKey];
 
   if (!pathSchema) {
     throw new Error(`Unknown submission path: ${pathKey}`);
   }
 
+  if (isTestSubmission) {
+    return [
+      ...SHARED_COLUMNS,
+      ...TEST_SUBMISSION_CONTEXT_COLUMNS,
+      ...UNIFIED_TEST_FIELD_COLUMNS.map(([, columnLabel]) => columnLabel),
+    ];
+  }
+
   return [...SHARED_COLUMNS, ...pathSchema.fieldColumns.map(([, columnLabel]) => columnLabel)];
 }
 
-function ensureSheetForPath(spreadsheet, pathKey) {
+function getDestinationSheetName(pathKey, isTestSubmission) {
   const pathSchema = PATH_SCHEMAS[pathKey];
-  let sheet = spreadsheet.getSheetByName(pathSchema.sheetName);
 
-  if (!sheet) {
-    sheet = spreadsheet.insertSheet(pathSchema.sheetName);
+  if (!pathSchema) {
+    throw new Error(`Unknown submission path: ${pathKey}`);
   }
 
-  const expectedHeaders = getSheetHeadersForPath(pathKey);
+  if (isTestSubmission) {
+    return TEST_SUBMISSIONS_SHEET_NAME;
+  }
+
+  return pathSchema.sheetName;
+}
+
+function ensureSheetForPath(spreadsheet, pathKey, isTestSubmission) {
+  const pathSchema = PATH_SCHEMAS[pathKey];
+  const destinationSheetName = getDestinationSheetName(pathKey, isTestSubmission);
+  let sheet = spreadsheet.getSheetByName(destinationSheetName);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(destinationSheetName);
+  }
+
+  const expectedHeaders = getSheetHeadersForPath(pathKey, isTestSubmission);
   const existingHeaders = sheet.getRange(1, 1, 1, expectedHeaders.length).getDisplayValues()[0];
   const headerMismatch = expectedHeaders.some((headerValue, index) => existingHeaders[index] !== headerValue);
 
@@ -112,7 +158,7 @@ function ensureSheetForPath(spreadsheet, pathKey) {
   return sheet;
 }
 
-function buildRowValues(pathKey, normalizedValues, payloadMetadata) {
+function buildRowValues(pathKey, normalizedValues, payloadMetadata, isTestSubmission) {
   const pathSchema = PATH_SCHEMAS[pathKey];
   const now = new Date();
   const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -127,7 +173,8 @@ function buildRowValues(pathKey, normalizedValues, payloadMetadata) {
     payloadMetadata.isTestSubmission ? "TRUE" : "FALSE",
   ];
 
-  const fieldValues = pathSchema.fieldColumns.map(([fieldKey]) => {
+  const fieldColumns = isTestSubmission ? UNIFIED_TEST_FIELD_COLUMNS : pathSchema.fieldColumns;
+  const fieldValues = fieldColumns.map(([fieldKey]) => {
     const rawValue = normalizedValues[fieldKey];
 
     if (typeof rawValue === "boolean") {
@@ -137,12 +184,17 @@ function buildRowValues(pathKey, normalizedValues, payloadMetadata) {
     return rawValue || "";
   });
 
+  if (isTestSubmission) {
+    const testContextValues = [getPathLabel(pathKey), pathSchema.sheetName];
+    return [...sharedValues, ...testContextValues, ...fieldValues];
+  }
+
   return [...sharedValues, ...fieldValues];
 }
 
-function buildRowRecord(pathKey, normalizedValues, payloadMetadata) {
-  const headers = getSheetHeadersForPath(pathKey);
-  const rowValues = buildRowValues(pathKey, normalizedValues, payloadMetadata);
+function buildRowRecord(pathKey, normalizedValues, payloadMetadata, isTestSubmission) {
+  const headers = getSheetHeadersForPath(pathKey, isTestSubmission);
+  const rowValues = buildRowValues(pathKey, normalizedValues, payloadMetadata, isTestSubmission);
 
   return headers.reduce((record, header, index) => {
     record[header] = rowValues[index];
@@ -173,21 +225,76 @@ function buildNotificationBody(pathKey, rowRecord, responseBody) {
 function sendNotificationEmail(pathKey, rowRecord, responseBody) {
   const subject = buildNotificationSubject(pathKey);
   const body = buildNotificationBody(pathKey, rowRecord, responseBody);
+  const recipients = [...new Set([NOTIFICATION_EMAIL, NOTIFICATION_EMAIL_FALLBACK])];
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let emailLogSheet = spreadsheet.getSheetByName("email_delivery_log");
+
+  if (!emailLogSheet) {
+    emailLogSheet = spreadsheet.insertSheet("email_delivery_log");
+  }
+
+  const emailLogHeaders = ["logged_at", "path", "sheet_tab", "row_number", "recipient", "provider", "status", "error_message"];
+  const existingHeaders = emailLogSheet.getRange(1, 1, 1, emailLogHeaders.length).getDisplayValues()[0];
+  const headersMismatch = emailLogHeaders.some((header, index) => existingHeaders[index] !== header);
+
+  if (headersMismatch) {
+    emailLogSheet.getRange(1, 1, 1, emailLogHeaders.length).setValues([emailLogHeaders]);
+    emailLogSheet.setFrozenRows(1);
+  }
+
+  const nowIso = new Date().toISOString();
+  let lastErrorMessage = "";
+
+  function appendEmailLogRow(recipient, provider, status, errorMessage) {
+    emailLogSheet.appendRow([
+      nowIso,
+      pathKey,
+      responseBody.sheet_name || "",
+      responseBody.row_number || "",
+      recipient,
+      provider,
+      status,
+      errorMessage || "",
+    ]);
+  }
 
   // Prefer GmailApp first so message handling matches mailbox-native delivery
   // behavior, and fall back to MailApp for resiliency.
-  try {
-    GmailApp.sendEmail(NOTIFICATION_EMAIL, subject, body, {
-      name: NOTIFICATION_SENDER_NAME,
-    });
-    return;
-  } catch (gmailError) {
-    MailApp.sendEmail({
-      to: NOTIFICATION_EMAIL,
-      subject,
-      body,
-      name: NOTIFICATION_SENDER_NAME,
-    });
+  for (const recipient of recipients) {
+    try {
+      GmailApp.sendEmail(recipient, subject, body, {
+        name: NOTIFICATION_SENDER_NAME,
+      });
+      appendEmailLogRow(recipient, "GmailApp", "sent", "");
+      continue;
+    } catch (gmailError) {
+      const gmailMessage = gmailError && gmailError.message ? gmailError.message : "Unknown GmailApp error.";
+      appendEmailLogRow(recipient, "GmailApp", "failed", gmailMessage);
+      lastErrorMessage = gmailMessage;
+    }
+
+    try {
+      MailApp.sendEmail({
+        to: recipient,
+        subject,
+        body,
+        name: NOTIFICATION_SENDER_NAME,
+      });
+      appendEmailLogRow(recipient, "MailApp", "sent", "");
+    } catch (mailError) {
+      const mailMessage = mailError && mailError.message ? mailError.message : "Unknown MailApp error.";
+      appendEmailLogRow(recipient, "MailApp", "failed", mailMessage);
+      lastErrorMessage = mailMessage;
+    }
+  }
+
+  const allLogRows = emailLogSheet.getDataRange().getDisplayValues().slice(1);
+  const sentRowCount = allLogRows.filter(([loggedAt, loggedPath, , loggedRowNumber, , , status]) => {
+    return loggedAt === nowIso && loggedPath === pathKey && String(loggedRowNumber) === String(responseBody.row_number) && status === "sent";
+  }).length;
+
+  if (sentRowCount === 0) {
+    throw new Error(lastErrorMessage || "Email delivery failed for all configured recipients.");
   }
 }
 
@@ -211,13 +318,14 @@ function parseIncomingPayload(event) {
 
 function writeSubmissionRow(payload) {
   const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ensureSheetForPath(spreadsheet, payload.path);
+  const isTestSubmission = Boolean(payload.is_test_submission);
+  const sheet = ensureSheetForPath(spreadsheet, payload.path, isTestSubmission);
   const payloadMetadata = {
     sourceUrl: payload.source_url,
-    isTestSubmission: payload.is_test_submission,
+    isTestSubmission,
   };
-  const rowValues = buildRowValues(payload.path, payload.normalized_values || {}, payloadMetadata);
-  const rowRecord = buildRowRecord(payload.path, payload.normalized_values || {}, payloadMetadata);
+  const rowValues = buildRowValues(payload.path, payload.normalized_values || {}, payloadMetadata, isTestSubmission);
+  const rowRecord = buildRowRecord(payload.path, payload.normalized_values || {}, payloadMetadata, isTestSubmission);
   const responseBody = {
     ok: true,
     sheet_name: sheet.getName(),

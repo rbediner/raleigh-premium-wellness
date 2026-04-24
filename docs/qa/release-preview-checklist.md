@@ -16,6 +16,9 @@ Use this after the Preview Deploy workflow finishes on `staging`.
 - Confirm each path in the unified form changes the visible fields.
 - Confirm the submit button label changes with the selected path.
 - Confirm required-field validation still works.
+- If backend code changed, run live intake QA:
+  - `npm run qa:backend:live -- --endpoint <exec-url> --spreadsheet-id <sheet-id>`
+- Confirm QA rows were written to `test_submissions`, not production lead tabs.
 
 ## Approval Rule
 

@@ -44,6 +44,7 @@ Include only the checks that match the changed risk:
 - one-path direct POST to the live `/exec` endpoint when browser proof is unnecessary
 - one row-write verification in the affected Google Sheet tab
 - one notification email verification when notification behavior changed
+- `npm run qa:backend:live -- --endpoint <exec-url> --spreadsheet-id <sheet-id>` when submission routing, Sheets mapping, or notification behavior changed
 - targeted GA4 / DebugView verification when analytics behavior changed
 - focused error-state verification when the change touched failure handling or validation messaging
 
@@ -69,8 +70,10 @@ This pack is intentionally expensive. Treat it as a sign-off artifact, not stand
 - Start with the smallest responsible gate.
 - If the change is docs-only, run `npm run qa:docs-gate` and `npm run test:workflow`.
 - If the change is front-end logic only, run the related unit tests plus lightweight browser QA.
+- If the change includes Apps Script push/deploy work, run `npm run qa:clasp-auth` before any `clasp push` or deploy action.
 - If the change is a normal preview promotion with no backend-risk changes, run `npm run release:preflight:preview` and stop there unless something looks wrong.
 - Do not run the full live-staging backend pack just because a deploy happened.
+- Keep preview and QA traffic isolated by sending `is_test_submission=true` so rows land in `test_submissions`.
 
 ## Targeted Smoke SOP
 
@@ -78,6 +81,10 @@ This pack is intentionally expensive. Treat it as a sign-off artifact, not stand
 - Test only the affected path or contract unless evidence shows a broader regression.
 - Prefer a single-path browser smoke plus one direct backend proof over a full three-path rerun.
 - Capture only the evidence needed to prove the changed behavior.
+- For Apps Script changes, prefer `npm run qa:backend:live` to get machine-readable evidence of:
+  - endpoint health contract
+  - path-to-tab routing
+  - notification `sent` rows in `email_delivery_log`
 
 ## Milestone Or Release Validation SOP
 

@@ -83,6 +83,7 @@ nvm use
 - `npm run preview:production` builds and serves the production artifact locally
 - `npm run qa:session-readiness` checks that the repo and machine are ready for a safe session
 - `npm run qa:docs-gate` verifies that the release SOP docs exist and say the right things
+- `npm run qa:backend:live -- --endpoint <exec-url> --spreadsheet-id <sheet-id>` runs live Apps Script + Sheets QA and verifies notification-send evidence from `email_delivery_log`
 - `npm run qa:preview-smoke:local` runs a local smoke check against the staging preview artifact
 - `npm run qa:production-smoke:local` runs a local smoke check against the production artifact
 - `npm run release:preflight:preview` runs the smallest responsible preview gate
@@ -91,6 +92,13 @@ nvm use
 - `npm run test:workflow` runs policy tests for release docs, workflows, and artifact rules
 - `npm run test:qa` runs end-to-end browser QA checks
 - `npm run test:all` runs the unit and QA suites sequentially
+
+## Google Intake Guardrails
+
+- Keep Apps Script source-of-truth in `integrations/google-sheets-submissions/Code.js`.
+- Deploy script changes as a **new Apps Script version**; saving in the UI alone is not enough.
+- Use `is_test_submission=true` for QA traffic so test rows land in `test_submissions` and never mix with real lead tabs.
+- Use `email_delivery_log` as the authoritative send-attempt ledger (`provider`, `status`, `error_message`).
 
 ## Release Workflow
 

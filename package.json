@@ -10,6 +10,8 @@
     "handoff:update": "node scripts/release/update-handoff-latest.mjs",
     "qa:session-readiness": "npm run session:ready",
     "qa:docs-gate": "node scripts/qa/check-release-documents.mjs",
+    "qa:clasp-auth": "node scripts/qa/check-clasp-auth.mjs",
+    "qa:backend:live": "node scripts/qa/run-live-google-integration-check.mjs",
     "qa:preview-smoke:local": "node scripts/qa/run-local-site-smoke-check.mjs --mode preview",
     "qa:production-smoke:local": "node scripts/qa/run-local-site-smoke-check.mjs --mode production",
     "release:build:preview": "node scripts/release/build-site-artifact.mjs --mode preview",

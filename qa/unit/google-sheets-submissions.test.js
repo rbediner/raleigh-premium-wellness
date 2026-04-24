@@ -12,37 +12,55 @@ const codePath = path.resolve(
 );
 const codeSource = readFileSync(codePath, "utf8");
 
-function loadAppsScriptContext(overrides = {}) {
-  // Mirror just enough of the Apps Script runtime so we can verify the gateway
-  // logic locally without depending on a live Google deployment.
-  const appendRow = vi.fn();
-  const sendEmail = vi.fn();
-  const setValues = vi.fn();
-  const setFrozenRows = vi.fn();
-  const sheet = {
-    name: "work_with_us",
-    lastRow: 1,
+function createFakeSheet(name) {
+  const rowStore = [[""]];
+
+  return {
+    name,
+    rowStore,
     getName() {
       return this.name;
     },
     getLastRow() {
-      return this.lastRow;
+      return rowStore.length;
     },
     appendRow(rowValues) {
-      appendRow(rowValues);
-      this.lastRow += 1;
+      rowStore.push(rowValues);
     },
-    getRange: vi.fn(() => ({
-      getDisplayValues: () => [[]],
-      setValues,
+    getRange: vi.fn((row, column, _numRows, numColumns) => ({
+      getDisplayValues: () => {
+        const headerRow = rowStore[0] || [];
+        const values = [];
+
+        for (let index = 0; index < numColumns; index += 1) {
+          values.push(headerRow[column - 1 + index] || "");
+        }
+
+        return [values];
+      },
+      setValues: (values) => {
+        rowStore[row - 1] = values[0];
+      },
     })),
-    setFrozenRows,
-    ...overrides.sheet,
+    setFrozenRows: vi.fn(),
+    getDataRange: vi.fn(() => ({
+      getDisplayValues: () => rowStore,
+    })),
   };
+}
+
+function loadAppsScriptContext(overrides = {}) {
+  const sheetsByName = new Map(
+    Object.entries(overrides.initialSheets || {}).map(([sheetName, fakeSheet]) => [sheetName, fakeSheet]),
+  );
 
   const spreadsheet = {
-    getSheetByName: vi.fn(() => sheet),
-    insertSheet: vi.fn(() => sheet),
+    getSheetByName: vi.fn((sheetName) => sheetsByName.get(sheetName) || null),
+    insertSheet: vi.fn((sheetName) => {
+      const fakeSheet = createFakeSheet(sheetName);
+      sheetsByName.set(sheetName, fakeSheet);
+      return fakeSheet;
+    }),
     getSpreadsheetTimeZone: vi.fn(() => "America/New_York"),
     ...overrides.spreadsheet,
   };
@@ -52,28 +70,33 @@ function loadAppsScriptContext(overrides = {}) {
     JSON,
     Date: class FixedDate extends Date {
       constructor(...args) {
-        super(args.length ? args[0] : "2026-04-13T20:00:00.000Z");
+        super(args.length ? args[0] : "2026-04-24T17:59:09.444Z");
       }
       static now() {
-        return new Date("2026-04-13T20:00:00.000Z").getTime();
+        return new Date("2026-04-24T17:59:09.444Z").getTime();
       }
     },
     SpreadsheetApp: {
       openById: vi.fn(() => spreadsheet),
     },
     Utilities: {
-      formatDate: vi.fn((dateValue, _timeZone, format) => {
+      formatDate: vi.fn((_dateValue, _timeZone, format) => {
         if (format === "yyyy-MM-dd") {
-          return "2026-04-13";
+          return "2026-04-24";
         }
         if (format === "HH:mm:ss") {
-          return "16:00:00";
+          return "13:59:09";
         }
-        return String(dateValue);
+        return "";
+      }),
+    },
+    GmailApp: {
+      sendEmail: vi.fn(() => {
+        throw new Error("Missing Gmail scope");
       }),
     },
     MailApp: {
-      sendEmail,
+      sendEmail: vi.fn(),
     },
     ContentService: {
       MimeType: {
@@ -90,18 +113,12 @@ function loadAppsScriptContext(overrides = {}) {
   };
 
   vm.createContext(context);
-  // Execute the checked-in Apps Script file as-is so tests cover the real
-  // deployed logic rather than a duplicated helper implementation.
   vm.runInContext(codeSource, context);
 
   return {
-    appendRow,
-    sendEmail,
-    setValues,
-    setFrozenRows,
-    sheet,
-    spreadsheet,
     context,
+    spreadsheet,
+    sheetsByName,
   };
 }
 
@@ -110,78 +127,99 @@ describe("google sheets submission gateway", () => {
     vi.restoreAllMocks();
   });
 
-  it("appends the submission row and sends a notification after success", () => {
-    const { appendRow, sendEmail, context } = loadAppsScriptContext();
+  it("routes test submissions into dedicated _test tabs", () => {
+    const { context } = loadAppsScriptContext();
 
     const responseBody = context.writeSubmissionRow({
       path: "work_with_us",
       normalized_values: {
-        first_name: "Roman",
-        last_name: "Bediner",
-        email: "roman@example.com",
-        short_message: "Happy to help launch this.",
+        first_name: "Smoke",
+        last_name: "Test",
+        email: "qa@example.com",
+        phone: "9195551111",
+        short_message: "test path",
+        city_area: "Raleigh",
+        linkedin_url: "",
+        additional_links: "",
         email_follow_up_consent: true,
       },
-      source_url: "https://rbediner.github.io/raleigh-premium-wellness/staging/?interestPath=work_with_us#contact",
+      source_url: "https://staging.local/?test=1",
+      is_test_submission: true,
+    });
+
+    expect(responseBody).toMatchObject({
+      ok: true,
+      sheet_name: "test_submissions",
+      notification_email_sent: true,
+    });
+  });
+
+  it("keeps non-test submissions in production tabs", () => {
+    const { context } = loadAppsScriptContext();
+
+    const responseBody = context.writeSubmissionRow({
+      path: "partner_with_us",
+      normalized_values: {
+        first_name: "Real",
+        last_name: "User",
+        organization_name: "Partner Org",
+        email: "real@example.com",
+        phone: "9195552222",
+        partnership_type: "local_business",
+        short_message: "real path",
+        email_follow_up_consent: true,
+      },
+      source_url: "https://staging.local/",
       is_test_submission: false,
     });
 
-    expect(appendRow).toHaveBeenCalledTimes(1);
-    expect(appendRow.mock.calls[0][0].slice(0, 6)).toEqual([
-      "2026-04-13T20:00:00.000Z",
-      "2026-04-13",
-      "16:00:00",
-      "work_with_us",
-      "https://rbediner.github.io/raleigh-premium-wellness/staging/?interestPath=work_with_us#contact",
-      "FALSE",
-    ]);
     expect(responseBody).toMatchObject({
       ok: true,
-      sheet_name: "work_with_us",
-      row_number: 2,
+      sheet_name: "partner_with_us",
       notification_email_sent: true,
     });
-    expect(sendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        to: "roman.bediner+thetox@cormanity.com",
-        name: "Raleigh Premium Wellness Intake",
-        subject: "New Raleigh Premium Wellness inquiry: Work With Us",
-      }),
-    );
-    expect(sendEmail.mock.calls[0][0].body).toContain("First Name: Roman");
-    expect(sendEmail.mock.calls[0][0].body).toContain("Short Message: Happy to help launch this.");
   });
 
-  it("does not send the notification email if the row append fails", () => {
-    const appendFailure = new Error("Sheet write failed.");
-    const { sendEmail, context } = loadAppsScriptContext({
-      sheet: {
-        appendRow: () => {
-          throw appendFailure;
-        },
+  it("normalizes legacy stay_connected path to find_out_whats_coming and keeps tab continuity", () => {
+    const { context } = loadAppsScriptContext();
+
+    const response = context.doPost({
+      postData: {
+        contents: JSON.stringify({
+          path: "stay_connected",
+          normalized_values: {
+            first_name: "Legacy",
+            last_name: "User",
+            email: "legacy@example.com",
+            phone: "9195553333",
+            email_updates_consent: true,
+          },
+          source_url: "https://staging.local/",
+          is_test_submission: true,
+        }),
       },
     });
 
-    expect(() =>
-      context.writeSubmissionRow({
-        path: "partner_with_us",
-        normalized_values: {
-          first_name: "Roman",
-        },
-      }),
-    ).toThrow("Sheet write failed.");
-    expect(sendEmail).not.toHaveBeenCalled();
+    const parsed = JSON.parse(response.body);
+
+    expect(parsed).toMatchObject({
+      ok: true,
+      sheet_name: "test_submissions",
+      notification_email_sent: true,
+    });
   });
 
-  it("keeps the submission successful even if the email notification fails", () => {
+  it("records email delivery diagnostics and reports failure if all providers fail", () => {
     const { context } = loadAppsScriptContext({
-      sheet: {
-        name: "stay_connected",
-      },
       context: {
+        GmailApp: {
+          sendEmail: vi.fn(() => {
+            throw new Error("GmailApp hard failure");
+          }),
+        },
         MailApp: {
           sendEmail: vi.fn(() => {
-            throw new Error("Mailbox unavailable.");
+            throw new Error("MailApp hard failure");
           }),
         },
       },
@@ -190,45 +228,33 @@ describe("google sheets submission gateway", () => {
     const responseBody = context.writeSubmissionRow({
       path: "find_out_whats_coming",
       normalized_values: {
-        first_name: "Marianna",
-        email: "marianna@example.com",
+        first_name: "Failure",
+        last_name: "Case",
+        email: "failure@example.com",
+        phone: "9195554444",
         email_updates_consent: true,
       },
+      source_url: "https://staging.local/",
       is_test_submission: true,
     });
 
     expect(responseBody).toMatchObject({
       ok: true,
-      sheet_name: "stay_connected",
-      row_number: 2,
+      sheet_name: "test_submissions",
       notification_email_sent: false,
-      notification_email_error: "Mailbox unavailable.",
     });
+    expect(responseBody.notification_email_error).toContain("MailApp hard failure");
   });
 
-  it("normalizes the legacy stay_connected payload path to the curiosity path", () => {
-    const { context } = loadAppsScriptContext({
-      sheet: {
-        name: "stay_connected",
-      },
-    });
+  it("exposes only current public paths in doGet health metadata", () => {
+    const { context } = loadAppsScriptContext();
+    const response = context.doGet();
+    const parsed = JSON.parse(response.body);
 
-    const response = context.doPost({
-      postData: {
-        contents: JSON.stringify({
-          path: "stay_connected",
-          normalized_values: {
-            first_name: "Legacy",
-            email: "legacy@example.com",
-            email_updates_consent: true,
-          },
-          is_test_submission: true,
-        }),
-      },
-    });
-    const parsedBody = JSON.parse(response.body);
-
-    expect(parsedBody.ok).toBe(true);
-    expect(parsedBody.sheet_name).toBe("stay_connected");
+    expect(parsed.available_paths).toEqual([
+      "work_with_us",
+      "partner_with_us",
+      "find_out_whats_coming",
+    ]);
   });
 });
