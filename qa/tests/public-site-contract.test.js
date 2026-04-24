@@ -76,7 +76,7 @@ describe("public site contract", () => {
     expect(htmlDocument).toContain("IS COMING TO RALEIGH");
     expect(htmlDocument).toContain("We’re bringing a premium body-focused wellness experience to Raleigh, designed to feel restorative, elevated, and worth making part of your routine.");
     expect(htmlDocument).toContain("A new premium wellness experience is taking shape in Raleigh.");
-    expect(htmlDocument).toContain("We’re grateful to be building it with and for this community, and we’d love to hear from people who want to help shape it, partner with it, or learn more as plans take shape.");
+    expect(htmlDocument).toContain("We’re grateful to be building it with this community and welcome people who want to help shape it, partner with it, or learn more as plans take shape.");
 
     expect(htmlDocument).not.toContain("This page is a simple invitation");
     expect(htmlDocument).not.toContain("prototype note");
