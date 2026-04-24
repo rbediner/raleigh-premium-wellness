@@ -3,6 +3,9 @@ import { GOOGLE_SHEET_TARGET_URL } from "./form-configuration.js";
 // Keep the browser-side gateway tiny so the form only needs to know where to
 // send a valid submission, not how the sheet itself is structured.
 const browserSubmissionEndpointKey = "__RaleighPremiumWellnessFormEndpoint";
+const backendPathAliasMap = {
+  find_out_whats_coming: "stay_connected",
+};
 
 export function resolveFormSubmissionEndpoint(globalScope = globalThis) {
   const configuredEndpoint = globalScope?.[browserSubmissionEndpointKey];
@@ -28,13 +31,14 @@ export function getIsTestSubmissionFlag(
 
 export async function submitUnifiedFormSubmission(submissionPayload, options = {}) {
   const submissionEndpoint = resolveFormSubmissionEndpoint(options.globalScope ?? globalThis);
+  const backendPath = backendPathAliasMap[submissionPayload.interestPath] ?? submissionPayload.interestPath;
 
   if (!submissionEndpoint) {
     throw new Error("Form submission endpoint is not configured.");
   }
 
   const submissionBody = {
-    path: submissionPayload.interestPath,
+    path: backendPath,
     normalized_values: submissionPayload.normalizedValues,
     source_url: options.sourceUrl ?? globalThis.location?.href ?? "",
     is_test_submission: Boolean(options.isTestSubmission),

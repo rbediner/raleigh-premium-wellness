@@ -67,6 +67,30 @@ describe("submission gateway", () => {
     expect(responseBody.sheet_name).toBe("work_with_us");
   });
 
+  it("maps the curiosity path key to the legacy backend path for compatibility", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true, sheet_name: "stay_connected", row_number: 7 }),
+    });
+
+    await submitUnifiedFormSubmission(
+      {
+        interestPath: "find_out_whats_coming",
+        normalizedValues: {
+          first_name: "Marianna",
+        },
+      },
+      {
+        globalScope: {
+          __RaleighPremiumWellnessFormEndpoint: "https://example.com/forms-endpoint",
+        },
+      },
+    );
+
+    const callBody = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(callBody.path).toBe("stay_connected");
+  });
+
   it("raises a truthful error when the endpoint is missing or returns a failure", async () => {
     await expect(
       submitUnifiedFormSubmission(
