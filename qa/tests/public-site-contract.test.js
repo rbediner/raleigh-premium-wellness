@@ -12,7 +12,7 @@ describe("public site contract", () => {
     expect(htmlDocument).toContain('id="hero"');
     expect(htmlDocument).toContain('id="work-with-us"');
     expect(htmlDocument).toContain('id="partner-with-us"');
-    expect(htmlDocument).toContain('id="stay-connected"');
+    expect(htmlDocument).toContain('id="find-out-whats-coming"');
     expect(htmlDocument).toContain('id="about"');
     expect(htmlDocument).toContain('id="contact"');
     expect(htmlDocument).toContain('id="manager-studio-development"');
@@ -76,7 +76,7 @@ describe("public site contract", () => {
     expect(htmlDocument).toContain("IS COMING TO RALEIGH");
     expect(htmlDocument).toContain("We’re bringing a premium body-focused wellness experience to Raleigh, designed to feel restorative, elevated, and worth making part of your routine.");
     expect(htmlDocument).toContain("A new premium wellness experience is taking shape in Raleigh.");
-    expect(htmlDocument).toContain("We’re grateful to be building it with and for this community, and we’d love to stay connected with the people who want to help shape it, support it, or be part of it early.");
+    expect(htmlDocument).toContain("We’re grateful to be building it with and for this community, and we’d love to hear from people who want to help shape it, partner with it, or learn more as plans take shape.");
 
     expect(htmlDocument).not.toContain("This page is a simple invitation");
     expect(htmlDocument).not.toContain("prototype note");
@@ -96,13 +96,13 @@ describe("public site contract", () => {
     expect(stylesheet).toContain(".founder-photo-card__image");
   });
 
-  it("uses the approved partner and stay-connected trust copy", () => {
+  it("uses the approved partner and curiosity-path trust copy", () => {
     const htmlDocument = readNormalizedHtmlDocument();
 
     expect(htmlDocument).toContain("We’re looking to connect with a small number of thoughtful local partners who care about wellness, community, and elevated everyday experiences.");
     expect(htmlDocument).toContain("If there’s a natural fit, we’d love to explore collaborations through events, activations, community touchpoints, and referral-friendly partnerships that create awareness, bring people together, and make the launch feel local from day one.");
-    expect(htmlDocument).toContain("Founding Member VIP is for people who want to be first in line when our founding-member offers become available.");
-    expect(htmlDocument).toContain("You’ll receive early updates, priority notice when pre-sales open, and first access to discounted services reserved for founding members.");
+    expect(htmlDocument).toContain("Curious what’s coming to Raleigh?");
+    expect(htmlDocument).toContain("we are inviting thoughtful local interest from people who want to know what’s taking shape.");
   });
 
   it("keeps label-style bullets and chips in title case", () => {
@@ -120,8 +120,8 @@ describe("public site contract", () => {
     expect(formConfiguration).toContain('label: "Why They Stand Out"');
     expect(formConfiguration).toContain('label: "Community Credibility"');
     expect(formConfiguration).toContain('"Community Partnership"');
-    expect(formConfiguration).toContain('"Launch Updates"');
-    expect(formConfiguration).toContain('"General Early Access"');
+    expect(formConfiguration).toContain('"Plans And Timeline"');
+    expect(formConfiguration).toContain('"General Curiosity"');
   });
 
   it("keeps the compact mobile menu structure and preferred submit CTA copy", () => {
@@ -131,17 +131,17 @@ describe("public site contract", () => {
     expect(htmlDocument).toContain('class="site-navigation__menu-button"');
     expect(htmlDocument).toContain('class="site-navigation__scrim"');
     expect(htmlDocument).toContain('class="site-footer__closing-line"');
-    expect(htmlDocument).toContain('data-nav-link="contact">Stay Connected</a>');
+    expect(htmlDocument).toContain('data-nav-link="contact">Find Out What’s Coming</a>');
     expect(formConfiguration).toContain('submitLabel: "Start the Conversation"');
     expect(formConfiguration).toContain('submitLabel: "Explore a Partnership"');
-    expect(formConfiguration).toContain('submitLabel: "Join the VIP List"');
+    expect(formConfiguration).toContain('submitLabel: "Find Out What’s Coming"');
   });
 
-  it("uses Stay Connected consistently for visible route and navigation labels", () => {
+  it("uses Find Out What’s Coming consistently for visible route and navigation labels", () => {
     const htmlDocument = readFileSync("site/index.html", "utf8");
 
-    expect(htmlDocument).toContain('<p class="eyebrow-label">Stay Connected</p>');
-    expect(htmlDocument).toContain('<a href="#contact">Stay Connected</a>');
+    expect(htmlDocument).toContain('<p class="eyebrow-label">Find Out What’s Coming</p>');
+    expect(htmlDocument).toContain('<a href="#contact">Find Out What’s Coming</a>');
     expect(htmlDocument).not.toContain('<p class="eyebrow-label">Connect</p>');
     expect(htmlDocument).not.toContain('<a href="#contact">Connect</a>');
   });
@@ -150,11 +150,11 @@ describe("public site contract", () => {
     const htmlDocument = readNormalizedHtmlDocument();
 
     expect(htmlDocument).toContain("<title>New Premium Wellness Experience Coming to Raleigh</title>");
-    expect(htmlDocument).toContain('name="description" content="A new premium body-focused wellness experience is taking shape in Raleigh. Work with us, partner with us, or stay connected from the beginning."');
+    expect(htmlDocument).toContain('name="description" content="A new premium wellness experience is taking shape in Raleigh. Work with us, partner with us, or find out what’s coming."');
     expect(htmlDocument).toContain('property="og:title" content="A New Premium Wellness Experience Is Coming to Raleigh"');
-    expect(htmlDocument).toContain('property="og:description" content="We’re bringing something special to Raleigh and inviting the people who want to help shape it, partner with it, or stay connected from the very beginning."');
+    expect(htmlDocument).toContain('property="og:description" content="We’re bringing something special to Raleigh and inviting the people who want to help shape it, partner with it, or learn more as plans take shape."');
     expect(htmlDocument).toContain('property="twitter:title" content="A New Premium Wellness Experience Is Coming to Raleigh"');
-    expect(htmlDocument).toContain('property="twitter:description" content="We’re bringing something special to Raleigh and inviting the people who want to help shape it, partner with it, or stay connected from the very beginning."');
+    expect(htmlDocument).toContain('property="twitter:description" content="We’re bringing something special to Raleigh and inviting the people who want to help shape it, partner with it, or learn more as plans take shape."');
     expect(htmlDocument).toContain("../assets/share-surfaces/favicon.svg");
     expect(htmlDocument).toContain("../assets/share-surfaces/open-graph-preview-1200x630.png");
   });

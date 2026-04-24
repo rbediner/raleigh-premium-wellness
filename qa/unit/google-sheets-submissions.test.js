@@ -188,7 +188,7 @@ describe("google sheets submission gateway", () => {
     });
 
     const responseBody = context.writeSubmissionRow({
-      path: "stay_connected",
+      path: "find_out_whats_coming",
       normalized_values: {
         first_name: "Marianna",
         email: "marianna@example.com",
@@ -204,5 +204,31 @@ describe("google sheets submission gateway", () => {
       notification_email_sent: false,
       notification_email_error: "Mailbox unavailable.",
     });
+  });
+
+  it("normalizes the legacy stay_connected payload path to the curiosity path", () => {
+    const { context } = loadAppsScriptContext({
+      sheet: {
+        name: "stay_connected",
+      },
+    });
+
+    const response = context.doPost({
+      postData: {
+        contents: JSON.stringify({
+          path: "stay_connected",
+          normalized_values: {
+            first_name: "Legacy",
+            email: "legacy@example.com",
+            email_updates_consent: true,
+          },
+          is_test_submission: true,
+        }),
+      },
+    });
+    const parsedBody = JSON.parse(response.body);
+
+    expect(parsedBody.ok).toBe(true);
+    expect(parsedBody.sheet_name).toBe("stay_connected");
   });
 });

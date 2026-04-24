@@ -3,6 +3,15 @@ const SPREADSHEET_ID = "1rRNeWWqNsdbr1kuwpQfzuFWHaIAXx--MfyhgdhDyWV0";
 // is resolved at the mail/domain level.
 const NOTIFICATION_EMAIL = "roman.bediner+thetox@cormanity.com";
 const NOTIFICATION_SENDER_NAME = "Raleigh Premium Wellness Intake";
+// Preserve support for older deployed clients while normalizing all writes to
+// the updated curiosity path key.
+const LEGACY_PATH_ALIASES = {
+  stay_connected: "find_out_whats_coming",
+};
+
+function normalizePathKey(pathKey) {
+  return LEGACY_PATH_ALIASES[pathKey] || pathKey;
+}
 
 // Mirror the public form paths one-to-one so each sheet tab stays readable and
 // does not collapse unrelated submissions into one mixed schema.
@@ -34,7 +43,7 @@ const PATH_SCHEMAS = {
       ["email_follow_up_consent", "Email Follow-up Consent"],
     ],
   },
-  stay_connected: {
+  find_out_whats_coming: {
     sheetName: "stay_connected",
     fieldColumns: [
       ["first_name", "First Name"],
@@ -58,7 +67,7 @@ const SHARED_COLUMNS = [
 const PATH_LABELS = {
   work_with_us: "Work With Us",
   partner_with_us: "Partner With Us",
-  stay_connected: "Stay Connected / VIP",
+  find_out_whats_coming: "Find Out What’s Coming",
 };
 
 function buildJsonResponse(responseBody) {
@@ -179,9 +188,13 @@ function parseIncomingPayload(event) {
 
   const payload = JSON.parse(event.postData.contents);
 
-  if (!payload.path || !PATH_SCHEMAS[payload.path]) {
+  const normalizedPath = normalizePathKey(payload.path);
+
+  if (!normalizedPath || !PATH_SCHEMAS[normalizedPath]) {
     throw new Error("Missing or invalid path.");
   }
+
+  payload.path = normalizedPath;
 
   return payload;
 }

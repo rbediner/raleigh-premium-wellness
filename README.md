@@ -7,7 +7,7 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 - One mobile-first anchored landing page for MVP
 - Primary goal is to support Studio Development Manager outreach and referrals
 - Secondary goals include partner outreach and future client/community list building
-- Form submission storage is being wired through Google Sheets and Apps Script as the operational intake path
+- Form submission intake now runs through Google Sheets and Apps Script as the operational path used by staging
 - Hosting target is GitHub Pages using a dedicated `gh-pages` publish branch
 
 ## Repository Structure
@@ -50,6 +50,7 @@ Repo-cleanup rule:
 - Primary PRD source: `planning/the-raleigh-tox-prd-reference.md`
 - Google Sheet source: `data-sources/the-tox-raleigh-outreach-sheet-reference.md`
 - Google account ownership + auth setup: `docs/integrations/google-service-ownership.md`
+- Backend QA trigger policy: `docs/qa/backend-qa-trigger-sop.md`
 - GitHub repository: `rbediner/raleigh-premium-wellness`
 - Repository visibility: private
 

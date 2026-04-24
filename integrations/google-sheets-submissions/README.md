@@ -26,6 +26,10 @@ Sheet tabs expected:
 - `partner_with_us`
 - `stay_connected`
 
+Public path mapping:
+- `find_out_whats_coming` routes to the existing `stay_connected` tab for continuity
+- legacy `stay_connected` payloads are still accepted and normalized server-side
+
 Important:
 - do not delete the linked Google Doc, Google Sheet, or Google Slides reference files in this repo
 - use `data-sources/the-tox-raleigh-outreach-sheet-reference.md` as the stable checked-in sheet reference

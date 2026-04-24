@@ -13,8 +13,12 @@ describe("unified contact form logic", () => {
     expect(getFormVariantConfig("unknown_path").submitLabel).toBe("Start the Conversation");
   });
 
-  it("lists stay-connected required fields before optional fields", () => {
-    expect(getFieldSequence("stay_connected")).toEqual([
+  it("maps the legacy stay-connected path to the new curiosity path config", () => {
+    expect(getFormVariantConfig("stay_connected").submitLabel).toBe("Find Out What’s Coming");
+  });
+
+  it("lists find-out-what’s-coming required fields before optional fields", () => {
+    expect(getFieldSequence("find_out_whats_coming")).toEqual([
       "first_name",
       "last_name",
       "email",
@@ -96,15 +100,15 @@ describe("unified contact form logic", () => {
     expect(getFormVariantConfig("partner_with_us").successMessage).toBe(
       "Thanks so much for reaching out. We’re grateful for your interest and excited to learn more about you, your business, and the kind of collaboration you have in mind. We’ll review your note and be back in touch soon.",
     );
-    expect(getFormVariantConfig("stay_connected").successMessage).toBe(
-      "Thank you so much for joining us early. We’re truly grateful for your interest and excited to keep you in the loop as launch plans take shape. We’ll share updates along the way and let you know as soon as founding-member opportunities become available. If you know someone in your circle who’d want to be part of this early, feel free to share the page with them.",
+    expect(getFormVariantConfig("find_out_whats_coming").successMessage).toBe(
+      "Thanks for reaching out. We’ve received your note and will follow up with more information as plans take shape.",
     );
   });
 
-  it("uses the approved VIP path label, CTA, and consent model", () => {
-    expect(getFormVariantConfig("stay_connected").submitLabel).toBe("Join the VIP List");
+  it("uses the approved curiosity-path label, CTA, and consent model", () => {
+    expect(getFormVariantConfig("find_out_whats_coming").submitLabel).toBe("Find Out What’s Coming");
     expect(FIELD_DEFINITIONS.email_updates_consent.label).toBe(
-      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available.",
+      "Yes, I’d be glad to hear from you by email and phone as plans take shape.",
     );
   });
 
@@ -139,8 +143,8 @@ describe("unified contact form logic", () => {
     expect(payload.validationErrors).not.toContain("Mobile Phone Number is required.");
   });
 
-  it("requires email consent for stay-connected submissions", () => {
-    const payload = buildSubmissionPayload("stay_connected", {
+  it("requires phone and consent for find-out-what’s-coming submissions", () => {
+    const payload = buildSubmissionPayload("find_out_whats_coming", {
       first_name: "Marianna",
       last_name: "Bediner",
       email: "marianna@example.com",
@@ -150,7 +154,7 @@ describe("unified contact form logic", () => {
 
     expect(payload.validationErrors).toContain("Mobile Phone Number is required.");
     expect(payload.validationErrors).toContain(
-      "Yes, I’d be glad to receive email updates as launch plans take shape and founding-member opportunities become available. is required.",
+      "Yes, I’d be glad to hear from you by email and phone as plans take shape. is required.",
     );
   });
 });

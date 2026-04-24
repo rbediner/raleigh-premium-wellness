@@ -53,6 +53,13 @@ This file is the repo-local source of truth for how releases must move through t
 - Production must not be marked `noindex`.
 - Production verification should include the deploy URL, CI run URL, promoted SHA, and smoke result.
 
+## Backend QA Escalation Rule
+
+- Use the smallest responsible QA gate for the change you made.
+- Routine builds should use cheap QA first and should not automatically trigger the expensive live-staging backend validation pack.
+- The full live-staging backend validation pack is reserved for backend-risk changes, suspected regressions, and milestone backend-readiness sign-off.
+- For the operational trigger list and decision matrix, read `docs/qa/backend-qa-trigger-sop.md`.
+
 ## GitHub Actions Runtime Maintenance
 
 - The repo upgraded `actions/checkout` to `@v6`.
