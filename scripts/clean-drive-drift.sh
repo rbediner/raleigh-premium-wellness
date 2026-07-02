@@ -27,22 +27,28 @@ done
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$ROOT" || exit 0
 
-canonical() { printf '%s' "$1" | sed -E 's/ [0-9]+(\.[^.]+)?$/\1/'; }
+# Strip a trailing Drive conflict suffix: " 2" or " (2)" before end-or-extension.
+canonical() { printf '%s' "$1" | sed -E 's/ (\([0-9]+\)|[0-9]+)(\.[^.]+)?$/\2/'; }
+# Does a basename look like a Drive conflict copy? (" 2", " 3", " (1)", " (2).ext")
+is_conflict() { [[ "$1" =~ \ (\([0-9]+\)|[0-9]+)($|\.) ]]; }
 
 found=()
-# Inside .git: every " <n>" name is junk (git never uses spaces).
+# Inside .git: git never uses spaces, so ANY spaced name is junk (conflict copy
+# of an object/ref/index in either " n" or " (n)" style). Stray .DS_Store files
+# also land in .git via Drive/macOS and break `git fsck` (badRefName) — drop them.
 if [ -d .git ]; then
   while IFS= read -r -d '' f; do found+=("$f"); done \
-    < <(find .git \( -name '* [0-9]' -o -name '* [0-9].*' \) -print0 2>/dev/null)
+    < <(find .git \( -name '* *' -o -name '.DS_Store' \) -print0 2>/dev/null)
 fi
-# Working tree: only treat a " <n>" name as a conflict copy when its de-suffixed
+# Working tree: only treat a conflict-style name as junk when its de-suffixed
 # sibling ALSO exists (Drive copies coexist with the original), so real names
-# like "chapter 2.md" are left alone.
+# like "chapter 2.md" or "My File.txt" are left alone.
 while IFS= read -r -d '' f; do
-  b="$(basename "$f")"; d="$(dirname "$f")"; c="$(canonical "$b")"
+  b="$(basename "$f")"; is_conflict "$b" || continue
+  d="$(dirname "$f")"; c="$(canonical "$b")"
   if [ "$c" != "$b" ] && [ -e "$d/$c" ]; then found+=("$f"); fi
 done < <(find . -path ./.git -prune -o -path '*/node_modules' -prune -o \
-             \( -name '* [0-9]' -o -name '* [0-9].*' \) -print0 2>/dev/null)
+             -name '* *' -print0 2>/dev/null)
 
 n=${#found[@]}
 if [ "$n" -eq 0 ]; then
