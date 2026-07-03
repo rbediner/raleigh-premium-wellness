@@ -1,3 +1,17 @@
+/**
+ * Purpose: Wire up all browser-side behavior for the single-page site: the
+ * unified contact form (path selection, field rendering, validation, submit),
+ * sticky-nav highlighting, the mobile menu, deep-link/hash handling, and
+ * analytics events.
+ * Role: This is the page's only entry-point module. It reads its field/copy
+ * configuration from form-configuration.js and delegates the actual network
+ * submit to submission-gateway.js, so this file stays focused on DOM and UX.
+ * Dependencies: Browser DOM APIs only (no bundler, no framework). Loaded as an
+ * ES module via <script type="module"> in index.html.
+ * Risk: Low. Contains no environment/SEO logic and no hardcoded form endpoint;
+ * the endpoint is injected at build time and read inside submission-gateway.js.
+ */
+
 import {
   FIND_OUT_WHATS_COMING_PATH,
   FIELD_DEFINITIONS,
@@ -563,6 +577,11 @@ function handleSectionActionClick(event) {
   setStatusMessage("", "idle");
 }
 
+// Bootstrap: bind every listener once, then paint the initial form variant.
+// Form events use both change and input so radio path switches and live typing
+// both refresh state; the document-level click listeners cover elements that
+// are rendered dynamically (composer chips, section CTAs) and so cannot be
+// bound directly at load time.
 contactFormElement.addEventListener("change", handleFormChange);
 contactFormElement.addEventListener("input", handleFormChange);
 contactFormElement.addEventListener("click", handleComposerChipClick);
@@ -573,6 +592,8 @@ siteNavigationElement?.addEventListener("click", handleNavClick);
 document.addEventListener("keydown", handleEscapeForMobileMenu);
 window.addEventListener("hashchange", handleHashNavigation);
 
+// Seed the form from any ?interestPath deep link before the first paint so a
+// visitor arriving on a specific path sees the matching variant immediately.
 trackEvent("page_load", { page: window.location.pathname });
 currentFormValues = {
   ...currentFormValues,
