@@ -2,6 +2,43 @@
 
 This repository holds the placeholder outreach site for The Tox Raleigh launch.
 
+## Architecture
+
+This is a single mobile-first, anchored landing page (marketing/outreach site), built as
+hand-written static assets with no front-end framework and no bundler.
+
+- Tech stack: plain HTML, CSS, and ES module JavaScript for the site; Node.js 20 (see
+  `.nvmrc`) for build and QA tooling; Vitest for unit/policy tests and Playwright for
+  browser QA. The one backend piece is a Google Apps Script web app that writes form
+  submissions into a Google Sheet.
+- Directory layout:
+  - `site/` — the single `index.html` document (contains `<!-- BUILD_ENVIRONMENT_* -->`
+    placeholders the build fills in).
+  - `styles/` — `site.css`.
+  - `scripts/site/` — browser runtime modules: `site-interactions.js` (nav, anchors,
+    forms), `form-configuration.js` (per-path form field config), and
+    `submission-gateway.js` (POSTs submissions to the Apps Script endpoint).
+  - `scripts/release/` — build/publish/verify tooling (`build-site-artifact.mjs`,
+    `publish-github-pages-branch.mjs`, preflight and deploy-verification scripts).
+  - `scripts/qa/`, `qa/` — QA runners plus unit, end-to-end (Playwright), and policy tests.
+  - `integrations/google-sheets-submissions/` — the Apps Script (`Code.js`) backend.
+  - `assets/`, `data-sources/`, `planning/`, `docs/` — imagery, reference docs, and SOPs.
+- Build/run: there is no compile step. `scripts/release/build-site-artifact.mjs --mode
+  <preview|production>` copies `site/`, `styles/`, `scripts/site/`, and `assets/` into
+  `dist/<mode>/`, injecting the form endpoint, canonical/`noindex` SEO rules, and an
+  environment banner per channel. Locally, `npm run preview:staging` /
+  `npm run preview:production` build then serve the artifact via
+  `scripts/qa/serve-static-site.mjs`.
+- Deploy: GitHub Actions publishes to the `gh-pages` branch (not the standard Pages
+  artifact actions). `preview-deploy.yml` runs on push to `staging` and publishes to
+  `/staging/`; `production-deploy.yml` runs on push to `main`, first verifying the commit
+  already exists on `staging`, then publishing to the branch root. Both run a preflight,
+  publish via `publish-github-pages-branch.mjs`, and verify the live URL.
+- Form flow: the browser gateway POSTs a JSON body (as `text/plain` to avoid a CORS
+  preflight) to the Apps Script web app, which routes each interest path to its own Sheet
+  tab, logs sends to `email_delivery_log`, and diverts `is_test_submission` traffic to a
+  `test_submissions` tab.
+
 ## Current Product Direction
 
 - One mobile-first anchored landing page for MVP
@@ -303,3 +340,11 @@ That command rewrites `docs/handoff/latest.md` with the latest repo state, incre
 ### Friendly Resume Rule
 
 Before editing code on a new machine, do not trust memory alone. Read the repo docs first, align to the handoff branch, and wait for `npm run session:ready` to pass.
+
+## Google Drive drift
+
+This repository is checked out inside Google Drive and synced across machines. Google Drive creates conflict-copies (filenames ending in ` 2`, ` 3`, or ` (1)`) — including inside `.git` — which corrupt the repo. A guardrail auto-removes them:
+
+- `scripts/clean-drive-drift.sh --fix` — remove conflict-copies then verify with `git fsck` (`--check` to only report).
+- Runs automatically via git hooks (`pre-commit`, `post-merge`, `post-checkout`) and, for Claude, on session start via `.claude/settings.json`.
+- Never commit a file whose name ends in ` 2`/` 3` — it is Google Drive junk, not a real file.
