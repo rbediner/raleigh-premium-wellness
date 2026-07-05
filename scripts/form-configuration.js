@@ -1,0 +1,478 @@
+export const GOOGLE_SHEET_TARGET_URL =
+  "https://docs.google.com/spreadsheets/d/1rRNeWWqNsdbr1kuwpQfzuFWHaIAXx--MfyhgdhDyWV0/edit?usp=sharing";
+
+export const EMAIL_NOTIFICATION_TARGET = "roman.bediner@thetox.com";
+export const STUDIO_DEVELOPMENT_MANAGER_LABEL = "Studio Development Manager";
+export const FIND_OUT_WHATS_COMING_PATH = "find_out_whats_coming";
+// Keep old deep links working while we migrate public language and routing to
+// the new curiosity-first path semantics.
+const LEGACY_PATH_ALIASES = {
+  stay_connected: FIND_OUT_WHATS_COMING_PATH,
+};
+
+export function normalizeInterestPath(pathKey) {
+  return LEGACY_PATH_ALIASES[pathKey] ?? pathKey;
+}
+
+export const FORM_VARIANT_CONFIG = {
+  work_with_us: {
+    introduction:
+      "If you see yourself in this opportunity, or someone came to mind while reading about it, we’d love to hear from you. Share a few details below and we’ll take it from there.",
+    submitLabel: "Start the Conversation",
+    successMessage:
+      "Thanks for reaching out. We’ve received your note and will review it carefully. If there looks to be a strong fit, we’ll be in touch about next steps.",
+  },
+  partner_with_us: {
+    introduction:
+      "If you see an opportunity to collaborate, host something together, or introduce us to your community, we’d love to hear from you. Share a few details below and let’s explore it.",
+    submitLabel: "Explore a Partnership",
+    successMessage:
+      "Thanks so much for reaching out. We’re grateful for your interest and excited to learn more about you, your business, and the kind of collaboration you have in mind. We’ll review your note and be back in touch soon.",
+  },
+  [FIND_OUT_WHATS_COMING_PATH]: {
+    introduction:
+      "A new premium wellness experience is coming to Raleigh. If you’d like to learn more as plans take shape, share your information below and we’ll follow up with more details.",
+    submitLabel: "Find Out What’s Coming",
+    successMessage:
+      "Thanks for reaching out. We’ve received your note and will follow up with more information as plans take shape.",
+  },
+};
+
+export const FIELD_DEFINITIONS = {
+  first_name: {
+    label: "First Name",
+    type: "text",
+    autocomplete: "given-name",
+  },
+  last_name: {
+    label: "Last Name",
+    type: "text",
+    autocomplete: "family-name",
+  },
+  email: {
+    label: "Email Address",
+    type: "email",
+    autocomplete: "email",
+  },
+  phone: {
+    label: "Mobile Phone Number",
+    type: "tel",
+    autocomplete: "tel",
+  },
+  role_interest: {
+    label: "Role of Interest",
+    type: "select",
+    options: [
+      STUDIO_DEVELOPMENT_MANAGER_LABEL,
+      "Front of House (FOH) Team Member",
+      "Licensed Esthetician Opportunity",
+    ],
+  },
+  short_message: {
+    label: "Short Message",
+    type: "textarea",
+    helperText:
+      "Share what sparked your interest, what feels aligned, or anything helpful for a first conversation.",
+    composerChips: [],
+  },
+  city_area: {
+    label: "City / Area",
+    type: "text",
+  },
+  linkedin_url: {
+    label: "LinkedIn URL",
+    type: "url",
+  },
+  additional_links: {
+    label: "Additional Links",
+    type: "textarea",
+    helperText:
+      "Optional. Feel free to share anything helpful, such as LinkedIn, a portfolio, a personal website, or a short introduction video.",
+    rows: 4,
+  },
+  social_media_link: {
+    label: "Social Media Link",
+    type: "url",
+  },
+  referral_reason: {
+    label: "Why do you think this person would be a great fit?",
+    type: "textarea",
+    helperText: "Share what stands out about this person and why they came to mind.",
+    composerChips: [
+      {
+        label: "How I Know Them",
+        text: "How I Know Them: ",
+      },
+      {
+        label: "Why They Stand Out",
+        text: "Why They Stand Out: ",
+      },
+      {
+        label: "Community Credibility",
+        text: "Community Credibility: ",
+      },
+    ],
+  },
+  referred_first_name: {
+    label: "Referred Person First Name",
+    type: "text",
+  },
+  referred_last_name: {
+    label: "Referred Person Last Name",
+    type: "text",
+  },
+  referred_email: {
+    label: "Referred Person Email Address",
+    type: "email",
+  },
+  referred_phone: {
+    label: "Referred Person Mobile Phone Number",
+    type: "tel",
+  },
+  referred_city_area: {
+    label: "Referred Person City / Area",
+    type: "text",
+  },
+  referred_linkedin_url: {
+    label: "Referred Person LinkedIn URL",
+    type: "url",
+  },
+  referred_portfolio_url: {
+    label: "Referred Person Personal Website / Portfolio URL",
+    type: "url",
+  },
+  referred_video_intro_url: {
+    label: "Referred Person Video Introduction URL",
+    type: "url",
+  },
+  referred_social_media_link: {
+    label: "Referred Person Social Media Link",
+    type: "url",
+  },
+  referral_permission_confirmed: {
+    label: "I confirm I have this person’s permission to share their contact information.",
+    type: "checkbox",
+  },
+  organization_name: {
+    label: "Business / Organization Name",
+    type: "text",
+  },
+  partnership_type: {
+    label: "Partnership Type",
+    type: "select",
+    options: [
+      "Community Partnership",
+      "Event Collaboration",
+      "Referral Partnership",
+      "Wellness Collaboration",
+      "Other",
+    ],
+  },
+  website_url: {
+    label: "Website URL",
+    type: "url",
+  },
+  collaboration_idea: {
+    label: "Collaboration Idea",
+    type: "textarea",
+    helperText: "Outline the idea, audience, or format you have in mind.",
+    composerChips: [],
+  },
+  short_note: {
+    label: "Short Note",
+    type: "textarea",
+    helperText: "Optional, but helpful if you want to share what interests you most.",
+    composerChips: [
+      {
+        label: "What I’m Curious About",
+        text: "I’m most curious about ",
+      },
+      {
+        label: "What I Hope To Learn",
+        text: "I’d like to learn more about ",
+      },
+    ],
+  },
+  interest_type: {
+    label: "Interest Type",
+    type: "select",
+    options: ["What’s Coming", "Plans And Timeline", "General Curiosity"],
+  },
+  email_follow_up_consent: {
+    label: "Yes, I’d be glad to hear from you by email about this opportunity.",
+    type: "checkbox",
+  },
+  text_follow_up_consent: {
+    label: "Yes, you may text me about this inquiry.",
+    type: "checkbox",
+    helperText: "Message frequency varies. Message and data rates may apply. Reply STOP to opt out.",
+  },
+  email_updates_consent: {
+    label: "Yes, I’d be glad to hear from you by email and phone as plans take shape.",
+    type: "checkbox",
+  },
+  text_updates_consent: {
+    label: "Yes, I’d be glad to receive text updates as plans take shape.",
+    type: "checkbox",
+    helperText: "Message frequency varies. Message and data rates may apply. Reply STOP to opt out.",
+  },
+};
+
+export function getFieldPresentation(fieldKey, pathKey, currentValues = {}) {
+  const baseField = FIELD_DEFINITIONS[fieldKey];
+
+  if (!baseField) {
+    return undefined;
+  }
+
+  if (pathKey === "partner_with_us") {
+    if (fieldKey === "short_message") {
+      return {
+        ...baseField,
+        label: "Partnership Idea",
+        helperText:
+          "Tell us a bit about your business, your audience, or the kind of collaboration you have in mind.",
+        // Keep helper-chip labels in title case so every visible category cue
+        // follows the same polished label style across the site.
+        composerChips: [
+          { label: "Partnership Idea", text: "Partnership Idea: " },
+          { label: "Audience / Community", text: "Audience / Community: " },
+          { label: "Activation Concept", text: "Activation Concept: " },
+          { label: "Venue / Business Fit", text: "Venue / Business Fit: " },
+        ],
+      };
+    }
+  }
+
+  if (pathKey === "work_with_us") {
+    if (fieldKey === "short_message") {
+      return {
+        ...baseField,
+        helperText:
+          "Share what sparked your interest, what feels aligned, or anything helpful for a first conversation.",
+        composerChips: [],
+      };
+    }
+
+    if (fieldKey === "additional_links") {
+      return {
+        ...baseField,
+        helperText:
+          "Optional. Feel free to share anything helpful, such as LinkedIn, a portfolio, a personal website, or a short introduction video.",
+      };
+    }
+  }
+
+  return baseField;
+}
+
+export function getFormVariantConfig(pathKey, currentValues = {}) {
+  const normalizedPathKey = normalizeInterestPath(pathKey);
+  const baseVariant = FORM_VARIANT_CONFIG[normalizedPathKey] ?? FORM_VARIANT_CONFIG.work_with_us;
+
+  return baseVariant;
+}
+
+export function getFieldGroups(pathKey, currentValues = {}) {
+  const normalizedPathKey = normalizeInterestPath(pathKey);
+
+  if (normalizedPathKey === "partner_with_us") {
+    return [
+      {
+        key: "partner_core",
+        label: "Partnership Details",
+        fields: [
+          "first_name",
+          "last_name",
+          "organization_name",
+          "email",
+          "phone",
+          "partnership_type",
+          "short_message",
+          "email_follow_up_consent",
+        ],
+      },
+    ];
+  }
+
+  if (normalizedPathKey === FIND_OUT_WHATS_COMING_PATH) {
+    return [
+      {
+        key: FIND_OUT_WHATS_COMING_PATH,
+        label: "Find Out What’s Coming",
+        fields: [
+          "first_name",
+          "last_name",
+          "email",
+          "phone",
+          "email_updates_consent",
+        ],
+      },
+    ];
+  }
+
+  return [
+    {
+      key: "work_core",
+      label: "Your Details",
+      fields: ["first_name", "last_name", "email", "phone"],
+    },
+    {
+      key: "work_self",
+      label: "A Few Helpful Details",
+      fields: [
+        "short_message",
+        "city_area",
+        "linkedin_url",
+        "additional_links",
+        "email_follow_up_consent",
+      ],
+    },
+  ];
+}
+
+export function getFieldSequence(pathKey, currentValues = {}) {
+  return getFieldGroups(pathKey, currentValues).flatMap((group) => group.fields);
+}
+
+export function trimOptionalValue(rawValue) {
+  if (typeof rawValue !== "string") {
+    return rawValue;
+  }
+
+  return rawValue.trim();
+}
+
+export function normalizeFormValues(rawValues) {
+  return Object.fromEntries(
+    Object.entries(rawValues).map(([fieldKey, fieldValue]) => [
+      fieldKey,
+      typeof fieldValue === "string" ? trimOptionalValue(fieldValue) : fieldValue,
+    ]),
+  );
+}
+
+export function getRequiredFields(pathKey, currentValues = {}) {
+  const normalizedPathKey = normalizeInterestPath(pathKey);
+
+  if (normalizedPathKey === "partner_with_us") {
+    return [
+      "first_name",
+      "last_name",
+      "organization_name",
+      "email",
+      "phone",
+      "partnership_type",
+      "short_message",
+      "email_follow_up_consent",
+    ];
+  }
+
+  if (normalizedPathKey === FIND_OUT_WHATS_COMING_PATH) {
+    return ["first_name", "last_name", "email", "phone", "email_updates_consent"];
+  }
+
+  const workRequiredFields = [
+    "first_name",
+    "last_name",
+    "email",
+    "short_message",
+    "email_follow_up_consent",
+  ];
+
+  return workRequiredFields;
+}
+
+function validateEmail(fieldLabel, fieldValue, validationErrors) {
+  if (fieldValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fieldValue)) {
+    validationErrors.push(`${fieldLabel} must be a valid email address.`);
+  }
+}
+
+function validatePhone(fieldLabel, fieldValue, validationErrors) {
+  if (fieldValue && !/^\+?[0-9()\-\s.]{10,}$/.test(fieldValue)) {
+    validationErrors.push(`${fieldLabel} must be a valid phone number.`);
+  }
+}
+
+function validateUrl(fieldLabel, fieldValue, validationErrors) {
+  if (!fieldValue) {
+    return;
+  }
+
+  try {
+    new URL(fieldValue);
+  } catch {
+    validationErrors.push(`${fieldLabel} must be a valid URL.`);
+  }
+}
+
+export function validateFormValues(pathKey, rawValues) {
+  const normalizedValues = normalizeFormValues(rawValues);
+  const requiredFields = getRequiredFields(pathKey, normalizedValues);
+  const validationErrors = [];
+
+  for (const requiredField of requiredFields) {
+    const fieldValue = normalizedValues[requiredField];
+    const fieldDefinition = getFieldPresentation(requiredField, pathKey, normalizedValues);
+
+    if (fieldDefinition?.type === "checkbox") {
+      if (!fieldValue) {
+        validationErrors.push(`${fieldDefinition.label} is required.`);
+      }
+      continue;
+    }
+
+    if (!fieldValue || (typeof fieldValue === "string" && fieldValue.trim().length === 0)) {
+      validationErrors.push(`${fieldDefinition.label} is required.`);
+    }
+  }
+
+  for (const [fieldKey, fieldValue] of Object.entries(normalizedValues)) {
+    const fieldDefinition = getFieldPresentation(fieldKey, pathKey, normalizedValues);
+
+    if (!fieldDefinition) {
+      continue;
+    }
+
+    if (fieldDefinition.type === "email") {
+      validateEmail(fieldDefinition.label, fieldValue, validationErrors);
+    }
+
+    if (fieldDefinition.type === "tel") {
+      validatePhone(fieldDefinition.label, fieldValue, validationErrors);
+    }
+
+    if (fieldDefinition.type === "url") {
+      validateUrl(fieldDefinition.label, fieldValue, validationErrors);
+    }
+  }
+
+  return {
+    normalizedValues,
+    validationErrors,
+  };
+}
+
+export function buildSubmissionPayload(pathKey, rawValues) {
+  const normalizedPathKey = normalizeInterestPath(pathKey);
+  const { normalizedValues, validationErrors } = validateFormValues(normalizedPathKey, rawValues);
+
+  return {
+    interestPath: normalizedPathKey,
+    formLabel: getFormVariantConfig(normalizedPathKey, normalizedValues).submitLabel,
+    normalizedValues,
+    validationErrors,
+    integrationHooks: {
+      googleSheetsTarget: GOOGLE_SHEET_TARGET_URL,
+      emailNotificationTarget: EMAIL_NOTIFICATION_TARGET,
+      analyticsEvents: [
+        "page_load",
+        "hero_cta_click",
+        "nav_click",
+        "form_path_selection",
+        "form_submission_success",
+      ],
+    },
+  };
+}
