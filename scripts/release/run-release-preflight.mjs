@@ -16,8 +16,19 @@ if (!["preview", "production"].includes(releaseMode)) {
   throw new Error("Pass --mode preview or --mode production.");
 }
 
+// qa:session-readiness checks for LOCAL machine drift (current branch matches
+// the handoff doc's declared branch, local HEAD matches origin, no stray
+// cloud-sync files). That's meaningful for a human/agent starting a session
+// on a laptop, but structurally inapplicable to a fresh CI runner, which
+// always has a clean checkout of exactly the triggering commit. It is also
+// unsatisfiable by design for a production promotion: the earlier
+// release:verify:promotion step requires main's commit to be byte-identical
+// to a commit that exists on staging, and that commit's handoff doc will
+// therefore always declare "staging" even once fast-forwarded onto main --
+// so this check can never pass in the Production Deploy workflow. Skip it in
+// CI; commit provenance is already covered by release:verify:promotion.
 const baseCommands = [
-  ["npm", ["run", "qa:session-readiness"]],
+  ...(process.env.CI ? [] : [["npm", ["run", "qa:session-readiness"]]]),
   ["npm", ["run", "qa:docs-gate"]],
   ["npm", ["run", "test:workflow"]],
   ["npm", ["run", "test:unit"]],
