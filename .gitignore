@@ -28,3 +28,9 @@ integrations/**/.clasp.json
 # Keep this local ad hoc UX review file out of the readiness gate unless the
 # team decides to move it into a purpose-driven docs folder later.
 /RPW_UX_QA_Review.docx
+
+# .claude/ holds machine-local Claude Code config. settings.local.json carries
+# personal permission overrides and must stay untracked, but settings.json
+# (the Drive-drift SessionStart hook) has no secrets and must be shared.
+.claude/*
+!.claude/settings.json

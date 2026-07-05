@@ -27,22 +27,14 @@ done
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$ROOT" || exit 0
 
-# Strip a trailing Drive conflict suffix: " 2" or " (2)" before end-or-extension.
 canonical() { printf '%s' "$1" | sed -E 's/ (\([0-9]+\)|[0-9]+)(\.[^.]+)?$/\2/'; }
-# Does a basename look like a Drive conflict copy? (" 2", " 3", " (1)", " (2).ext")
 is_conflict() { [[ "$1" =~ \ (\([0-9]+\)|[0-9]+)($|\.) ]]; }
 
 found=()
-# Inside .git: git never uses spaces, so ANY spaced name is junk (conflict copy
-# of an object/ref/index in either " n" or " (n)" style). Stray .DS_Store files
-# also land in .git via Drive/macOS and break `git fsck` (badRefName) — drop them.
 if [ -d .git ]; then
   while IFS= read -r -d '' f; do found+=("$f"); done \
     < <(find .git \( -name '* *' -o -name '.DS_Store' \) -print0 2>/dev/null)
 fi
-# Working tree: only treat a conflict-style name as junk when its de-suffixed
-# sibling ALSO exists (Drive copies coexist with the original), so real names
-# like "chapter 2.md" or "My File.txt" are left alone.
 while IFS= read -r -d '' f; do
   b="$(basename "$f")"; is_conflict "$b" || continue
   d="$(dirname "$f")"; c="$(canonical "$b")"
@@ -64,11 +56,12 @@ if [ "$MODE" != "fix" ]; then
   exit 1
 fi
 
-for f in "${found[@]}"; do rm -rf "$f"; done
+for f in "${found[@]}"; do
+  git rm -r --cached --ignore-unmatch --quiet -- "$f" >/dev/null 2>&1 || true
+  rm -rf "$f"
+done
 echo "clean-drive-drift: removed $n conflict-copy path(s)."
 
-# Verify .git integrity after touching object/ref files. --no-dangling hides the
-# harmless dangling-object chatter so only real corruption surfaces.
 if git rev-parse --git-dir >/dev/null 2>&1; then
   tmp="$(mktemp)"
   if ! git fsck --full --no-progress --no-dangling >"$tmp" 2>&1; then
