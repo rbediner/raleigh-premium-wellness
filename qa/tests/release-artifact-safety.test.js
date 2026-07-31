@@ -44,8 +44,9 @@ describe("release artifact safety", () => {
 
     expect(productionHtml).toContain('data-release-channel="production"');
     expect(productionHtml).not.toContain('name="robots" content="noindex, noarchive, nofollow"');
-    expect(productionHtml).toContain('property="og:url" content="https://rbediner.github.io/raleigh-premium-wellness/"');
-    expect(productionHtml).toContain('property="og:image" content="https://rbediner.github.io/raleigh-premium-wellness/assets/share-surfaces/open-graph-preview-1200x630.png"');
+    expect(productionHtml).toContain('rel="canonical" href="https://raleigh-premium-wellness.romanbediner.com/"');
+    expect(productionHtml).toContain('property="og:url" content="https://raleigh-premium-wellness.romanbediner.com/"');
+    expect(productionHtml).toContain('property="og:image" content="https://raleigh-premium-wellness.romanbediner.com/assets/share-surfaces/open-graph-preview-1200x630.png"');
     expect(productionHtml.match(/property="og:image"/g)?.length).toBe(1);
     expect(productionHtml.match(/property="twitter:image"/g)?.length).toBe(1);
     expect(productionRobots).toContain("Allow: /");

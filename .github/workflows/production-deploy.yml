@@ -41,7 +41,6 @@ jobs:
         run: npm run release:preflight:production
         env:
           FORM_SUBMISSION_ENDPOINT_URL: ${{ vars.FORM_SUBMISSION_ENDPOINT_URL }}
-          PRODUCTION_CANONICAL_URL: ${{ vars.PRODUCTION_CANONICAL_URL }}
 
       - name: Publish production artifact to gh-pages
         run: node scripts/release/publish-github-pages-branch.mjs --mode production
@@ -49,17 +48,16 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRODUCTION_CANONICAL_URL: ${{ vars.PRODUCTION_CANONICAL_URL }}
           FORM_SUBMISSION_ENDPOINT_URL: ${{ vars.FORM_SUBMISSION_ENDPOINT_URL }}
 
       - name: Verify production URL
         run: >
           node scripts/release/verify-remote-deployment.mjs
           --mode production
-          --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          --url https://raleigh-premium-wellness.romanbediner.com/
           --sha ${{ github.sha }}
           --ci-run-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          --deploy-url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          --deploy-url https://raleigh-premium-wellness.romanbediner.com/
 
       - name: Write production summary
         run: |
@@ -69,6 +67,6 @@ jobs:
             echo "- Branch: main"
             echo "- Commit: ${{ github.sha }}"
             echo "- Promotion guard: commit confirmed on staging"
-            echo "- Production URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+            echo "- Production URL: https://raleigh-premium-wellness.romanbediner.com/"
             echo "- CI Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -181,9 +181,9 @@ Once GitHub Pages is enabled for the `gh-pages` branch, the preview URL will be:
 
 ### Production URL
 
-Once GitHub Pages is enabled for the `gh-pages` branch, the production URL will be:
+The public production URL is:
 
-`https://rbediner.github.io/raleigh-premium-wellness/`
+`https://raleigh-premium-wellness.romanbediner.com/`
 
 ### One-Time Manual GitHub Setup
 
@@ -192,9 +192,10 @@ GitHub Pages still needs one manual repo setting:
 1. Open the GitHub repository settings.
 2. Go to `Pages`.
 3. Set the source to the `gh-pages` branch and the root folder.
-4. Save.
+4. Set the custom domain to `raleigh-premium-wellness.romanbediner.com` and enforce HTTPS after DNS verification completes.
+5. Save.
 
-After that, the preview and production workflows can publish the preview path and the live root automatically.
+The production publisher writes the root `CNAME` file from `scripts/release/production-domain-config.mjs`, so future deploys retain the custom domain. The preview remains on GitHub Pages at the staging URL.
 
 ## GitHub Actions Runtime Maintenance
 

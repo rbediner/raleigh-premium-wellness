@@ -31,6 +31,12 @@ Source commit: `287554b` (verify with `git rev-parse HEAD`)
 - Local staging-equivalent preview with the real backend was verified at `http://127.0.0.1:4173`
 - GitHub repo variable has been updated so the next staging deploy will use the live Apps Script endpoint
 
+## Production Domain Configuration
+
+- Production is configured in source control for: `https://raleigh-premium-wellness.romanbediner.com/`
+- The GitHub Pages publisher now writes the required root `CNAME` file on each production deploy.
+- Cloudflare DNS still needs a DNS-only CNAME record: `raleigh-premium-wellness` -> `rbediner.github.io`.
+
 ## Current CI Or Deploy Status Summary
 
 - `staging` has been pushed in this session

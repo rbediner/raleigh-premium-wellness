@@ -13,6 +13,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
+import { productionDomain } from "./production-domain-config.mjs";
 
 const commandLineArguments = process.argv.slice(2);
 const modeIndex = commandLineArguments.indexOf("--mode");
@@ -85,6 +86,9 @@ if (publishMode === "preview") {
 } else {
   removeDirectoryContents(publishDirectory, [".git", "staging"]);
   copyArtifactContents(artifactDirectory, publishDirectory);
+
+  // GitHub Pages reads this file to keep the custom domain attached after every publish.
+  writeFileSync(join(publishDirectory, "CNAME"), `${productionDomain}\n`);
 }
 
 writeFileSync(join(publishDirectory, ".nojekyll"), "");

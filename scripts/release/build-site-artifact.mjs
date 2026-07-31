@@ -11,6 +11,7 @@
 import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join, resolve } from "node:path";
+import { productionCanonicalUrl } from "./production-domain-config.mjs";
 
 const commandLineArguments = process.argv.slice(2);
 const modeIndex = commandLineArguments.indexOf("--mode");
@@ -50,7 +51,8 @@ const sourceAssetsDirectory = resolve(repositoryRoot, "assets");
 
 const currentCommitSha = process.env.GITHUB_SHA || execSync("git rev-parse HEAD").toString().trim();
 const formSubmissionEndpointUrl = process.env.FORM_SUBMISSION_ENDPOINT_URL?.trim() || "";
-const canonicalUrl = process.env.PRODUCTION_CANONICAL_URL?.replace(/\/$/, "") || "";
+// Keep this in source control so every production build uses the real public address.
+const canonicalUrl = productionCanonicalUrl;
 const repositorySlug =
   process.env.GITHUB_REPOSITORY ||
   execSync("git config --get remote.origin.url").toString().trim().match(/[:/]([^/]+\/[^/.]+)(?:\.git)?$/)?.[1] ||

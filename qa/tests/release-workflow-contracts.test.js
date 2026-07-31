@@ -24,6 +24,15 @@ describe("release workflow contracts", () => {
     expect(productionWorkflow).toContain("- main");
     expect(productionWorkflow).toContain("--mode production");
     expect(productionWorkflow).toContain("release:verify:promotion");
+    expect(productionWorkflow).toContain("https://raleigh-premium-wellness.romanbediner.com/");
+  });
+
+  it("keeps the production custom domain in the publisher and canonical metadata", () => {
+    const publisher = readFileSync("scripts/release/publish-github-pages-branch.mjs", "utf8");
+    const domainConfiguration = readFileSync("scripts/release/production-domain-config.mjs", "utf8");
+
+    expect(domainConfiguration).toContain('productionDomain = "raleigh-premium-wellness.romanbediner.com"');
+    expect(publisher).toContain('writeFileSync(join(publishDirectory, "CNAME"), `${productionDomain}\\n`)');
   });
 
   it("keeps GitHub-hosted workflow actions on current majors and documents the Pages runtime plan", () => {

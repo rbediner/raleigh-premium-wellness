@@ -51,6 +51,8 @@ This file is the repo-local source of truth for how releases must move through t
 
 - Production publishes from `main` only.
 - Production must not be marked `noindex`.
+- Production uses `https://raleigh-premium-wellness.romanbediner.com/`; its DNS CNAME must target `rbediner.github.io` and remain DNS-only in Cloudflare.
+- The production publisher writes the GitHub Pages `CNAME` file from the version-controlled production-domain configuration.
 - Production verification should include the deploy URL, CI run URL, promoted SHA, and smoke result.
 
 ## Backend QA Escalation Rule
