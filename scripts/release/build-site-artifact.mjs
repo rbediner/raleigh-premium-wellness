@@ -100,10 +100,13 @@ const previewBannerMarkup = `
 function buildHtmlForMode() {
   const environmentHeadMarkup = buildMode === "preview" ? previewHeadMarkup : productionHeadMarkup;
   const environmentBannerMarkup = buildMode === "preview" ? previewBannerMarkup : "";
+  // GitHub Pages can cache a module path after a deploy, so couple the entry
+  // module URL to this exact release commit and avoid serving prior behavior.
+  const versionedInteractionScriptUrl = `./scripts/site-interactions.js?v=${currentCommitSha}`;
 
   return sourceHtml
     .replace("../styles/site.css", "./styles/site.css")
-    .replace("../scripts/site/site-interactions.js", "./scripts/site-interactions.js")
+    .replace("../scripts/site/site-interactions.js", versionedInteractionScriptUrl)
     .replaceAll("../assets/", "./assets/")
     .replace(
       'property="og:image" content="./assets/share-surfaces/open-graph-preview-1200x630.png"',
