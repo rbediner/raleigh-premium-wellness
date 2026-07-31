@@ -3,7 +3,7 @@
  * the expected release-channel behavior.
  * Role: Used for preview smoke checks, production smoke checks, and post-deploy
  * verification evidence.
- * Dependencies: Node.js 20+ for fetch.
+ * Dependencies: Node.js 22+ for the project runtime and native fetch.
  * Risk: Low. This script only reads remote or local HTTP responses.
  */
 

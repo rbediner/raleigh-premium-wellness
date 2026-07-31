@@ -7,7 +7,7 @@ This repository holds the placeholder outreach site for The Tox Raleigh launch.
 This is a single mobile-first, anchored landing page (marketing/outreach site), built as
 hand-written static assets with no front-end framework and no bundler.
 
-- Tech stack: plain HTML, CSS, and ES module JavaScript for the site; Node.js 20 (see
+- Tech stack: plain HTML, CSS, and ES module JavaScript for the site; Node.js 22 (see
   `.nvmrc`) for build and QA tooling; Vitest for unit/policy tests and Playwright for
   browser QA. The one backend piece is a Google Apps Script web app that writes form
   submissions into a Google Sheet.
@@ -97,7 +97,7 @@ Repo-cleanup rule:
 
 These are the tools this repo now expects:
 
-- Node.js 20.x, matching `.nvmrc`
+- Node.js 22.x, matching `.nvmrc`
 - npm 10 or newer
 - Git
 - GitHub CLI (`gh`) for convenient branch/workflow inspection

@@ -58,4 +58,12 @@ describe("session readiness contract", () => {
     expect(readinessScript).toContain("does not match origin/");
     expect(readinessScript).toContain("cloud-sync duplicate artifacts");
   });
+
+  it("declares Node 22 as the single project runtime", () => {
+    const nodeVersion = readFileSync(".nvmrc", "utf8").trim();
+    const readme = readFileSync("README.md", "utf8");
+
+    expect(nodeVersion).toBe("22");
+    expect(readme).toContain("Node.js 22.x, matching `.nvmrc`");
+  });
 });

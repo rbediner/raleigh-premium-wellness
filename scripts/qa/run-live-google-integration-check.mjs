@@ -2,7 +2,7 @@
  * Purpose: Run a live Apps Script + Google Sheets smoke check for all public
  * intake paths and prove row writes plus notification-send evidence.
  * Role: Backend QA guardrail used after Apps Script deploys and staging pushes.
- * Dependencies: Node.js 20+ (native fetch).
+ * Dependencies: Node.js 22+ (native fetch).
  * Risk: Medium. This writes test rows to designated *_test tabs.
  */
 

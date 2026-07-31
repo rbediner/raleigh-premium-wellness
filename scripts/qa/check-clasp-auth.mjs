@@ -1,7 +1,7 @@
 /**
  * Purpose: Fast preflight check for clasp auth before Apps Script push/deploy.
  * Role: Prevents release interruptions caused by missing local clasp tokens.
- * Dependencies: Node.js 20+ and a local ~/.clasprc.json file.
+ * Dependencies: Node.js 22+ and a local ~/.clasprc.json file.
  * Risk: Low. Read-only check that exits non-zero when auth is missing.
  */
 
