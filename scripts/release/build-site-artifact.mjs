@@ -47,6 +47,12 @@ const sourceSubmissionGatewayPath = resolve(
   "site",
   "submission-gateway.js",
 );
+const sourceQrAttributionPath = resolve(
+  repositoryRoot,
+  "scripts",
+  "site",
+  "qr-attribution.js",
+);
 const sourceAssetsDirectory = resolve(repositoryRoot, "assets");
 
 const currentCommitSha = process.env.GITHUB_SHA || execSync("git rev-parse HEAD").toString().trim();
@@ -129,6 +135,7 @@ copyFileSync(sourceStylesPath, join(outputStylesDirectory, "site.css"));
 copyFileSync(sourceInteractionScriptPath, join(outputScriptsDirectory, "site-interactions.js"));
 copyFileSync(sourceFormConfigPath, join(outputScriptsDirectory, "form-configuration.js"));
 copyFileSync(sourceSubmissionGatewayPath, join(outputScriptsDirectory, "submission-gateway.js"));
+copyFileSync(sourceQrAttributionPath, join(outputScriptsDirectory, "qr-attribution.js"));
 cpSync(sourceAssetsDirectory, outputAssetsDirectory, { recursive: true });
 
 writeFileSync(join(outputDirectory, "index.html"), buildHtmlForMode());

@@ -16,8 +16,10 @@ hand-written static assets with no front-end framework and no bundler.
     placeholders the build fills in).
   - `styles/` — `site.css`.
   - `scripts/site/` — browser runtime modules: `site-interactions.js` (nav, anchors,
-    forms), `form-configuration.js` (per-path form field config), and
-    `submission-gateway.js` (POSTs submissions to the Apps Script endpoint).
+    forms, and analytics), `form-configuration.js` (per-path form field config),
+    `submission-gateway.js` (POSTs submissions to the Apps Script endpoint), and
+    `qr-attribution.js` (records an approved QR source, then removes it from the
+    shareable address bar URL).
   - `scripts/release/` — build/publish/verify tooling (`build-site-artifact.mjs`,
     `publish-github-pages-branch.mjs`, preflight and deploy-verification scripts).
   - `scripts/qa/`, `qa/` — QA runners plus unit, end-to-end (Playwright), and policy tests.

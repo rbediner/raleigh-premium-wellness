@@ -32,6 +32,7 @@ describe("release artifact safety", () => {
     expect(existsSync("dist/preview/assets/share-surfaces/favicon.svg")).toBe(true);
     expect(existsSync("dist/preview/assets/share-surfaces/favicon.ico")).toBe(true);
     expect(existsSync("dist/preview/assets/share-surfaces/open-graph-preview-1200x630.png")).toBe(true);
+    expect(existsSync("dist/preview/scripts/qr-attribution.js")).toBe(true);
   });
 
   it("builds a production artifact that is not blocked from indexing", () => {
@@ -54,6 +55,7 @@ describe("release artifact safety", () => {
     expect(existsSync("dist/production/assets/share-surfaces/favicon.svg")).toBe(true);
     expect(existsSync("dist/production/assets/share-surfaces/favicon.ico")).toBe(true);
     expect(existsSync("dist/production/assets/share-surfaces/open-graph-preview-1200x630.png")).toBe(true);
+    expect(existsSync("dist/production/scripts/qr-attribution.js")).toBe(true);
   });
 
   it("keeps the Open Graph image at the expected share-preview dimensions", () => {

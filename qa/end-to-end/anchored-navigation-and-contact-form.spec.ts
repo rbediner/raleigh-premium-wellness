@@ -45,6 +45,23 @@ test("homepage exposes anchored sections and adaptive form states", async ({ pag
   ).toBeVisible();
 });
 
+test("QR visits record their source once and leave a clean shareable URL", async ({ page }) => {
+  await page.goto("/?qr=business-card&interestPath=partner_with_us#contact");
+
+  await expect(page).toHaveURL(/interestPath=partner_with_us/);
+  await expect(page).not.toHaveURL(/(?:[?&])qr=/);
+  await expect(page.getByLabel("I want to partner with you")).toBeChecked();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.dataLayer.some(
+          (entry) => entry?.event === "qr_scan" && entry.qr_source === "business-card",
+        ),
+      ),
+    )
+    .toBe(true);
+});
+
 test("cta routing preselects the matching form path", async ({ page }) => {
   await page.goto("/");
 

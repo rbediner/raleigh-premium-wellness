@@ -22,6 +22,7 @@ import {
   getFormVariantConfig,
   normalizeInterestPath,
 } from "./form-configuration.js";
+import { consumeQrAttribution } from "./qr-attribution.js";
 import { getIsTestSubmissionFlag, submitUnifiedFormSubmission } from "./submission-gateway.js";
 
 const contactFormElement = document.querySelector("#unified-contact-form");
@@ -72,6 +73,19 @@ function trackEvent(eventName, eventData = {}) {
   });
   if (typeof gtag === "function") {
     gtag("event", eventName, eventData);
+  }
+}
+
+function trackAndCleanQrAttribution() {
+  const { cleanedUrl, qrSource } = consumeQrAttribution(window.location.href);
+
+  if (qrSource) {
+    // Record the printed source before hiding it, so shares copy a clean URL.
+    trackEvent("qr_scan", { qr_source: qrSource });
+  }
+
+  if (cleanedUrl !== window.location.href) {
+    window.history.replaceState({}, "", cleanedUrl);
   }
 }
 
@@ -594,6 +608,7 @@ window.addEventListener("hashchange", handleHashNavigation);
 
 // Seed the form from any ?interestPath deep link before the first paint so a
 // visitor arriving on a specific path sees the matching variant immediately.
+trackAndCleanQrAttribution();
 trackEvent("page_load", { page: window.location.pathname });
 currentFormValues = {
   ...currentFormValues,
