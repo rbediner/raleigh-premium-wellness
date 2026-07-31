@@ -80,6 +80,28 @@
       </nav>
     </header>
 
+    <aside class="page-jump-menu" aria-label="Page navigation">
+      <button
+        class="page-jump-menu__button"
+        type="button"
+        aria-expanded="false"
+        aria-controls="page-jump-menu-links"
+        aria-label="Open on-page navigation"
+      >
+        <span>On this page</span>
+        <span class="page-jump-menu__button-icon" aria-hidden="true">↕</span>
+      </button>
+
+      <nav id="page-jump-menu-links" class="page-jump-menu__links" aria-label="On this page" hidden>
+        <a href="#hero" data-page-jump-link="hero">Home</a>
+        <a href="#work-with-us" data-page-jump-link="work-with-us">Work With Us</a>
+        <a href="#partner-with-us" data-page-jump-link="partner-with-us">Partner With Us</a>
+        <a href="#find-out-whats-coming" data-page-jump-link="find-out-whats-coming">What’s Coming</a>
+        <a href="#about" data-page-jump-link="about">About</a>
+        <a href="#contact" data-page-jump-link="contact">Contact</a>
+      </nav>
+    </aside>
+
     <main class="page-flow">
       <section id="hero" class="hero-section hero-shell">
         <p class="eyebrow-label">Founder-Led</p>

@@ -186,6 +186,24 @@ test("mobile navigation uses a compact menu pattern and closes after selection",
   await expect(menuButton).toHaveAttribute("aria-expanded", "false");
 });
 
+test("mobile floating page navigation jumps to a section and closes after selection", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const jumpMenuButton = page.locator(".page-jump-menu__button");
+  await expect(jumpMenuButton).toBeVisible();
+  await expect(jumpMenuButton).toHaveAttribute("aria-label", "Open on-page navigation");
+  await jumpMenuButton.click();
+  await expect(jumpMenuButton).toHaveAttribute("aria-label", "Close on-page navigation");
+
+  const jumpMenu = page.getByRole("navigation", { name: "On this page" });
+  await expect(jumpMenu.getByRole("link", { name: "Partner With Us", exact: true })).toBeVisible();
+  await jumpMenu.getByRole("link", { name: "Partner With Us", exact: true }).click();
+
+  await expect(page).toHaveURL(/#partner-with-us$/);
+  await expect(jumpMenuButton).toHaveAttribute("aria-label", "Open on-page navigation");
+});
+
 test("manager deep link lands on the role pill instead of overshooting into the heading", async ({ page }) => {
   await page.goto("/#manager-studio-development");
 

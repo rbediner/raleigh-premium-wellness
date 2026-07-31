@@ -36,6 +36,9 @@ const siteNavigationElement = document.querySelector(".site-navigation");
 const mobileMenuButtonElement = document.querySelector(".site-navigation__menu-button");
 const mobileMenuScrimElement = document.querySelector(".site-navigation__scrim");
 const mobileMenuLinksElement = document.querySelector("#site-navigation-links");
+const pageJumpMenuElement = document.querySelector(".page-jump-menu");
+const pageJumpMenuButtonElement = document.querySelector(".page-jump-menu__button");
+const pageJumpMenuLinksElement = document.querySelector("#page-jump-menu-links");
 let currentFormValues = {
   interestPath: "work_with_us",
 };
@@ -63,6 +66,29 @@ function closeMobileMenu() {
 function toggleMobileMenu() {
   const isExpanded = mobileMenuButtonElement?.getAttribute("aria-expanded") === "true";
   setMobileMenuState(!isExpanded);
+}
+
+function setPageJumpMenuState(isOpen) {
+  if (!pageJumpMenuButtonElement || !pageJumpMenuLinksElement) {
+    return;
+  }
+
+  // Keep the visible control and the hidden section list in one accessible state.
+  pageJumpMenuButtonElement.setAttribute("aria-expanded", String(isOpen));
+  pageJumpMenuButtonElement.setAttribute(
+    "aria-label",
+    isOpen ? "Close on-page navigation" : "Open on-page navigation",
+  );
+  pageJumpMenuLinksElement.hidden = !isOpen;
+}
+
+function closePageJumpMenu() {
+  setPageJumpMenuState(false);
+}
+
+function togglePageJumpMenu() {
+  const isExpanded = pageJumpMenuButtonElement?.getAttribute("aria-expanded") === "true";
+  setPageJumpMenuState(!isExpanded);
 }
 
 function trackEvent(eventName, eventData = {}) {
@@ -526,6 +552,29 @@ function handleNavClick(event) {
   closeMobileMenu();
 }
 
+function handlePageJumpMenuClick(event) {
+  const menuTrigger = event.target.closest(".page-jump-menu__button");
+  const jumpLink = event.target.closest("[data-page-jump-link]");
+
+  if (menuTrigger) {
+    togglePageJumpMenu();
+    return;
+  }
+
+  if (jumpLink) {
+    trackEvent("page_jump_navigation", { target: jumpLink.dataset.pageJumpLink });
+    closePageJumpMenu();
+    return;
+  }
+
+  if (
+    pageJumpMenuButtonElement?.getAttribute("aria-expanded") === "true" &&
+    !pageJumpMenuElement?.contains(event.target)
+  ) {
+    closePageJumpMenu();
+  }
+}
+
 function handleHeroCtaTracking(event) {
   const trackedLink = event.target.closest("[data-analytics-id]");
 
@@ -539,11 +588,13 @@ function handleHeroCtaTracking(event) {
 function handleEscapeForMobileMenu(event) {
   if (event.key === "Escape") {
     closeMobileMenu();
+    closePageJumpMenu();
   }
 }
 
 function handleHashNavigation() {
   closeMobileMenu();
+  closePageJumpMenu();
 
   const nextIntentState = parseIntentStateFromUrl();
   if (window.location.hash === "#contact" && nextIntentState.interestPath) {
@@ -602,6 +653,7 @@ contactFormElement.addEventListener("click", handleComposerChipClick);
 contactFormElement.addEventListener("submit", handleFormSubmit);
 document.addEventListener("click", handleHeroCtaTracking);
 document.addEventListener("click", handleSectionActionClick);
+document.addEventListener("click", handlePageJumpMenuClick);
 siteNavigationElement?.addEventListener("click", handleNavClick);
 document.addEventListener("keydown", handleEscapeForMobileMenu);
 window.addEventListener("hashchange", handleHashNavigation);
