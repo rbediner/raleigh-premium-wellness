@@ -100,12 +100,14 @@ const previewBannerMarkup = `
 function buildHtmlForMode() {
   const environmentHeadMarkup = buildMode === "preview" ? previewHeadMarkup : productionHeadMarkup;
   const environmentBannerMarkup = buildMode === "preview" ? previewBannerMarkup : "";
-  // GitHub Pages can cache a module path after a deploy, so couple the entry
-  // module URL to this exact release commit and avoid serving prior behavior.
+  // GitHub Pages can cache static files after a deploy, so couple both the
+  // stylesheet and entry module URLs to this exact release commit. This keeps
+  // new markup from ever rendering with an older stylesheet in a phone cache.
+  const versionedStylesheetUrl = `./styles/site.css?v=${currentCommitSha}`;
   const versionedInteractionScriptUrl = `./scripts/site-interactions.js?v=${currentCommitSha}`;
 
   return sourceHtml
-    .replace("../styles/site.css", "./styles/site.css")
+    .replace("../styles/site.css", versionedStylesheetUrl)
     .replace("../scripts/site/site-interactions.js", versionedInteractionScriptUrl)
     .replaceAll("../assets/", "./assets/")
     .replace(

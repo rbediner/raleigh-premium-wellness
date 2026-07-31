@@ -27,6 +27,7 @@ describe("release artifact safety", () => {
     expect(previewHtml.match(/property="og:image"/g)?.length).toBe(1);
     expect(previewHtml.match(/property="twitter:image"/g)?.length).toBe(1);
     expect(previewHtml).not.toContain('rel="canonical"');
+    expect(previewHtml).toMatch(/href="\.\/styles\/site\.css\?v=[a-f0-9]{40}"/);
     expect(previewHtml).toMatch(/src="\.\/scripts\/site-interactions\.js\?v=[a-f0-9]{40}"/);
     expect(previewRobots).toContain("Disallow: /");
     expect(existsSync("dist/preview/assets/optimized-images/founders/rb-mb-social-photo-960.jpg")).toBe(true);
@@ -52,6 +53,7 @@ describe("release artifact safety", () => {
     expect(productionHtml.match(/property="og:image"/g)?.length).toBe(1);
     expect(productionHtml.match(/property="twitter:image"/g)?.length).toBe(1);
     expect(productionRobots).toContain("Allow: /");
+    expect(productionHtml).toMatch(/href="\.\/styles\/site\.css\?v=[a-f0-9]{40}"/);
     expect(productionHtml).toMatch(/src="\.\/scripts\/site-interactions\.js\?v=[a-f0-9]{40}"/);
     expect(existsSync("dist/production/assets/optimized-images/founders/rb-mb-social-photo-960.jpg")).toBe(true);
     expect(existsSync("dist/production/assets/share-surfaces/favicon.svg")).toBe(true);
