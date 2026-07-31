@@ -1020,9 +1020,10 @@ button {
 
   .page-jump-menu {
     position: fixed;
-    right: max(0.8rem, env(safe-area-inset-right));
-    bottom: max(0.8rem, env(safe-area-inset-bottom));
-    z-index: 19;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    /* Keep this above page content without competing with the header menu. */
+    z-index: 30;
     display: grid;
     justify-items: end;
   }
@@ -1030,42 +1031,44 @@ button {
   .page-jump-menu__button {
     display: inline-flex;
     align-items: center;
-    gap: 0.48rem;
-    min-height: 2.9rem;
-    padding: 0.68rem 0.86rem 0.68rem 1rem;
-    border: 1px solid rgba(247, 239, 231, 0.16);
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid rgba(226, 181, 135, 0.55);
     border-radius: 999px;
-    background: rgba(25, 19, 17, 0.94);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+    background: rgba(26, 19, 16, 0.96);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38);
     color: var(--ink);
     font: inherit;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
     font-weight: 700;
     cursor: pointer;
   }
 
   .page-jump-menu__button-icon {
     color: var(--accent);
-    font-size: 1rem;
+    font-size: 0.92rem;
     line-height: 1;
   }
 
   .page-jump-menu__links {
-    width: min(15rem, calc(100vw - 1.6rem));
-    margin-bottom: 0.62rem;
-    padding: 0.5rem;
-    border: 1px solid rgba(247, 239, 231, 0.12);
-    border-radius: 1rem;
+    width: min(17rem, calc(100vw - 2rem));
+    margin-bottom: 0.72rem;
+    padding: 0.55rem;
+    border: 1px solid rgba(226, 181, 135, 0.34);
+    border-radius: 1.1rem;
     background: linear-gradient(180deg, rgba(32, 24, 21, 0.98), rgba(16, 12, 11, 0.98));
     box-shadow: var(--shadow-strong);
   }
 
   .page-jump-menu__links a {
     display: block;
-    padding: 0.72rem 0.8rem;
+    padding: 0.78rem 0.85rem;
     border-radius: 0.68rem;
     color: var(--ink-soft);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-decoration: none;
   }
