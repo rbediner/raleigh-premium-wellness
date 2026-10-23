@@ -13,3 +13,6 @@ scripts/clean-drive-drift.sh --check    # report only (exit 1 if any found)
 - Runs automatically via git hooks (`pre-commit`, `post-merge`, `post-checkout`) — activated by `git config core.hooksPath .githooks` (verify with `git config core.hooksPath`; it should print `.githooks`).
 - Dependency-free (bash + git) — works for Codex, Claude, Cursor, or a human. Claude also runs it at session start via `.claude/settings.json`.
 - **Never commit a file whose name ends in ` 2`/` 3` — it is Drive junk, not a real file.**
+
+Also read and follow this repository's AGENTS.md, the rules every agent shares:
+@AGENTS.md

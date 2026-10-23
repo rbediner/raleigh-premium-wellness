@@ -1,0 +1,96 @@
+name: CI standard
+
+# The CI/CD standard check (CI-STANDARD.md). The job is named ci-standard and that name is frozen: it is the required
+# status check in this repository's ruleset, so renaming it blocks every pull request.
+# It reports on every pull request (no trigger paths filter, so the required check always answers) and exits in seconds when
+# the pull request changes no workflow file. It lints only the workflow files this change touched; older violations print as
+# warnings. The lint and its config are read from the BASE commit, so a pull request cannot weaken its own checker; a change
+# to the checker is also run in its new version. On a push to a protected branch that changes a workflow, a violation fails
+# the run and opens one P1 issue (an admin merge cannot hide it).
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - '.github/ci-standard/**'
+      - 'CI-STANDARD.md'
+
+concurrency:
+  group: ci-standard-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  ci-standard:
+    name: ci-standard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Which files did this change touch
+        id: changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          : > "$RUNNER_TEMP/changed.txt"
+          if [ "$EVENT" = "pull_request" ]; then
+            gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[] | select(.status != "removed") | .filename' > "$RUNNER_TEMP/changed.txt"
+          elif ! printf '%s' "$BEFORE" | grep -Eq '^0+$'; then
+            gh api "repos/$REPO/compare/$BEFORE...$SHA" --jq '.files[] | select(.status != "removed") | .filename' > "$RUNNER_TEMP/changed.txt"
+          else
+            echo '.github/workflows/ci-standard.yml' > "$RUNNER_TEMP/changed.txt"
+          fi
+          if grep -Eq '^\.github/(workflows|ci-standard)/|^CI-STANDARD\.md$' "$RUNNER_TEMP/changed.txt"; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "ci-standard: this change touches no workflow or standard file, nothing to check"
+          fi
+      - if: steps.changed.outputs.relevant == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: .github
+      - name: Lint with the base version of the checker, then the new version
+        if: steps.changed.outputs.relevant == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -uo pipefail
+          base="$RUNNER_TEMP/ci-standard-base"; mkdir -p "$base"
+          have_base=0
+          if [ -n "$BASE_SHA" ] && ! printf '%s' "$BASE_SHA" | grep -Eq '^0+$'; then
+            if git fetch -q --depth 1 origin "$BASE_SHA" 2>/dev/null; then
+              for f in ci-cost-lint.py config.json; do
+                git show "FETCH_HEAD:.github/ci-standard/$f" > "$base/$f" 2>/dev/null || rm -f "$base/$f"
+              done
+              [ -f "$base/ci-cost-lint.py" ] && have_base=1
+            fi
+          fi
+          rc=0
+          extra=""
+          [ "$EVENT" = "push" ] && extra="--open-issues $REPO"
+          if [ "$have_base" = 1 ]; then
+            echo "== checker from the base commit"
+            python3 "$base/ci-cost-lint.py" --root . --changed-list "$RUNNER_TEMP/changed.txt" --config "$base/config.json" $extra || rc=1
+          else
+            echo "== no checker on the base commit (first install): using this change's version only"
+          fi
+          if [ "$have_base" = 0 ] || grep -Eq '^\.github/ci-standard/|^CI-STANDARD\.md$' "$RUNNER_TEMP/changed.txt"; then
+            echo "== checker from this change"
+            python3 .github/ci-standard/ci-cost-lint.py --root . --changed-list "$RUNNER_TEMP/changed.txt" || rc=1
+          fi
+          exit $rc
