@@ -1,0 +1,7 @@
+{
+  "default_branch": "main",
+  "release_branches": [],
+  "deploy_workflows": [],
+  "weekly_minute_budget": 300,
+  "exceptions": []
+}
