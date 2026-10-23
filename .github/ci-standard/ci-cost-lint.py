@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+# ruff: noqa
+# flake8: noqa
+# Vendored byte for byte from rbediner/automation-estate into every repository: exempt from each repo's linters; do not edit here.
 """ci-cost-lint.py: check a repository's .github/workflows/*.yml against the CI/CD standard (CI-STANDARD.md).
 
 Roman, 2026-10-23: "our CI/CD process is amateur". GitHub bills every job that starts as at least one whole minute
@@ -36,13 +38,30 @@ MODES
 Never contacts the network except with --open-issues. Dependency-free: it carries its own small YAML reader for the subset
 workflows use, checked against PyYAML in test_ci_cost_lint.py.
 """
-import argparse, datetime, json, os, re, subprocess, sys
+
+import argparse
+import datetime
+import json
+import os
+import re
+import subprocess
+import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_CONFIG = os.path.join(HERE, "config.json")
 MAX_TIMEOUT = 15
 MAX_MATRIX = 3
-MUST_IDS = ["CI000", "CI001", "CI002", "CI003", "CI004", "CI005", "CI006", "CI007", "CI008"]
+MUST_IDS = [
+    "CI000",
+    "CI001",
+    "CI002",
+    "CI003",
+    "CI004",
+    "CI005",
+    "CI006",
+    "CI007",
+    "CI008",
+]
 FIX = {
     "CI001": "limit `push` to the default or release branch and add a `paths:` list; run branch checks on `pull_request` only",
     "CI002": "add a top-level `concurrency:` with a group; checks `cancel-in-progress: true`, deploys and writers `false`",
@@ -56,13 +75,27 @@ FIX = {
     "CI101": "merge the small jobs into one job with several steps (each job bills a whole minute)",
 }
 
-FILTERED_EVENTS = {"issue_comment", "issues", "pull_request_review", "pull_request_review_comment", "workflow_run",
-                   "repository_dispatch", "discussion", "discussion_comment", "check_run", "check_suite", "label", "status"}
+FILTERED_EVENTS = {
+    "issue_comment",
+    "issues",
+    "pull_request_review",
+    "pull_request_review_comment",
+    "workflow_run",
+    "repository_dispatch",
+    "discussion",
+    "discussion_comment",
+    "check_run",
+    "check_suite",
+    "label",
+    "status",
+}
 PR_EVENTS = {"pull_request", "pull_request_target"}
 WRITER_PATTERN = re.compile(
     r"git\s+push|wrangler\s+(deploy|publish)|\bdeploy|gh\s+(release|pr\s+(merge|create))|drive-writer|upload-pages|"
     r"deploy-pages|\bpublish|gcloud\s+(run|app)\s+deploy|firebase\s+deploy|git-auto-commit|peaceiris|push:\s*true|"
-    r"gh\s+api\s+.*(-X|--method)\s+(POST|PUT|PATCH|DELETE)|gh\s+workflow\s+run", re.I)
+    r"gh\s+api\s+.*(-X|--method)\s+(POST|PUT|PATCH|DELETE)|gh\s+workflow\s+run",
+    re.IGNORECASE,
+)
 
 
 # ----------------------------------------------------------------------------- minimal YAML subset parser
@@ -111,9 +144,15 @@ def _tokenize(text):
             continue
         indent = len(line) - len(line.lstrip(" "))
         content = _strip_comment(line.strip())
-        key_indent = indent + 2 if content.startswith("- ") and _split_key(content[1:].strip()) else indent
+        key_indent = (
+            indent + 2
+            if content.startswith("- ") and _split_key(content[1:].strip())
+            else indent
+        )
         # block scalar: the value part ends with | or > (plus chomp / indent indicators)
-        if re.search(r"(^|[:\s])[|>][+\-0-9]*$", content) and (content.endswith(("|", ">")) or re.search(r"[|>][+\-0-9]+$", content)):
+        if re.search(r"(^|[:\s])[|>][+\-0-9]*$", content) and (
+            content.endswith(("|", ">")) or re.search(r"[|>][+\-0-9]+$", content)
+        ):
             head = re.sub(r"\s*[|>][+\-0-9]*$", "", content)
             body, j = [], i + 1
             while j < len(raw):
@@ -129,14 +168,22 @@ def _tokenize(text):
                 j += 1
             while body and body[-1] == "":
                 body.pop()
-            toks.append((indent, head + " " + json.dumps("\n".join(body)) if head else json.dumps("\n".join(body)), True))
+            toks.append(
+                (
+                    indent,
+                    head + " " + json.dumps("\n".join(body))
+                    if head
+                    else json.dumps("\n".join(body)),
+                    True,
+                )
+            )
             i = j
             continue
         # multi-line flow collection
         m = re.search(r"(^|:\s|-\s)([\[{].*)$", content)
         if m and not _balanced(m.group(2)):
             j = i + 1
-            while j < len(raw) and not _balanced(content[content.index(m.group(2)):]):
+            while j < len(raw) and not _balanced(content[content.index(m.group(2)) :]):
                 content += " " + _strip_comment(raw[j].strip())
                 j += 1
             i = j
@@ -146,14 +193,22 @@ def _tokenize(text):
     return toks
 
 
-_KEY_RE = re.compile(r"""^(?:"([^"]*)"|'([^']*)'|([^\s"'\[\]{},#&*!|>%@`:][^:]*?))\s*:(?:\s+(.*))?$""")
+_KEY_RE = re.compile(
+    r"""^(?:"([^"]*)"|'([^']*)'|([^\s"'\[\]{},#&*!|>%@`:][^:]*?))\s*:(?:\s+(.*))?$"""
+)
 
 
 def _split_key(content):
     m = _KEY_RE.match(content)
     if not m:
         return None
-    key = m.group(1) if m.group(1) is not None else m.group(2) if m.group(2) is not None else m.group(3)
+    key = (
+        m.group(1)
+        if m.group(1) is not None
+        else m.group(2)
+        if m.group(2) is not None
+        else m.group(3)
+    )
     return key.strip(), (m.group(4) if m.group(4) is not None else "")
 
 
@@ -224,7 +279,10 @@ def _parse_map(toks, i, indent):
         key, rest = kv
         i += 1
         if rest.strip() == "":
-            if i < len(toks) and (toks[i][0] > indent or (toks[i][0] == indent and toks[i][1].startswith("- "))):
+            if i < len(toks) and (
+                toks[i][0] > indent
+                or (toks[i][0] == indent and toks[i][1].startswith("- "))
+            ):
                 val, i = _parse_block(toks, i, toks[i][0])
             else:
                 val = None
@@ -236,7 +294,11 @@ def _parse_map(toks, i, indent):
 
 def _parse_list(toks, i, indent):
     out = []
-    while i < len(toks) and toks[i][0] == indent and (toks[i][1].startswith("- ") or toks[i][1] == "-"):
+    while (
+        i < len(toks)
+        and toks[i][0] == indent
+        and (toks[i][1].startswith("- ") or toks[i][1] == "-")
+    ):
         content = toks[i][1][1:].strip()
         if content == "":
             i += 1
@@ -249,10 +311,10 @@ def _parse_list(toks, i, indent):
         kv = _split_key(content)
         if kv and not (content.startswith(("[", "{"))):
             # an inline mapping starting on the dash line; its siblings sit at indent + 2 (after "- ")
-            sub_indent = indent + (len(toks[i][1]) - len(toks[i][1][1:].lstrip()) )
+            sub_indent = indent + (len(toks[i][1]) - len(toks[i][1][1:].lstrip()))
             sub = [(sub_indent, content, toks[i][2])]
             j = i + 1
-            while j < len(toks) and toks[j][0] >= sub_indent and not (toks[j][0] == indent):
+            while j < len(toks) and toks[j][0] >= sub_indent and toks[j][0] != indent:
                 sub.append(toks[j])
                 j += 1
             val, _ = _parse_map(sub, 0, sub_indent)
@@ -272,8 +334,6 @@ def parse_yaml(text):
     if i != len(toks):
         raise YamlError("trailing content near %r" % (toks[i][1],))
     return val
-
-
 
 
 # ----------------------------------------------------------------------------- helpers over a parsed workflow
@@ -332,7 +392,7 @@ def min_gap_minutes(times):
 
 def _code_only(text):
     """The workflow text without comment lines, so a word in a comment never makes a workflow look like a deploy."""
-    return "\n".join(l for l in text.splitlines() if not l.strip().startswith("#"))
+    return "\n".join(ln for ln in text.splitlines() if not ln.strip().startswith("#"))
 
 
 def is_writer(doc, text, listed=False):
@@ -346,6 +406,7 @@ def is_writer(doc, text, listed=False):
             perms.extend(str(v) for v in p.values())
         elif isinstance(p, str):
             perms.append(p)
+
     collect(doc.get("permissions"))
     for job in (doc.get("jobs") or {}).values():
         if isinstance(job, dict):
@@ -380,7 +441,11 @@ def matrix_size(job):
 def runs_on_values(job):
     ro = job.get("runs-on")
     vals = []
-    for item in as_list(ro) if not isinstance(ro, dict) else as_list(ro.get("labels")) + as_list(ro.get("group")):
+    for item in (
+        as_list(ro)
+        if not isinstance(ro, dict)
+        else as_list(ro.get("labels")) + as_list(ro.get("group"))
+    ):
         s = str(item)
         m = re.fullmatch(r"\$\{\{\s*matrix\.([\w\-]+)\s*\}\}", s.strip())
         if m:
@@ -419,25 +484,41 @@ def cancel_state(conc):
 # ----------------------------------------------------------------------------- the rules
 class Finding:
     def __init__(self, repo, workflow, rule, severity, message):
-        self.repo, self.workflow, self.rule, self.severity, self.message = repo, workflow, rule, severity, message
-        self.excepted = None      # reason, when an unexpired exception covers it
-        self.existing = False     # in changed mode: a file this change did not touch (a warning, never blocks)
+        self.repo, self.workflow, self.rule, self.severity, self.message = (
+            repo,
+            workflow,
+            rule,
+            severity,
+            message,
+        )
+        self.excepted = None  # reason, when an unexpired exception covers it
+        self.existing = False  # in changed mode: a file this change did not touch (a warning, never blocks)
 
     @property
     def blocking(self):
         return self.severity == "error" and self.excepted is None and not self.existing
 
     def as_dict(self):
-        return {"repo": self.repo, "workflow": self.workflow, "rule": self.rule, "severity": self.severity,
-                "message": self.message, "fix": FIX.get(self.rule, ""), "excepted": self.excepted,
-                "existing": self.existing, "blocking": self.blocking}
+        return {
+            "repo": self.repo,
+            "workflow": self.workflow,
+            "rule": self.rule,
+            "severity": self.severity,
+            "message": self.message,
+            "fix": FIX.get(self.rule, ""),
+            "excepted": self.excepted,
+            "existing": self.existing,
+            "blocking": self.blocking,
+        }
 
 
 def lint_workflow(repo, name, text, cfg):
     out = []
     default = cfg.get("default_branch") or "main"
     release = list(cfg.get("release_branches") or [])
-    allowed_branches = {default} | set(release) | ({"master"} if default == "main" else set())
+    allowed_branches = (
+        {default} | set(release) | ({"master"} if default == "main" else set())
+    )
     listed = name in (cfg.get("deploy_workflows") or [])
 
     def add(rule, sev, msg):
@@ -463,39 +544,81 @@ def lint_workflow(repo, name, text, cfg):
     if push is not None:
         branches, tags = as_list(push.get("branches")), as_list(push.get("tags"))
         if not branches and not tags:
-            add("CI001", "error", "`push` has no branches filter: it runs on a push to every branch (allowed: %s)" % here)
+            add(
+                "CI001",
+                "error",
+                "`push` has no branches filter: it runs on a push to every branch (allowed: %s)"
+                % here,
+            )
         elif branches:
             bad = [str(b) for b in branches if b not in allowed_branches]
             if bad:
-                add("CI001", "error", "`push` runs on %s; only %s are allowed" % (", ".join(bad), here))
-        if not push.get("paths") and not push.get("paths-ignore") and not (tags and not branches):
-            add("CI001", "error", "`push` has no paths / paths-ignore filter: every push to the branch starts this workflow")
+                add(
+                    "CI001",
+                    "error",
+                    "`push` runs on %s; only %s are allowed" % (", ".join(bad), here),
+                )
+        if (
+            not push.get("paths")
+            and not push.get("paths-ignore")
+            and not (tags and not branches)
+        ):
+            add(
+                "CI001",
+                "error",
+                "`push` has no paths / paths-ignore filter: every push to the branch starts this workflow",
+            )
 
     # CI002
     conc = concurrency_of(doc, jobs)
     if push is not None or pr:
         if not conc or not conc.get("group"):
-            add("CI002", "error", "no `concurrency` group: superseded and queued runs all keep billing")
+            add(
+                "CI002",
+                "error",
+                "no `concurrency` group: superseded and queued runs all keep billing",
+            )
         else:
             cs = cancel_state(conc)
             if writer or listed:
                 if cs == "true":
-                    add("CI002", "error", "cancel-in-progress is always true on a workflow that deploys or writes: a cancelled "
-                        "run can leave a half-applied change (cancel only pull_request runs, or use false)")
+                    add(
+                        "CI002",
+                        "error",
+                        "cancel-in-progress is always true on a workflow that deploys or writes: a cancelled "
+                        "run can leave a half-applied change (cancel only pull_request runs, or use false)",
+                    )
             elif cs == "false":
-                add("CI002", "error", "the group never cancels a superseded run: set `cancel-in-progress: true` "
-                    "(or `${{ github.event_name == 'pull_request' }}`)")
-            if push is not None and cs == "true" and set(map(str, as_list(push.get("branches")))) & set(release):
-                add("CI002", "error", "cancel-in-progress is always true on a push to a release branch (%s): a cancelled "
-                    "deploy leaves production half-updated" % ", ".join(release))
+                add(
+                    "CI002",
+                    "error",
+                    "the group never cancels a superseded run: set `cancel-in-progress: true` "
+                    "(or `${{ github.event_name == 'pull_request' }}`)",
+                )
+            if (
+                push is not None
+                and cs == "true"
+                and set(map(str, as_list(push.get("branches")))) & set(release)
+            ):
+                add(
+                    "CI002",
+                    "error",
+                    "cancel-in-progress is always true on a push to a release branch (%s): a cancelled "
+                    "deploy leaves production half-updated" % ", ".join(release),
+                )
 
     # CI003
     fired = sorted(e for e in trig if e in FILTERED_EVENTS)
     if fired:
         for jname, job in jobs.items():
             if isinstance(job, dict) and job.get("if") is None and not job.get("needs"):
-                add("CI003", "error", "job `%s` has no job-level `if:` but the workflow starts on %s: a runner starts and "
-                    "bills a minute for every event, even ones it ignores" % (jname, ", ".join(fired)))
+                add(
+                    "CI003",
+                    "error",
+                    "job `%s` has no job-level `if:` but the workflow starts on %s: a runner starts and "
+                    "bills a minute for every event, even ones it ignores"
+                    % (jname, ", ".join(fired)),
+                )
 
     # CI004, CI005, CI006
     for jname, job in jobs.items():
@@ -505,27 +628,51 @@ def lint_workflow(repo, name, text, cfg):
             continue
         tm = job.get("timeout-minutes")
         if tm is None:
-            add("CI004", "error", "job `%s` has no timeout-minutes: a hung step bills up to 360 minutes" % jname)
+            add(
+                "CI004",
+                "error",
+                "job `%s` has no timeout-minutes: a hung step bills up to 360 minutes"
+                % jname,
+            )
         else:
             try:
                 if float(str(tm)) > MAX_TIMEOUT:
-                    add("CI004", "error", "job `%s` allows %s minutes; the ceiling is %d" % (jname, tm, MAX_TIMEOUT))
+                    add(
+                        "CI004",
+                        "error",
+                        "job `%s` allows %s minutes; the ceiling is %d"
+                        % (jname, tm, MAX_TIMEOUT),
+                    )
             except ValueError:
                 pass  # an expression: cannot be checked here
-        bad_os = [v for v in runs_on_values(job) if re.search(r"macos|windows", v, re.I)]
+        bad_os = [
+            v for v in runs_on_values(job) if re.search(r"macos|windows", v, re.I)
+        ]
         if bad_os:
-            add("CI005", "error", "job `%s` runs on %s: macOS bills 10 times and Windows 2 times the Linux price" %
-                (jname, ", ".join(sorted(set(bad_os)))))
+            add(
+                "CI005",
+                "error",
+                "job `%s` runs on %s: macOS bills 10 times and Windows 2 times the Linux price"
+                % (jname, ", ".join(sorted(set(bad_os)))),
+            )
         n = matrix_size(job)
         if n > MAX_MATRIX:
-            add("CI006", "error", "job `%s` expands to a %d-way matrix (ceiling %d): each leg bills a whole minute" %
-                (jname, n, MAX_MATRIX))
+            add(
+                "CI006",
+                "error",
+                "job `%s` expands to a %d-way matrix (ceiling %d): each leg bills a whole minute"
+                % (jname, n, MAX_MATRIX),
+            )
 
     # CI007
     on_raw = doc.get("on", doc.get(True))
     if isinstance(on_raw, dict) and isinstance(on_raw.get("schedule"), list):
         for item in on_raw["schedule"]:
-            cron = str(item.get("cron")) if isinstance(item, dict) and item.get("cron") else None
+            cron = (
+                str(item.get("cron"))
+                if isinstance(item, dict) and item.get("cron")
+                else None
+            )
             if not cron:
                 continue
             try:
@@ -535,20 +682,38 @@ def lint_workflow(repo, name, text, cfg):
                 continue
             gap = min_gap_minutes(times)
             if gap < 60:
-                add("CI007", "error", "cron `%s` fires every %d minutes (%d times a day, about %d billed minutes a day)"
-                    % (cron, gap, len(times), len(times)))
+                add(
+                    "CI007",
+                    "error",
+                    "cron `%s` fires every %d minutes (%d times a day, about %d billed minutes a day)"
+                    % (cron, gap, len(times), len(times)),
+                )
 
     # CI008
     if push is not None and pr and not writer:
-        add("CI008", "error", "runs on pull_request and again on the merge push and neither deploys nor writes: "
-            "the second run repeats the first")
+        add(
+            "CI008",
+            "error",
+            "runs on pull_request and again on the merge push and neither deploys nor writes: "
+            "the second run repeats the first",
+        )
 
     # CI101
-    tiny = [j for j, jd in jobs.items() if isinstance(jd, dict) and len(as_list(jd.get("steps"))) <= 3 and not jd.get("uses")
-            and matrix_size(jd) == 1]
+    tiny = [
+        j
+        for j, jd in jobs.items()
+        if isinstance(jd, dict)
+        and len(as_list(jd.get("steps"))) <= 3
+        and not jd.get("uses")
+        and matrix_size(jd) == 1
+    ]
     if len(jobs) >= 4 and len(tiny) >= 4:
-        add("CI101", "warning", "%d jobs of three steps or fewer (%s): each starts a runner and bills a whole minute"
-            % (len(tiny), ", ".join(tiny[:6])))
+        add(
+            "CI101",
+            "warning",
+            "%d jobs of three steps or fewer (%s): each starts a runner and bills a whole minute"
+            % (len(tiny), ", ".join(tiny[:6])),
+        )
     return out
 
 
@@ -578,21 +743,54 @@ def apply_exceptions(findings, repo, cfg, config_problems):
     valid = []
     for e in cfg.get("exceptions") or []:
         label = "exception %s" % json.dumps(e, sort_keys=True)
-        if not isinstance(e, dict) or not all(str(e.get(k, "")).strip() for k in ("rule", "file", "reason", "expires")):
-            extra.append(Finding(repo, "config.json", "CI000", "error", "%s needs rule, file, reason and expires" % label))
+        if not isinstance(e, dict) or not all(
+            str(e.get(k, "")).strip() for k in ("rule", "file", "reason", "expires")
+        ):
+            extra.append(
+                Finding(
+                    repo,
+                    "config.json",
+                    "CI000",
+                    "error",
+                    "%s needs rule, file, reason and expires" % label,
+                )
+            )
             continue
         if e["rule"] not in MUST_IDS and e["rule"] not in FIX:
-            extra.append(Finding(repo, "config.json", "CI000", "error", "%s names an unknown rule" % label))
+            extra.append(
+                Finding(
+                    repo,
+                    "config.json",
+                    "CI000",
+                    "error",
+                    "%s names an unknown rule" % label,
+                )
+            )
             continue
         try:
             exp = datetime.date.fromisoformat(str(e["expires"]))
         except ValueError:
-            extra.append(Finding(repo, "config.json", "CI000", "error", "%s has a bad date (use YYYY-MM-DD)" % label))
+            extra.append(
+                Finding(
+                    repo,
+                    "config.json",
+                    "CI000",
+                    "error",
+                    "%s has a bad date (use YYYY-MM-DD)" % label,
+                )
+            )
             continue
         if exp < today():
-            extra.append(Finding(repo, str(e["file"]), "CI000", "error",
-                                 "exception for %s in %s expired on %s: the violation applies again; fix it or renew the "
-                                 "exception with a reason" % (e["rule"], e["file"], e["expires"])))
+            extra.append(
+                Finding(
+                    repo,
+                    str(e["file"]),
+                    "CI000",
+                    "error",
+                    "exception for %s in %s expired on %s: the violation applies again; fix it or renew the "
+                    "exception with a reason" % (e["rule"], e["file"], e["expires"]),
+                )
+            )
             continue
         valid.append(e)
     for f in findings:
@@ -634,14 +832,20 @@ def lint_repo(root, cfg, repo=None, config_problems=(), changed=None):
 # ----------------------------------------------------------------------------- changed files, issues, command line
 def _git(root, *args):
     try:
-        r = subprocess.run(["git", "-C", root] + list(args), capture_output=True, text=True, timeout=30)
+        r = subprocess.run(
+            ["git", "-C", root] + list(args), capture_output=True, text=True, timeout=30
+        )
     except (OSError, subprocess.SubprocessError):
         return []
-    return [l for l in r.stdout.splitlines() if l.strip()] if r.returncode == 0 else []
+    return (
+        [ln for ln in r.stdout.splitlines() if ln.strip()] if r.returncode == 0 else []
+    )
 
 
 def git_changed(root, default_branch):
-    files = set(_git(root, "diff", "--name-only", "HEAD")) | set(_git(root, "ls-files", "--others", "--exclude-standard"))
+    files = set(_git(root, "diff", "--name-only", "HEAD")) | set(
+        _git(root, "ls-files", "--others", "--exclude-standard")
+    )
     for base in ("origin/" + default_branch, default_branch):
         mb = _git(root, "merge-base", "HEAD", base)
         if mb:
@@ -653,32 +857,92 @@ def git_changed(root, default_branch):
 def open_issues(repo_full, findings):
     """One P1 issue per blocking violation, deduplicated by exact title among open issues."""
     made = []
-    subprocess.run(["gh", "label", "create", "P1", "-R", repo_full, "--color", "B60205", "--description", "Fix first"],
-                   capture_output=True, text=True)
+    subprocess.run(
+        [
+            "gh",
+            "label",
+            "create",
+            "P1",
+            "-R",
+            repo_full,
+            "--color",
+            "B60205",
+            "--description",
+            "Fix first",
+        ],
+        capture_output=True,
+        text=True,
+    )
     for f in findings:
         if not f.blocking:
             continue
         title = "[ci-standard] %s in %s" % (f.rule, f.workflow)
-        q = subprocess.run(["gh", "issue", "list", "-R", repo_full, "--state", "open", "--limit", "100", "--json", "title",
-                            "--jq", ".[].title"], capture_output=True, text=True)
+        q = subprocess.run(
+            [
+                "gh",
+                "issue",
+                "list",
+                "-R",
+                repo_full,
+                "--state",
+                "open",
+                "--limit",
+                "100",
+                "--json",
+                "title",
+                "--jq",
+                ".[].title",
+            ],
+            capture_output=True,
+            text=True,
+        )
         if title in q.stdout.splitlines():
             continue
-        body = ("%s\n\nFix: %s\n\nThis change reached a protected branch without passing the CI/CD standard (an admin merge or a "
-                "direct push). Standard: CI-STANDARD.md at the repository root. Local check before pushing: "
-                "`python3 .github/ci-standard/ci-cost-lint.py --changed`." % (f.message, FIX.get(f.rule, "")))
-        r = subprocess.run(["gh", "issue", "create", "-R", repo_full, "--title", title, "--label", "P1", "--body", body],
-                           capture_output=True, text=True)
+        body = (
+            "%s\n\nFix: %s\n\nThis change reached a protected branch without passing the CI/CD standard (an admin merge or a "
+            "direct push). Standard: CI-STANDARD.md at the repository root. Local check before pushing: "
+            "`python3 .github/ci-standard/ci-cost-lint.py --changed`."
+            % (f.message, FIX.get(f.rule, ""))
+        )
+        r = subprocess.run(
+            [
+                "gh",
+                "issue",
+                "create",
+                "-R",
+                repo_full,
+                "--title",
+                title,
+                "--label",
+                "P1",
+                "--body",
+                body,
+            ],
+            capture_output=True,
+            text=True,
+        )
         made.append(title if r.returncode == 0 else "FAILED: " + title)
     return made
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--root", default=".", help="repository checkout (default: current directory)")
-    ap.add_argument("--repo", help="repository name (default: GITHUB_REPOSITORY or the folder name)")
+    ap.add_argument(
+        "--root", default=".", help="repository checkout (default: current directory)"
+    )
+    ap.add_argument(
+        "--repo", help="repository name (default: GITHUB_REPOSITORY or the folder name)"
+    )
     ap.add_argument("--config", default=DEFAULT_CONFIG)
-    ap.add_argument("--changed", action="store_true", help="only files changed by this branch block (uses git)")
-    ap.add_argument("--changed-list", help="file with the changed paths, one per line (what CI passes)")
+    ap.add_argument(
+        "--changed",
+        action="store_true",
+        help="only files changed by this branch block (uses git)",
+    )
+    ap.add_argument(
+        "--changed-list",
+        help="file with the changed paths, one per line (what CI passes)",
+    )
     ap.add_argument("--report-only", action="store_true")
     ap.add_argument("--json-out")
     ap.add_argument("--open-issues", metavar="OWNER/REPO")
@@ -688,7 +952,7 @@ def main(argv=None):
     changed = None
     if args.changed_list:
         with open(args.changed_list, encoding="utf-8") as fh:
-            changed = {l.strip() for l in fh if l.strip()}
+            changed = {ln.strip() for ln in fh if ln.strip()}
     elif args.changed:
         changed = git_changed(args.root, cfg.get("default_branch") or "main")
     repo = args.repo or detect_repo(args.root)
@@ -699,18 +963,45 @@ def main(argv=None):
     for f in findings:
         if f.excepted:
             continue
-        label = "ERROR" if f.blocking else ("WARNING (existing, not touched by this change)" if f.severity == "error" and f.existing
-                                            else "WARNING")
-        print("%s %s %s/%s: %s\n    fix: %s" % (label, f.rule, repo, f.workflow, f.message, FIX.get(f.rule, "")))
+        label = (
+            "ERROR"
+            if f.blocking
+            else (
+                "WARNING (existing, not touched by this change)"
+                if f.severity == "error" and f.existing
+                else "WARNING"
+            )
+        )
+        print(
+            "%s %s %s/%s: %s\n    fix: %s"
+            % (label, f.rule, repo, f.workflow, f.message, FIX.get(f.rule, ""))
+        )
     for f in excepted:
         print("EXCEPTED %s %s/%s: %s" % (f.rule, repo, f.workflow, f.excepted))
     warn = len([f for f in findings if not f.blocking and not f.excepted])
-    print("ci-cost-lint %s: %d workflows, %d blocking, %d warnings, %d excepted%s" %
-          (repo, n, len(blocking), warn, len(excepted),
-           "" if changed is None else ", %d changed paths checked" % len(changed)))
+    print(
+        "ci-cost-lint %s: %d workflows, %d blocking, %d warnings, %d excepted%s"
+        % (
+            repo,
+            n,
+            len(blocking),
+            warn,
+            len(excepted),
+            "" if changed is None else ", %d changed paths checked" % len(changed),
+        )
+    )
     if args.json_out:
         with open(args.json_out, "w", encoding="utf-8") as fh:
-            json.dump({"repo": repo, "workflows": n, "blocking": len(blocking), "findings": [f.as_dict() for f in findings]}, fh, indent=1)
+            json.dump(
+                {
+                    "repo": repo,
+                    "workflows": n,
+                    "blocking": len(blocking),
+                    "findings": [f.as_dict() for f in findings],
+                },
+                fh,
+                indent=1,
+            )
     if args.open_issues and blocking:
         for t in open_issues(args.open_issues, findings):
             print("issue: " + t)
