@@ -57,7 +57,7 @@ jobs:
             echo "ci-standard: this change touches no workflow or standard file, nothing to check"
           fi
       - if: steps.changed.outputs.relevant == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
           sparse-checkout: .github
