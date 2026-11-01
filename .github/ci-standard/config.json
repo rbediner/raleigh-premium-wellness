@@ -3,5 +3,12 @@
   "release_branches": [],
   "deploy_workflows": [],
   "weekly_minute_budget": 300,
-  "exceptions": []
+  "exceptions": [
+    {
+      "rule": "CI001",
+      "file": "preview-deploy.yml",
+      "reason": "the staging branch deploys the preview site by design",
+      "expires": "2027-01-31"
+    }
+  ]
 }
