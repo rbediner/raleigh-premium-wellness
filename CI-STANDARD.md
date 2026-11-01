@@ -43,6 +43,7 @@ estate, `main` was pushed 24 to 97 times per repository and the same check ran o
 | CI006 | A matrix has at most 3 legs. | Each leg is a job and bills a whole minute (a 30-leg matrix cost 446 minutes in 11 runs). | Fold legs into one job with steps. |
 | CI007 | A schedule fires no more often than hourly. | An every-10-minute cron is 144 billed minutes a day even when idle. | Use an event trigger, or a Worker that starts the job only when there is work. |
 | CI008 | The same check does not run on `pull_request` and again on the merge push, unless the workflow deploys or writes. | The estate ran every check twice per change. | Drop the `push` trigger. |
+| CI009 | Branch hygiene is declared and wired: `branch_hygiene` in `config.json` names the branch allowlist (it must cover the default and release branches and must not be `*`), a janitor workflow that exists, runs on a `schedule:` and archives under `refs/archive/branches/`, and, when a release branch is declared, a `release_gate` script that exists. A repository that has not declared it yet gets a warning on every pull request; once declared, a change to `config.json` or the janitor must keep it valid. | Sunset Grove reached 490 branches (115 `mirror-request/*`, 149 `claude/*`, 210 `codex/*`) with no protection on `main`. | Add the block and the janitor; see Branch hygiene below. |
 | CI000 | `config.json` is valid: every exception has a rule, a file, a reason and an unexpired `expires` date. | An exception without an end date is a permanent hole. | Fix or renew the exception with a reason. |
 
 ## SHOULD rules (warnings)
@@ -56,6 +57,36 @@ estate, `main` was pushed 24 to 97 times per repository and the same check ran o
 Also expected, not lintable: **test only what you touch** (change-based selection; `NC-Courage` `scripts/qa/gates-for.py` and
 Sunset Grove `scripts/select_tests.py` are the patterns), **look before you build** (search the repo for a tool that exists),
 and **every report to Roman carries a cost line** (Actions runs or minutes triggered, API bursts, model used).
+
+## Weekly minutes estimate (wg-445, 2026-11-01)
+
+When a pull request adds or edits a workflow file, the `ci-standard` job posts one comment (replaced on each push) with the estimated billed minutes per week: one minute per job, matrix legs counted, schedules exact (a 10 minute cron shows 1,008), and assumed counts for `pull_request` (5 runs a week) and `push` (7 runs a week). It is `ci-cost-lint.py --estimate-out`; it never blocks.
+
+## Branch hygiene (Roman, 2026-10-31)
+
+Roman, after seeing 490 branches in Sunset Grove: "i dont ever want to see any branches there unless they are active", "i want
+branches to be deleted once they are merged!", enforced "at git level! as part of each release gate". Every repository:
+
+1. **Only active branches exist on GitHub.** Active means: the default branch, a declared release branch, a named system branch
+   listed in `allowed_branches`, the head of an open pull request, or a branch with a commit in the last 24 hours. Nothing else.
+2. **A branch is deleted when it is merged.** `delete_branch_on_merge` is on in the repository settings, so a merged pull request
+   deletes its head. A release flow that merges branches in a batch (not through pull requests) deletes each merged branch
+   right after its push to the release branch succeeds.
+3. **A repository ruleset restricts branch creation to the allowlist.** The ruleset targets every branch except the
+   `branch_hygiene.allowed_branches` patterns and applies the "Restrict creations" rule, so a branch outside the allowlist cannot
+   be created. The allowlist names prefixes (`claude/*`, `codex/*`, `mirror-request/*`), never `*`.
+4. **A daily janitor deletes inactive branches.** A scheduled workflow (daily, within CI007) lists the branches, keeps every active
+   one (rule 1), and deletes the rest. Before deleting a branch whose tip is not merged into the default or release branch, it
+   pushes that tip to `refs/archive/branches/<name>`, so no unmerged work is lost and `git fetch origin
+   refs/archive/branches/<name>` restores it. A merged branch is deleted with no archive.
+5. **The release gate refuses a release push while merged branches linger.** The repository's release gate (named in
+   `branch_hygiene.release_gate`) lists the remote branches before it allows a push to the release branch, and exits non-zero
+   naming every branch already merged that still exists. Delete them (rule 2) and push again.
+
+`ci-cost-lint.py` checks the parts it can see without calling the API (CI009): the allowlist is declared and covers the default
+and release branches, the janitor workflow exists, is scheduled and archives under `refs/archive/branches/`, and the release gate
+script exists when a release branch is declared. The live settings (`delete_branch_on_merge`, the ruleset, the branch count) are
+checked by the janitor and the release gate, which have the token.
 
 ## Release branches
 
@@ -73,7 +104,12 @@ cancel. A repository whose default branch is not `main` (for example `staging`) 
   "weekly_minute_budget": 300,
   "exceptions": [
     {"rule": "CI007", "file": "pulse.yml", "reason": "why this must be so", "expires": "2026-12-31"}
-  ]
+  ],
+  "branch_hygiene": {
+    "allowed_branches": ["main", "claude/*", "codex/*"],
+    "janitor_workflow": "branch-janitor.yml",
+    "release_gate": ""
+  }
 }
 ```
 
@@ -81,6 +117,9 @@ cancel. A repository whose default branch is not `main` (for example `staging`) 
 - `weekly_minute_budget`: billed minutes allowed in a trailing 7 days; the daily cost check opens one P1 issue when a repo goes over.
 - `exceptions`: a justified exception names the rule ID, the file, a plain reason and an ISO `expires` date. The lint fails on a
   missing field or an expired date. Review each one when it expires; do not just push the date out.
+- `branch_hygiene`: `allowed_branches` (names or `fnmatch` patterns the creation ruleset allows), `janitor_workflow` (a file in
+  `.github/workflows/`), `release_gate` (repository path of the script that refuses a release push while merged branches linger;
+  required when `release_branches` is not empty, otherwise `""`). See Branch hygiene.
 
 ## The measure
 
