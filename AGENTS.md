@@ -27,6 +27,9 @@ Read `CI-STANDARD.md` at the repository root before you add or change anything u
   repository_dispatch jobs (CI003); `timeout-minutes` on every job (CI004); no schedule more often than hourly (CI007); no second
   run of the same check on the merge push (CI008).
 - Push once when ready, batch merges, test only what you touch, and put a cost line (Actions minutes, API calls, model) in every report.
+- Branch hygiene (CI009): only active branches exist on GitHub. Delete your branch once it is merged, never leave one idle, and create
+  branches only under the prefixes in `branch_hygiene.allowed_branches`. A daily janitor archives unmerged tips under
+  `refs/archive/branches/<name>` and deletes inactive branches; the release gate refuses a release push while merged branches linger.
 - `CI-STANDARD.md` and the files under `.github/ci-standard/` (except `config.json`) are byte copies from `rbediner/automation-estate`.
   Do not edit them here; change the canonical copy there and the installer opens the pull requests.
 <!-- ci-standard:end -->

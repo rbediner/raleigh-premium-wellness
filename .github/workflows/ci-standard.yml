@@ -22,7 +22,7 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
   issues: write
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
             echo "ci-standard: this change touches no workflow or standard file, nothing to check"
           fi
       - if: steps.changed.outputs.relevant == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 1
           sparse-checkout: .github
@@ -94,3 +94,22 @@ jobs:
             python3 .github/ci-standard/ci-cost-lint.py --root . --changed-list "$RUNNER_TEMP/changed.txt" || rc=1
           fi
           exit $rc
+      - name: Comment the weekly Actions minutes this change adds
+        continue-on-error: true
+        if: always() && github.event_name == 'pull_request' && steps.changed.outputs.relevant == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -uo pipefail
+          out="$RUNNER_TEMP/estimate.md"; rm -f "$out"
+          grep -q -- '--estimate-out' .github/ci-standard/ci-cost-lint.py || { echo "this checker has no estimate yet"; exit 0; }
+          python3 .github/ci-standard/ci-cost-lint.py --root . --changed-list "$RUNNER_TEMP/changed.txt" --estimate-out "$out" --report-only > /dev/null || true
+          [ -s "$out" ] || { echo "no workflow file changed, no estimate"; exit 0; }
+          existing=$(gh api --paginate "repos/$REPO/issues/$PR/comments" --jq '.[] | select(.body | startswith("<!-- ci-standard-estimate -->")) | .id' | head -1)
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" -F body=@"$out" > /dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR/comments" -F body=@"$out" > /dev/null
+          fi
