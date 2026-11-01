@@ -10,5 +10,18 @@
       "reason": "the staging branch deploys the preview site by design",
       "expires": "2027-01-31"
     }
-  ]
+  ],
+  "branch_hygiene": {
+    "allowed_branches": [
+      "main",
+      "claude/*",
+      "codex/*",
+      "estate5/*",
+      "ci-standard-install",
+      "staging",
+      "gh-pages"
+    ],
+    "janitor_workflow": "branch-janitor.yml",
+    "release_gate": ""
+  }
 }
