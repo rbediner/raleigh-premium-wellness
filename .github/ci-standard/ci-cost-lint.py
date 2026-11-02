@@ -16,8 +16,6 @@ MUST RULES (each ID is stable, is named in CI-STANDARD.md, and carries a one-lin
   CI006  matrix size is at most 3
   CI007  schedules fire no more often than hourly
   CI008  no duplicate run of the same check on pull_request and the merge push, unless the workflow deploys or writes
-  CI009  branch hygiene is declared: config names the branch allowlist, a daily janitor workflow that archives under
-         refs/archive/branches/, and (with a release branch) the release gate script; all checked offline, no API calls
   CI000  the config and its exceptions are valid (every exception has rule, file, reason and an unexpired date)
 SHOULD RULES (warnings, never block):
   CI101  one job with steps instead of four or more tiny sibling jobs
@@ -26,9 +24,7 @@ SHOULD RULES (warnings, never block):
 
 CONFIG: .github/ci-standard/config.json beside this file (same folder).
   {"default_branch": "main", "release_branches": [], "deploy_workflows": [], "weekly_minute_budget": 300,
-   "exceptions": [{"rule": "CI007", "file": "x.yml", "reason": "why", "expires": "2026-12-31"}],
-   "branch_hygiene": {"allowed_branches": ["main", "claude/*", "codex/*"], "janitor_workflow": "branch-janitor.yml",
-                      "release_gate": ""}}
+   "exceptions": [{"rule": "CI007", "file": "x.yml", "reason": "why", "expires": "2026-12-31"}]}
 An exception without a reason or an expiry date, or past its date, is a CI000 error and stops applying.
 
 MODES
@@ -45,7 +41,6 @@ workflows use, checked against PyYAML in test_ci_cost_lint.py.
 
 import argparse
 import datetime
-import fnmatch
 import json
 import os
 import re
@@ -66,7 +61,6 @@ MUST_IDS = [
     "CI006",
     "CI007",
     "CI008",
-    "CI009",
 ]
 FIX = {
     "CI001": "limit `push` to the default or release branch and add a `paths:` list; run branch checks on `pull_request` only",
@@ -77,8 +71,6 @@ FIX = {
     "CI006": "cut the matrix to 3 legs or fewer, or fold the legs into one job with steps; otherwise add an exception",
     "CI007": "schedule no more often than hourly; prefer an event trigger or a Worker that starts the job only when there is work",
     "CI008": "drop the `push` trigger (the pull_request run already checked it) unless the workflow deploys or writes",
-    "CI009": "declare `branch_hygiene` in .github/ci-standard/config.json (allowed_branches, janitor_workflow, release_gate) and add "
-    "the daily janitor workflow; see CI-STANDARD.md, Branch hygiene",
     "CI000": "fix .github/ci-standard/config.json: every exception needs rule, file, reason and a future ISO `expires` date",
     "CI101": "merge the small jobs into one job with several steps (each job bills a whole minute)",
 }
@@ -809,71 +801,6 @@ def apply_exceptions(findings, repo, cfg, config_problems):
     return extra
 
 
-# ----------------------------------------------------------------------------- CI009 branch hygiene (offline: config and files only)
-ARCHIVE_PREFIX = "refs/archive/branches/"
-
-
-def lint_branch_hygiene(root, repo, cfg):
-    """CI009. Findings on config.json, or on the janitor workflow when it is that file that is missing or wrong.
-
-    Only what can be read from the checkout is checked: the live ruleset, branch list and delete_branch_on_merge setting need the
-    API and are the janitor's and the release gate's job."""
-    out = []
-
-    def add(where, msg):
-        out.append(Finding(repo, where, "CI009", "error", msg))
-
-    bh = cfg.get("branch_hygiene")
-    if not isinstance(bh, dict):
-        add("config.json", "config.json has no `branch_hygiene` block: the branch allowlist, janitor and release gate are undeclared")
-        return out
-    default = cfg.get("default_branch") or "main"
-    release = [b for b in (cfg.get("release_branches") or []) if isinstance(b, str)]
-    allowed = bh.get("allowed_branches")
-    if not isinstance(allowed, list) or not allowed or not all(isinstance(a, str) and a.strip() for a in allowed):
-        add("config.json", "branch_hygiene.allowed_branches must be a non-empty list of branch names or patterns")
-        allowed = []
-    for a in allowed:
-        if a.strip() in ("*", "**", "**/*"):
-            add("config.json", "branch_hygiene.allowed_branches entry %r allows every branch; name the prefixes instead" % a)
-    for b in [default] + release:
-        if allowed and not any(fnmatch.fnmatchcase(b, a) for a in allowed):
-            add("config.json", "branch %r (default or release branch) is not in branch_hygiene.allowed_branches" % b)
-    jw = bh.get("janitor_workflow")
-    if not isinstance(jw, str) or not jw.strip() or "/" in jw:
-        add("config.json", "branch_hygiene.janitor_workflow must name a file in .github/workflows/")
-    else:
-        path = os.path.join(root, ".github", "workflows", jw)
-        if not os.path.isfile(path):
-            add(jw, "janitor workflow .github/workflows/%s does not exist" % jw)
-        else:
-            with open(path, encoding="utf-8") as fh:
-                text = fh.read()
-            try:
-                trig = triggers_of(parse_yaml(text))
-            except YamlError:
-                trig = {}
-            if "schedule" not in trig:
-                add(jw, "janitor workflow has no `schedule:` trigger (it must run daily)")
-            if ARCHIVE_PREFIX not in text:
-                add(jw, "janitor workflow never writes %s<name>: an unmerged tip must be archived before its branch is deleted" % ARCHIVE_PREFIX)
-    gate = bh.get("release_gate")
-    if gate is not None and not isinstance(gate, str):
-        add("config.json", "branch_hygiene.release_gate must be a repository path or an empty string")
-        gate = ""
-    gate = (gate or "").strip()
-    if release and not gate:
-        add("config.json", "a release branch is declared but branch_hygiene.release_gate is empty: name the script that refuses a "
-            "release push while merged branches linger")
-    if gate:
-        norm = os.path.normpath(gate)
-        if os.path.isabs(gate) or norm.startswith(".."):
-            add("config.json", "branch_hygiene.release_gate %r must be a path inside the repository" % gate)
-        elif not os.path.isfile(os.path.join(root, norm)):
-            add("config.json", "branch_hygiene.release_gate %s does not exist" % gate)
-    return out
-
-
 def detect_repo(root):
     env = os.environ.get("GITHUB_REPOSITORY")
     return env.split("/")[-1] if env else os.path.basename(os.path.abspath(root))
@@ -890,80 +817,16 @@ def lint_repo(root, cfg, repo=None, config_problems=(), changed=None):
                 n += 1
                 with open(os.path.join(wf_dir, fn), encoding="utf-8") as fh:
                     findings.extend(lint_workflow(repo, fn, fh.read(), cfg))
-    findings.extend(lint_branch_hygiene(root, repo, cfg))
     findings.extend(apply_exceptions(findings, repo, cfg, list(config_problems)))
     if changed is not None:
         touched_cfg = any(p.startswith(".github/ci-standard/") for p in changed)
-        # CI009 is a ratchet: a repository that has not declared branch_hygiene sees a warning on every change (so a lint update never
-        # blocks a pull request); once declared, a change that edits config.json or the janitor must keep it valid.
-        declared = isinstance(cfg.get("branch_hygiene"), dict)
-        cfg_edited = ".github/ci-standard/config.json" in changed
         for f in findings:
             path = ".github/workflows/" + f.workflow
-            if f.rule == "CI009":
-                f.existing = not declared or not (cfg_edited if f.workflow == "config.json" else path in changed)
-            elif f.workflow == "config.json":
+            if f.workflow == "config.json":
                 f.existing = not touched_cfg and "cannot be read" not in f.message
             elif path not in changed and not (f.rule == "CI000" and touched_cfg):
                 f.existing = True
     return findings, n
-
-
-# ----------------------------------------------------------------------------- weekly minutes estimate (wg-445)
-PR_RUNS_PER_WEEK = 5      # assumed pushes to a pull request in a week, per workflow that runs on pull_request
-PUSH_RUNS_PER_WEEK = 7    # assumed pushes to a protected branch in a week, per workflow that runs on push
-
-
-def estimate_workflow(text):
-    """(weekly billed minutes, [(label, minutes)]) for one workflow file. One minute per job (each started job bills a whole
-    minute), times the matrix legs, times the firings in a week. Schedules are exact; pull_request and push use the assumed
-    counts above; any other event is not counted."""
-    doc = parse_yaml(text)
-    jobs = doc.get("jobs") if isinstance(doc.get("jobs"), dict) else {}
-    per_run = sum(matrix_size(j) for j in jobs.values() if isinstance(j, dict) and not j.get("uses")) or 0
-    trig = triggers_of(doc)
-    parts = []
-    on_raw = doc.get("on", doc.get(True))
-    if isinstance(on_raw, dict) and isinstance(on_raw.get("schedule"), list):
-        for item in on_raw["schedule"]:
-            cron = str(item.get("cron")) if isinstance(item, dict) and item.get("cron") else None
-            if not cron:
-                continue
-            try:
-                fires = len(cron_fires_per_day(cron))
-            except ValueError:
-                continue
-            parts.append(("schedule `%s` (%d a day x 7)" % (cron, fires), fires * 7 * per_run))
-    if "pull_request" in trig or "pull_request_target" in trig:
-        parts.append(("pull_request (%d runs a week assumed)" % PR_RUNS_PER_WEEK, PR_RUNS_PER_WEEK * per_run))
-    if "push" in trig:
-        parts.append(("push (%d runs a week assumed)" % PUSH_RUNS_PER_WEEK, PUSH_RUNS_PER_WEEK * per_run))
-    return sum(m for _, m in parts), parts
-
-
-def estimate_markdown(root, changed):
-    """Markdown comment body for the workflow files in `changed`, or None when the change touches no workflow file."""
-    rows = []
-    for path in sorted(changed):
-        if not re.match(r"^\.github/workflows/[^/]+\.ya?ml$", path):
-            continue
-        full = os.path.join(root, path)
-        if not os.path.isfile(full):
-            continue
-        try:
-            with open(full, encoding="utf-8") as fh:
-                total, parts = estimate_workflow(fh.read())
-        except YamlError:
-            rows.append("| `%s` | could not be read | |" % path)
-            continue
-        rows.append("| `%s` | %s | %s |" % (path, "{:,}".format(total), "; ".join("%s: %s" % (l, "{:,}".format(m)) for l, m in parts) or "no counted trigger"))
-    if not rows:
-        return None
-    return (
-        "<!-- ci-standard-estimate -->\n**Estimated GitHub Actions minutes per week for the workflows this change adds or edits** "
-        "(one minute per job, matrix legs counted, schedules exact; pull request and push counts are assumptions):\n\n"
-        "| Workflow | Minutes a week | How |\n|---|---:|---|\n" + "\n".join(rows) + "\n"
-    )
 
 
 # ----------------------------------------------------------------------------- changed files, issues, command line
@@ -1081,7 +944,6 @@ def main(argv=None):
         help="file with the changed paths, one per line (what CI passes)",
     )
     ap.add_argument("--report-only", action="store_true")
-    ap.add_argument("--estimate-out", help="write the weekly-minutes estimate comment (markdown) for the changed workflows here")
     ap.add_argument("--json-out")
     ap.add_argument("--open-issues", metavar="OWNER/REPO")
     args = ap.parse_args(argv)
@@ -1093,11 +955,6 @@ def main(argv=None):
             changed = {ln.strip() for ln in fh if ln.strip()}
     elif args.changed:
         changed = git_changed(args.root, cfg.get("default_branch") or "main")
-    if args.estimate_out and changed is not None:
-        body = estimate_markdown(args.root, changed)
-        if body:
-            with open(args.estimate_out, "w", encoding="utf-8") as fh:
-                fh.write(body)
     repo = args.repo or detect_repo(args.root)
     findings, n = lint_repo(args.root, cfg, repo, problems, changed)
 
