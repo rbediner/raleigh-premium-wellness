@@ -5,7 +5,7 @@
 # testing our code. We do our own code review, we do our own tests, and we just deploy through Git." In the 7 days to
 # 2026-11-11 the six estate repositories started 1,004 pull_request runs, each billed as at least a whole minute, mostly
 # repeating checks the agent had already run. So checks run here, once, and GitHub only deploys from the default branch
-# and re-runs this same script once a night as the safety net (.github/workflows/nightly-gate.yml where tests exist).
+# runs this same script once more, as the first step of any workflow that publishes (the release check).
 #
 # What it runs, in order:
 #   1. the CI standard lint on the workflow files you changed (always);
@@ -13,11 +13,10 @@
 # A repository with no "local_gate" list runs only the lint.
 #
 # Usage:   bash .github/ci-standard/local-gate.sh            (before every push)
-#          bash .github/ci-standard/local-gate.sh --all      (lint every workflow, as the nightly gate does)
+#          bash .github/ci-standard/local-gate.sh --all      (lint every workflow; the release check runs this)
 # Output:  the last line is the proof, for example
 #            Local-Gate: pass 3f2a91c 2026-11-11T21:40:12Z
 #          Put that line in the pull request body (or the commit message when you push straight to the default branch).
-#          The nightly gate checks that every pull request merged in the last day carries a pass line for its own head.
 # Exit:    0 when everything passed, 1 when anything failed (fix it, then run it again; never push on a failure).
 set -uo pipefail
 
