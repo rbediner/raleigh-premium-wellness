@@ -1,8 +1,34 @@
 # CI/CD standard (Roman, 2026-10-23)
 
-Every repository under `rbediner` and `alliance-properties` follows this, for every agent, human and harness. This file is a
+Every repository under `rbediner`, `North-Carolina-Courage`, `Agentic-Society-LLC`, `alliance-properties` and `pasteflowapp` follows this, for every agent, human and harness. This file is a
 byte-identical copy of the canonical one in `rbediner/automation-estate` (`automations/CI-STANDARD.md`); never edit a copy,
 change the canonical one and let the installer open the pull requests.
+
+## Test locally, deploy through git (Roman, 2026-11-11). Read this first
+
+Roman: *"We are supposed to be testing our shit locally so that GitHub doesn't waste action minutes on testing our code.
+We do our own code review, we do our own tests, and we just deploy through Git."* Measured for the 7 days to 2026-11-11:
+the six estate repositories started 1,004 `pull_request` runs (each billed as at least a whole minute) out of 3,674, and
+Agentic Society's Slack-Agents alone started 908, mostly repeating checks the agent had already run on its own machine.
+
+| Step | Who does it | Where |
+|---|---|---|
+| 1. Test | The agent, before every push: `bash .github/ci-standard/local-gate.sh` | Your machine or sandbox |
+| 2. Review | The agent reads its own full diff before pushing; a change to a deploy, auth, money or workflow path also gets one second-model review (`/code-review` or a reviewer agent) | Your machine |
+| 3. Prove | Paste the gate's last line, `Local-Gate: pass <sha> <time>`, into the pull request body (or the commit message when pushing straight to the default branch). Run the gate after your last commit, so the sha is the head | The pull request |
+| 4. Merge and deploy | Merge; the deploy workflow runs on the default branch | GitHub, push to the default branch only |
+| 5. Safety net | Once a night, in each repository that declares tests, `nightly-gate.yml` re-runs the gate on the default branch and checks that every pull request merged that day carried a pass line for its head. Anything red opens ONE issue; the morning fixer repairs it | GitHub, one short run a night, nothing on a quiet day |
+
+- **No workflow starts on `pull_request` (CI010)**, except `ci-standard.yml`, whose job skips itself there. A job skipped by a
+  job-level `if:` costs nothing, finishes at once and counts as a passing required check, so rulesets requiring `ci-standard`
+  never make a merge wait.
+- **What the gate runs:** the CI standard lint on the workflows you changed, then every command in `local_gate` in
+  `.github/ci-standard/config.json` (for example `["python3 -m pytest -q", "node --test"]`). Test only what you touch where the
+  repository has a change-based selector; the full suite runs for shared core code.
+- **Never push on a red gate**, and never fake a pass line: the nightly gate compares it with the merged head commit.
+- **Installing the safety net:** a repository that declares `local_gate` copies
+  `rbediner/automation-estate/.github/ci-standard/nightly-gate.yml.tmpl` to `.github/workflows/nightly-gate.yml`, setting
+  `__MINUTE__` to a minute of its own (staggered so the repositories do not all start at once).
 
 ## Why
 
@@ -14,8 +40,9 @@ estate, `main` was pushed 24 to 97 times per repository and the same check ran o
 
 ## How it is enforced
 
-1. **The check `ci-standard`.** `.github/workflows/ci-standard.yml` runs on every pull request. It lints only the workflow
-   files that pull request changed, so old violations never block unrelated work; they print as warnings.
+1. **The check `ci-standard`.** `.github/workflows/ci-standard.yml` answers on every pull request, but since 2026-11-11 its job
+   skips itself there (CI010): the same lint runs locally inside `local-gate.sh` before the push. It lints only the workflow
+   files a change touched, so old violations never block unrelated work; they print as warnings.
 2. **The name is frozen.** The required check is named `ci-standard`. Renaming the job or the workflow's check blocks every pull
    request in that repository until the ruleset is edited. Do not rename it.
 3. **A pull request cannot weaken its own checker.** The job runs the lint and reads `config.json` from the BASE branch, never
@@ -26,7 +53,8 @@ estate, `main` was pushed 24 to 97 times per repository and the same check ran o
 5. **The bypass is watched.** On a push to a protected branch that changes `.github/workflows/**`, the same job runs. On a
    violation it fails red and opens one P1 issue titled `[ci-standard] <rule> in <file>` (one per title), so the morning fixer
    and the daily estate status see it. Never use `gh pr merge --admin` to get a workflow change past this check.
-6. **Local pre-push command.** Run `python3 .github/ci-standard/ci-cost-lint.py --changed` before pushing. Exit 1 means fix first.
+6. **Local pre-push command.** Run `bash .github/ci-standard/local-gate.sh` before pushing (it runs the lint and this
+   repository's `local_gate` commands). Exit 1 means fix first. Its last line is the pass line the pull request carries.
 7. **Every repo carries its own copy** (this file, `AGENTS.md`, `CLAUDE.md`, `.github/ci-standard/`, the workflow), so an agent
    on any account finds the standard with no access to the estate repo. New repositories start from `rbediner/repo-template`;
    a daily installer opens an install pull request in any repository that is missing the set.
@@ -44,6 +72,7 @@ estate, `main` was pushed 24 to 97 times per repository and the same check ran o
 | CI007 | A schedule fires no more often than hourly. | An every-10-minute cron is 144 billed minutes a day even when idle. | Use an event trigger, or a Worker that starts the job only when there is work. |
 | CI008 | The same check does not run on `pull_request` and again on the merge push, unless the workflow deploys or writes. | The estate ran every check twice per change. | Drop the `push` trigger. |
 | CI009 | Branch hygiene is declared and wired: `branch_hygiene` in `config.json` names the branch allowlist (it must cover the default and release branches and must not be `*`), a janitor workflow that exists, runs on a `schedule:` and archives under `refs/archive/branches/`, and, when a release branch is declared, a `release_gate` script that exists. A repository that has not declared it yet gets a warning on every pull request; once declared, a change to `config.json` or the janitor must keep it valid. | Sunset Grove reached 490 branches (115 `mirror-request/*`, 149 `claude/*`, 210 `codex/*`) with no protection on `main`. | Add the block and the janitor; see Branch hygiene below. |
+| CI010 | No workflow starts on `pull_request` or `pull_request_target`, except `ci-standard.yml` (which skips itself there). Checks run locally with `local-gate.sh` before the push; GitHub deploys from the default branch and runs the nightly gate. | 1,004 pull_request runs in 7 days in the six estate repositories, and 908 in one Agentic Society repository, mostly repeating the agent's own checks (2026-11-11). | Drop the `pull_request` trigger and add the command to `local_gate` in `config.json`. |
 | CI000 | `config.json` is valid: every exception has a rule, a file, a reason and an unexpired `expires` date. | An exception without an end date is a permanent hole. | Fix or renew the exception with a reason. |
 
 ## SHOULD rules (warnings)
