@@ -28,6 +28,11 @@ permissions:
 jobs:
   ci-standard:
     name: ci-standard
+    # CI010 (Roman, 2026-11-11): tests and this lint run locally before the push (local-gate.sh), so on a pull request
+    # this job is SKIPPED. A job skipped by a job-level `if:` costs nothing, finishes at once, and GitHub reports it as
+    # a passing required check, so the ruleset requiring `ci-standard` still lets the merge through with no wait. On a
+    # push to a protected branch that changes a workflow it still runs and opens the P1 issue (the bypass watch).
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

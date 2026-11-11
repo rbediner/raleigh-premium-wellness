@@ -16,6 +16,8 @@ MUST RULES (each ID is stable, is named in CI-STANDARD.md, and carries a one-lin
   CI006  matrix size is at most 3
   CI007  schedules fire no more often than hourly
   CI008  no duplicate run of the same check on pull_request and the merge push, unless the workflow deploys or writes
+  CI010  no workflow starts on pull_request except ci-standard.yml (which skips itself there): checks run locally
+         with .github/ci-standard/local-gate.sh before the push; GitHub only deploys and runs the nightly gate
   CI009  branch hygiene is declared: config names the branch allowlist, a daily janitor workflow that archives under
          refs/archive/branches/, and (with a release branch) the release gate script; all checked offline, no API calls
   CI000  the config and its exceptions are valid (every exception has rule, file, reason and an unexpired date)
@@ -67,6 +69,7 @@ MUST_IDS = [
     "CI007",
     "CI008",
     "CI009",
+    "CI010",
 ]
 FIX = {
     "CI001": "limit `push` to the default or release branch and add a `paths:` list; run branch checks on `pull_request` only",
@@ -79,6 +82,7 @@ FIX = {
     "CI008": "drop the `push` trigger (the pull_request run already checked it) unless the workflow deploys or writes",
     "CI009": "declare `branch_hygiene` in .github/ci-standard/config.json (allowed_branches, janitor_workflow, release_gate) and add "
     "the daily janitor workflow; see CI-STANDARD.md, Branch hygiene",
+    "CI010": "drop the pull_request trigger and put the command in `local_gate` in .github/ci-standard/config.json; agents run it with local-gate.sh before pushing, and the nightly gate re-runs it on main",
     "CI000": "fix .github/ci-standard/config.json: every exception needs rule, file, reason and a future ISO `expires` date",
     "CI101": "merge the small jobs into one job with several steps (each job bills a whole minute)",
 }
@@ -704,6 +708,24 @@ def lint_workflow(repo, name, text, cfg):
             "error",
             "runs on pull_request and again on the merge push and neither deploys nor writes: "
             "the second run repeats the first",
+        )
+
+    # CI010 (Roman, 2026-11-11): "We are supposed to be testing our shit locally so that GitHub doesn't waste action
+    # minutes." The estate's six repos ran 1,004 pull_request runs in 7 days. Checks run on the agent's machine with
+    # local-gate.sh before the push; GitHub deploys from the default branch and re-runs the gate once a night.
+    # A workflow may keep its pull_request trigger (so a ruleset that requires its check by name still gets an answer)
+    # only when EVERY job skips itself there with a job-level `if:` naming `github.event_name != 'pull_request'`: a
+    # skipped job starts no runner, costs nothing and reports as a passing required check.
+    def skips_pr(jd):
+        cond = str(jd.get("if") or "") if isinstance(jd, dict) else ""
+        # the skip must LEAD the condition (joined with && or alone); the same text inside an || clause skips nothing
+        return bool(re.match(r"\s*(\$\{\{\s*)?github\.event_name\s*!=\s*['\"]pull_request(_target)?['\"]\s*(&&|\}\}|$)", cond))
+    if pr and name != "ci-standard.yml" and not (jobs and all(skips_pr(jd) for jd in jobs.values())):
+        add(
+            "CI010",
+            "error",
+            "starts on pull_request: tests run locally (.github/ci-standard/local-gate.sh) before the push, never again on "
+            "GitHub (drop the trigger, or give every job `if: github.event_name != 'pull_request'`)",
         )
 
     # CI101
