@@ -23,10 +23,11 @@ Read `CI-STANDARD.md` at the repository root before you push code or change anyt
   (the CI standard lint plus this repository's `local_gate` commands from `.github/ci-standard/config.json`). Never push on a
   red gate. Read your own full diff before pushing; a deploy, auth, money or workflow change also gets one second-model review.
 - **Prove it.** Put the gate's last line, `Local-Gate: pass <sha> <time>`, in the pull request body (or the commit message when
-  you push straight to the default branch). Run it after your last commit. A nightly gate re-runs it on the default branch and
-  checks every merged pull request carried a pass line for its head; anything red becomes an issue for the morning fixer.
+  you push straight to the default branch). Run it after your last commit.
+- **Release check.** Every workflow that publishes runs `bash .github/ci-standard/local-gate.sh --all` as its first step and
+  publishes nothing on a failure: the combined code is tested once, on GitHub, right before it goes live.
 - **GitHub does not test pull requests.** No workflow starts on `pull_request` except `ci-standard.yml`, whose job skips itself
-  there (free, and it still satisfies the required check). GitHub deploys from the default branch and runs the nightly gate.
+  there (free, and it still satisfies the required check). GitHub only runs the release check and the deploy.
 - Workflow changes go through a pull request. Never `gh pr merge --admin`, and never push a workflow change straight to the
   default branch. The required check is named `ci-standard`; its name is frozen.
 - The rules that matter most: no pull_request runs (CI010); push triggers only on the default or a release branch with a
@@ -35,6 +36,8 @@ Read `CI-STANDARD.md` at the repository root before you push code or change anyt
 - Branch hygiene (CI009): only active branches exist on GitHub. Delete your branch once it is merged, never leave one idle, and create
   branches only under the prefixes in `branch_hygiene.allowed_branches`. A daily janitor archives unmerged tips under
   `refs/archive/branches/<name>` and deletes inactive branches; the release gate refuses a release push while merged branches linger.
+- Clean up before you stop (CI104): merge or close your own pull request and let its branch be deleted; never leave a branch you made
+  without an open PR. Unmerged work is never deleted automatically; the daily sweep lists anything idle 3 days for the morning fixer.
 - Push once when ready, batch merges, test only what you touch, and put a cost line (Actions minutes, API calls, model) in every report.
 - `CI-STANDARD.md` and the files under `.github/ci-standard/` (except `config.json`) are byte copies from `rbediner/automation-estate`.
   Do not edit them here; change the canonical copy there and the installer opens the pull requests.
