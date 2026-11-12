@@ -2,7 +2,7 @@ name: branch janitor
 
 # CI-STANDARD.md, Branch hygiene rule 4. Daily: keep the default branch, the head of every open pull request and any branch with a
 # commit in the last 24 hours; archive the tip of every other unmerged branch under refs/archive/branches/<name>, then delete it.
-# A merged branch is deleted with no archive. Restore: git fetch origin refs/archive/branches/<name>.
+# A merged branch is deleted with no archive. Restore: git fetch origin refs/archive/branches/<name> (or <name>@<sha> when that name was archived before).
 
 on:
   schedule:
@@ -42,7 +42,12 @@ jobs:
             echo "$open_heads" | grep -qxF "$name" && continue
             [ "$ts" -ge "$cutoff" ] && continue
             if ! git merge-base --is-ancestor "$sha" "origin/$DEFAULT"; then
-              git push origin "$sha:refs/archive/branches/$name"
+              # A name archived before (e.g. the installer's reused ci-standard-install branch) gets the tip's short sha
+              # appended, so the push never collides with the earlier archive (fixed 2026-11-11).
+              arch="refs/archive/branches/$name"
+              existing=$(git ls-remote origin "$arch" | cut -f1)
+              if [ -n "$existing" ] && [ "$existing" != "$sha" ]; then arch="$arch@${sha:0:12}"; fi
+              [ "$existing" = "$sha" ] || git push origin "$sha:$arch"
             fi
             git push origin ":refs/heads/$name"
           done
