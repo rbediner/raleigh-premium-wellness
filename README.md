@@ -12,19 +12,19 @@ hand-written static assets with no front-end framework and no bundler.
   browser QA. The one backend piece is a Google Apps Script web app that writes form
   submissions into a Google Sheet.
 - Directory layout:
-  - `site/` — the single `index.html` document (contains `<!-- BUILD_ENVIRONMENT_* -->`
+  - `site/`, the single `index.html` document (contains `<!-- BUILD_ENVIRONMENT_* -->`
     placeholders the build fills in).
-  - `styles/` — `site.css`.
-  - `scripts/site/` — browser runtime modules: `site-interactions.js` (nav, anchors,
+  - `styles/`, `site.css`.
+  - `scripts/site/`, browser runtime modules: `site-interactions.js` (nav, anchors,
     forms, and analytics), `form-configuration.js` (per-path form field config),
     `submission-gateway.js` (POSTs submissions to the Apps Script endpoint), and
     `qr-attribution.js` (records an approved QR source, then removes it from the
     shareable address bar URL).
-  - `scripts/release/` — build/publish/verify tooling (`build-site-artifact.mjs`,
+  - `scripts/release/`, build/publish/verify tooling (`build-site-artifact.mjs`,
     `publish-github-pages-branch.mjs`, preflight and deploy-verification scripts).
-  - `scripts/qa/`, `qa/` — QA runners plus unit, end-to-end (Playwright), and policy tests.
-  - `integrations/google-sheets-submissions/` — the Apps Script (`Code.js`) backend.
-  - `assets/`, `data-sources/`, `planning/`, `docs/` — imagery, reference docs, and SOPs.
+  - `scripts/qa/`, `qa/`, QA runners plus unit, end-to-end (Playwright), and policy tests.
+  - `integrations/google-sheets-submissions/`, the Apps Script (`Code.js`) backend.
+  - `assets/`, `data-sources/`, `planning/`, `docs/`, imagery, reference docs, and SOPs.
 - Build/run: there is no compile step. `scripts/release/build-site-artifact.mjs --mode
   <preview|production>` copies `site/`, `styles/`, `scripts/site/`, and `assets/` into
   `dist/<mode>/`, injecting the form endpoint, canonical/`noindex` SEO rules, and an
@@ -36,6 +36,10 @@ hand-written static assets with no front-end framework and no bundler.
   `/staging/`; `production-deploy.yml` runs on push to `main`, first verifying the commit
   already exists on `staging`, then publishing to the branch root. Both run a preflight,
   publish via `publish-github-pages-branch.mjs`, and verify the live URL.
+  Both run on `ubuntu-24.04` (pinned 2026-11-11: on Ubuntu 26.04 `npx playwright install chromium` fails, which
+  broke every production deploy from 2026-11-01) and ignore pushes that change only `.github/**` or Markdown, so CI
+  housekeeping commits never start a publish. Keep `staging` level with `main` for such commits
+  (`git push origin origin/main:staging` when it is a fast-forward), or the promotion check refuses the next release.
 - Form flow: the browser gateway POSTs a JSON body (as `text/plain` to avoid a CORS
   preflight) to the Apps Script web app, which routes each interest path to its own Sheet
   tab, logs sends to `email_delivery_log`, and diverts `is_test_submission` traffic to a
@@ -346,8 +350,8 @@ Before editing code on a new machine, do not trust memory alone. Read the repo d
 
 ## Google Drive drift
 
-This repository is checked out inside Google Drive and synced across machines. Google Drive creates conflict-copies (filenames ending in ` 2`, ` 3`, or ` (1)`) — including inside `.git` — which corrupt the repo. A guardrail auto-removes them:
+This repository is checked out inside Google Drive and synced across machines. Google Drive creates conflict-copies (filenames ending in ` 2`, ` 3`, or ` (1)`), including inside `.git`, which corrupt the repo. A guardrail auto-removes them:
 
-- `scripts/clean-drive-drift.sh --fix` — remove conflict-copies then verify with `git fsck` (`--check` to only report).
+- `scripts/clean-drive-drift.sh --fix`, remove conflict-copies then verify with `git fsck` (`--check` to only report).
 - Runs automatically via git hooks (`pre-commit`, `post-merge`, `post-checkout`) and, for Claude, on session start via `.claude/settings.json`.
-- Never commit a file whose name ends in ` 2`/` 3` — it is Google Drive junk, not a real file.
+- Never commit a file whose name ends in ` 2`/` 3`, it is Google Drive junk, not a real file.
